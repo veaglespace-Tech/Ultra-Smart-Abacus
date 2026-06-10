@@ -28,6 +28,10 @@ public class Enquiry {
     @Column(columnDefinition = "TEXT")
     private String message;
 
+    // Enquiry -> Courses
+    @ManyToOne
+    private Course course;
+
     @Enumerated(EnumType.STRING)
     private EnquiryStatus status;
 
@@ -40,4 +44,7 @@ public class Enquiry {
             this.status = EnquiryStatus.PENDING;
         }
     }
+
+
+
 }
