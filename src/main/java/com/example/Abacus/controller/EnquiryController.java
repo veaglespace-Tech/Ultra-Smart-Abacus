@@ -17,12 +17,6 @@ public class EnquiryController {
 
     private final EnquiryService enquiryService;
 
-
-    @GetMapping
-    public String hello(){
-        return "Hello...";
-    }
-
     //  Create
     @PostMapping
     public ResponseEntity<String> createEnquiry(
@@ -33,13 +27,43 @@ public class EnquiryController {
         return ResponseEntity.ok("Enquiry submitted successfully");
     }
 
+
      // GET ALL
     @GetMapping
     public ResponseEntity<List<EnquiryResponse>> getAllEnquiries() {
+
+    // Get all Enquiry's
+    public ResponseEntity<List<EnquiryResponse>> getAll() {
+
+
         return ResponseEntity.ok(
                 enquiryService.getAllEnquiries()
         );
     }
+
+
+    // Get Particular One entry
+    @GetMapping("/{id}")
+    public ResponseEntity<EnquiryResponse> getById(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                enquiryService.getEnquiryById(id)
+        );
+    }
+
+    // Update Enquiry
+    @PutMapping("/{id}")
+    public ResponseEntity<EnquiryResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody EnquiryRequest request) {
+
+        return ResponseEntity.ok(
+                enquiryService.updateEnquiry(id, request)
+        );
+    }
+
+
 
 
 }
