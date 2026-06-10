@@ -5,9 +5,11 @@ import com.example.Abacus.dto.request.LoginRequest;
 import com.example.Abacus.dto.request.RegisterRequest;
 import com.example.Abacus.dto.response.AuthResponse;
 import com.example.Abacus.entity.User;
+import com.example.Abacus.enums.UserRole;
 import com.example.Abacus.repository.UserRepo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,12 +47,16 @@ public class AuthService {
         );
     }
 
-    // Login
+    // User Login
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() ->
                         new RuntimeException("Invalid credentials"));
+
+        if (user.getRole() != UserRole.USER) {
+            throw new AccessDeniedException("Only Users Can Login");
+        }
 
         if (!passwordEncoder.matches(
                 request.password(),
@@ -68,4 +74,30 @@ public class AuthService {
         );
     }
 
+    // Admin Login
+    public AuthResponse adminLogin(@Valid LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() ->
+                        new RuntimeException("Invalid credentials"));
+
+        if (user.getRole() != UserRole.ADMIN) {
+            throw new AccessDeniedException("Only Users Can Login");
+        }
+
+        if (!passwordEncoder.matches(
+                request.password(),
+                user.getPassword())) {
+
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        String token = jwtService.generateToken(user.getEmail(),user.getRole());
+
+        return new AuthResponse(
+                token,
+                user.getEmail(),
+                user.getRole().name()
+        );
+    }
 }

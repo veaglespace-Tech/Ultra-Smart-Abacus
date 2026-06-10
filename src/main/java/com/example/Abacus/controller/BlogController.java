@@ -19,12 +19,13 @@ public class BlogController {
     private final BlogService blogService;
 
     // Create Blog
-    @PostMapping
+    @PostMapping()
     public ResponseEntity<BlogResponse> createBlog(
             @Valid @RequestBody BlogRequest request) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(blogService.createBlog(request));
+
     }
 
     // Get All Blogs
@@ -62,4 +63,6 @@ public class BlogController {
 
         return ResponseEntity.ok("Blog deleted successfully");
     }
+
+
 }
