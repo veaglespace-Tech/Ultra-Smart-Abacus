@@ -33,31 +33,13 @@ public class EnquiryController {
         return ResponseEntity.ok("Enquiry submitted successfully");
     }
 
-    // Get all 
-    public ResponseEntity<List<EnquiryResponse>> getAll() {
-
+     // GET ALL
+    @GetMapping
+    public ResponseEntity<List<EnquiryResponse>> getAllEnquiries() {
         return ResponseEntity.ok(
                 enquiryService.getAllEnquiries()
         );
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<EnquiryResponse> getById(
-            @PathVariable Long id) {
-
-        return ResponseEntity.ok(
-                enquiryService.getEnquiryById(id)
-        );
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<EnquiryResponse> update(
-            @PathVariable Long id,
-            @Valid @RequestBody EnquiryRequest request) {
-
-        return ResponseEntity.ok(
-                enquiryService.updateEnquiry(id, request)
-        );
-    }
 
 }
