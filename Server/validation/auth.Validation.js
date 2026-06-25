@@ -39,10 +39,10 @@ export const registerValidation = [
         .withMessage("Role is required")
         .bail()
         .isIn([
-            "SUPER_ADMIN",
             "ADMIN",
-            "TEAM_LEADER",
-            "EMPLOYEE",
+            "FRANCHISE",
+            "TEACHER",
+            "STUDENT",
         ])
         .withMessage(
             "Invalid role"
