@@ -3,16 +3,18 @@ import { createBatch,getAllBatches, getBatchById, updateBatch, deleteBatch }
 from "../controllers/batchController.js"
 import { createBatchValidation } from "../validation/batchValidation.js"
 import { validate } from "../middleware/batchMiddleware.js"
+import authMiddleware from "../middleware/authMiddleware.js"
+import authorize from "../middleware/roleMiddleware.js"
 
 
 
 
 const router = express.Router()
 
-router.post("/", createBatchValidation, validate,  createBatch)   
+router.post("/", authMiddleware, authorize("FRANCHISE","TEACHER"), createBatchValidation, validate,  createBatch)   
 router.get("/", getAllBatches)
 router.get("/:id", getBatchById)
-router.put("/:id", updateBatch)
-router.delete("/:id", deleteBatch)
+router.put("/:id", authMiddleware, authorize("FRANCHISE","TEACHER"), updateBatch)
+router.delete("/:id", authMiddleware, authorize("FRANCHISE","TEACHER"), deleteBatch)
 
 export default router

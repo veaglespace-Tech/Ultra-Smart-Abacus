@@ -4,12 +4,12 @@ import cors from "cors"
 
 import authRoutes from "./routes/authRoutes.js"
 import teacherRoutes from "./routes/teacherRoutes.js"
-
 import franchiseRoutes from "./routes/franchiseRoutes.js"
-
 import inventoryRoutes from "./routes/inventoryRoutes.js"
-
 import errorMiddleware from "./middleware/errorMiddleware.js"
+import studentRoutes from "./routes/studentRoutes.js";
+import batchRoutes from "./routes/batchRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
 
 dotenv.config()
 
@@ -28,6 +28,9 @@ app.use("/api/teachers", teacherRoutes)
 app.use("/api/franchise", franchiseRoutes)
 
 app.use("/api/inventory", inventoryRoutes)
+app.use("/api/students", studentRoutes)
+app.use("/api/batches", batchRoutes)
+app.use("/api/courses", courseRoutes)
 app.use(errorMiddleware)
 
 
