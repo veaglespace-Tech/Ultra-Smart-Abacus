@@ -25,6 +25,7 @@ model User {
   createdAt DateTime @default(now())
 }
 
+
 model Teacher {
   id String @id @default(uuid())
 
@@ -79,4 +80,48 @@ model Inventory {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  rollNo    String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Course {
+  id Int @id @default(autoincrement())
+
+  name String
+  code String @unique
+
+  description String?
+
+  duration Int? // months
+
+  fees Float?
+
+  Batches Batch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Batch {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  courseId Int?
+  course   Course? @relation(fields: [courseId], references: [id])
+
+  code        String  @unique
+  description String?
+
+  level String? // Beginner / Intermediate / Advanced
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  maxStudents Int?
 }

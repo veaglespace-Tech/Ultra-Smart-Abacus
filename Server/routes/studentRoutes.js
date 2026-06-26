@@ -7,7 +7,7 @@ import {createStudent,
 import { createStudentValidation } from "../validation/studentValidation.js";
 import { validate } from "../middleware/studentMiddleware.js";
 import  authMiddleware from "../middleware/authMiddleware.js";
-import authorize from "../middleware/authorize.js";
+import authorize from "../middleware/roleMiddleware.js";
 
 
 const router = express.Router();
