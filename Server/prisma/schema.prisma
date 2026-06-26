@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
 
   name String
 
@@ -25,9 +25,8 @@ model User {
   createdAt DateTime @default(now())
 }
 
-
 model Teacher {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
 
   qualification String
 
@@ -35,13 +34,13 @@ model Teacher {
 
   experience Int
 
-  userId String @unique
+  userId Int @unique
 
   user User @relation(fields: [userId], references: [id])
 }
 
 model Franchise {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
 
   name String
 
@@ -51,7 +50,7 @@ model Franchise {
 
   address String?
 
-  userId String @unique
+  userId Int @unique
 
   user User @relation(fields: [userId], references: [id])
 }
@@ -67,7 +66,7 @@ enum Role {
 }
 
 model Inventory {
-  id String @id @default(uuid())
+  id  Int      @id @default(autoincrement())
 
   itemName String
 
