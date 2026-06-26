@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
+  id        Int      @id @default(autoincrement())
 
   name String
 
@@ -27,7 +27,7 @@ model User {
 
 
 model Teacher {
-  id String @id @default(uuid())
+  id        Int      @id @default(autoincrement())
 
   qualification String
 
@@ -35,13 +35,13 @@ model Teacher {
 
   experience Int
 
-  userId String @unique
+  userId Id @unique
 
   user User @relation(fields: [userId], references: [id])
 }
 
 model Franchise {
-  id String @id @default(uuid())
+  id        Int      @id @default(autoincrement())
 
   name String
 
@@ -87,6 +87,9 @@ model Student {
   name      String
   email     String   @unique
   rollNo    String   @unique
+
+  notifications Notification[]
+
   createdAt DateTime @default(now())
 }
 
@@ -124,4 +127,47 @@ model Batch {
   endDate   DateTime?
 
   maxStudents Int?
+ 
+  notifications Notification[]
+
+}
+
+enum NotificationType {
+  GENERAL
+  EXAM
+  FEE
+  ATTENDANCE
+  ANNOUNCEMENT
+}
+
+enum RecipientType {
+  ALL
+  STUDENTS
+  TEACHERS
+  FRANCHISES
+  BATCH
+  STUDENT
+}
+
+model Notification {
+
+  id Int @id @default(autoincrement())
+
+  title String
+  message String
+
+  type NotificationType @default(GENERAL)
+
+  recipientType RecipientType
+
+  batchId Int?
+  batch Batch? @relation(fields: [batchId], references: [id])
+
+  studentId Int?
+  student Student? @relation(fields: [studentId], references: [id])
+
+  createdBy Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

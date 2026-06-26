@@ -2,17 +2,19 @@ import prisma from '../config/prisma.js';
 
 export const createCourse = async (req, res) => {
   try {
-    const { name, code, batchId, description, duration, fees } = req.body;
+    const { name, code, description, duration, fees } = req.body;
     const course = await prisma.course.create({
         data: {
             name,
             code,
-            batchId: batchId ? Number(batchId) : null,
+            //batchId: batchId ? Number(batchId) : null,
             description,
             duration: duration ? Number(duration) : null,
             fees: fees ? Number(fees) : null
         },
-        include: { batch: true }
+         include: {
+    Batches: true
+  }
     });
     res.status(201).json(course);
   } catch (error) {
