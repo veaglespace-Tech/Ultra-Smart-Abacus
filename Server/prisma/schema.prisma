@@ -66,7 +66,7 @@ enum Role {
 }
 
 model Inventory {
-  id  Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   itemName String
 
@@ -131,6 +131,7 @@ model Batch {
 
 }
 
+
 enum NotificationType {
   GENERAL
   EXAM
@@ -171,4 +172,30 @@ model Notification {
   updatedAt DateTime @updatedAt
 }
 
+
+model Fee {
+  id Int @id @default(autoincrement())
+
+  studentId Int
+
+  totalAmount Float
+
+  paidAmount Float @default(0)
+
+  pendingAmount Float
+
+  status FeeStatus @default(PENDING)
+
+  paymentDate DateTime?
+
+  createdAt DateTime @default(now())
+}
+
+enum FeeStatus {
+  PAID
+
+  PARTIAL
+
+  PENDING
+}
 
