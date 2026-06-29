@@ -24,7 +24,9 @@ export const createBatch = async (req, res) => {
 
 export const getAllBatches = async (req, res) => {
     try {
-        const batches = await prisma.batch.findMany();
+        const batches = await prisma.batch.findMany({
+            include: {students: true, course: true}
+        });
         res.status(200).json(batches);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -35,7 +37,12 @@ export const getBatchById = async (req, res) => {
     try {
         const { id } = req.params;
         const batch = await prisma.batch.findUnique({
-            where: { id: Number(id) }
+            where: { id: Number(id) },
+            include:{
+
+            students:true,
+            course:true
+            }
         });
         if (!batch) {
             return res.status(404).json({ error: "Batch not found" });

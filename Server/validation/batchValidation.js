@@ -8,6 +8,7 @@ export const createBatchValidation = [
     body("startDate").notEmpty().withMessage("startDate field should not be empty"),
     body("endDate").notEmpty().withMessage("endDate field should not be empty"),
     body("maxStudents").notEmpty().withMessage("maxStudents field should not be empty"),
+    body("courseId").optional().isInt().withMessage("courseId must be REQUIRED")
 ]
 
 

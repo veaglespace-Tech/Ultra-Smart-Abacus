@@ -87,6 +87,10 @@ model Student {
   email     String   @unique
   rollNo    String   @unique
 
+   batchId Int?
+
+  batch Batch? @relation(fields: [batchId], references: [id])
+
   notifications Notification[]
 
   createdAt DateTime @default(now())
@@ -128,6 +132,8 @@ model Batch {
   maxStudents Int?
  
   notifications Notification[]
+
+  students Student[]
 
 }
 

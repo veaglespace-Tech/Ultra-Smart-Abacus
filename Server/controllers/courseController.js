@@ -24,7 +24,11 @@ export const createCourse = async (req, res) => {
 
 export const getAllCourses = async (req, res) => {
   try {
-    const courses = await prisma.course.findMany();
+    const courses = await prisma.course.findMany({
+      include: {
+        Batches: true
+      }
+    });
     res.status(200).json(courses);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -35,7 +39,10 @@ export const getCourseById = async (req, res) => {
   try {
     const { id } = req.params;
     const course = await prisma.course.findUnique({
-        where: { id: Number(id) }   
+        where: { id: Number(id) } ,
+        include: {
+            Batches: true
+        }  
         
     });
     if (!course) {

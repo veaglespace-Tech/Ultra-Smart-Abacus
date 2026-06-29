@@ -2,13 +2,14 @@ import prisma from "../config/prisma.js";
 
 export const createStudent = async (req, res) => {
   try {
-    const { name, email, rollNo } = req.body;
+    const { name, email, rollNo, batchId } = req.body;
 
     const student = await prisma.student.create({
       data: {
         name,
         email,
-        rollNo
+        rollNo,
+        batchId
       }
     });
 
@@ -22,7 +23,13 @@ export const createStudent = async (req, res) => {
 };
 
 export const getAllStudents = async (req, res) => {
-  const students = await prisma.student.findMany();
+  const students = await prisma.student.findMany({
+    include:{
+
+batch:true
+
+}
+  });
 
   res.status(200).json(students);
 };
@@ -32,8 +39,12 @@ export const getStudentById = async (req, res) => {
 
   const student = await prisma.student.findUnique({
     where: {
-      id: Number(id)
-    }
+      id: Number(id),
+      include:{
+
+batch:true
+      }
+      }
   });
 
   if (!student) {
