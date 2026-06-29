@@ -1,5 +1,5 @@
 import express from "express"
-import { createBatch,getAllBatches, getBatchById, updateBatch, deleteBatch } 
+import { createBatch,getAllBatches, getBatchById, updateBatch, deleteBatch,getBatchesByCourseId } 
 from "../controllers/batchController.js"
 import { createBatchValidation } from "../validation/batchValidation.js"
 import { validate } from "../middleware/batchMiddleware.js"
@@ -16,5 +16,6 @@ router.get("/", getAllBatches)
 router.get("/:id", getBatchById)
 router.put("/:id", authMiddleware, authorize("FRANCHISE","TEACHER"), updateBatch)
 router.delete("/:id", authMiddleware, authorize("FRANCHISE","TEACHER"), deleteBatch)
+router.get("/course/:courseId", getBatchesByCourseId)
 
 export default router

@@ -72,3 +72,16 @@ export const deleteBatch = async (req, res) => {
     }
 };
 
+export const getBatchesByCourseId = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const batches = await prisma.batch.findMany({
+            where: { courseId: Number(courseId) }
+        });
+        res.status(200).json(batches);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+
+};
