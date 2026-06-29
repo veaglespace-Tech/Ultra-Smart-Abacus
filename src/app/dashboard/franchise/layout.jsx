@@ -5,13 +5,17 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, GraduationCap, Users, Calendar, 
-  CheckSquare, CreditCard, Box, BarChart3, Menu, X, LogOut 
+  CheckSquare, CreditCard, Box, BarChart3, Menu, X, LogOut, Sun, Moon
 } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function FranchiseLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { theme, toggleTheme, mounted } = useTheme();
+  const { logout } = useAuth();
 
   const sidebarItems = [
     { name: 'Overview', href: '/dashboard/franchise', icon: LayoutDashboard },
@@ -26,29 +30,30 @@ export default function FranchiseLayout({ children }) {
   ];
 
   const handleSignOut = () => {
-    router.push('/login'); 
+    logout();
+    router.push('/pages/auth/login'); 
   };
 
   const currentActiveItem = sidebarItems.find(item => item.href === pathname);
   const pageTitle = currentActiveItem ? currentActiveItem.name : "Center Metrics";
 
   return (
-    <div className="flex h-screen bg-[#eceffd] text-slate-800 font-sans overflow-hidden w-full relative">
+    <div className="flex h-screen bg-[#eceffd] dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans overflow-hidden w-full relative transition-colors duration-300">
       
       {/* Background Radial Ambient Gradients like Teacher Console */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-200/50 blur-[120px] pointer-events-none z-0"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[50%] rounded-full bg-purple-200/40 blur-[120px] pointer-events-none z-0"></div>
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-200/50 dark:bg-blue-900/10 blur-[120px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[50%] rounded-full bg-purple-200/40 dark:bg-purple-900/10 blur-[120px] pointer-events-none z-0"></div>
 
       {/* Mobile Sidebar Overlay */}
       {isMobileOpen && (
         <div 
           onClick={() => setIsMobileOpen(false)} 
-          className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/20 dark:bg-slate-950/40 backdrop-blur-sm md:hidden"
         />
       )}
       
       {/* Modern Glass Console Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/70 backdrop-blur-md border-r border-slate-200 flex flex-col justify-between p-5 transition-transform duration-300 md:translate-x-0 md:static md:flex shrink-0 m-0 md:m-4 md:mr-0 md:rounded-3xl shadow-sm ${
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between p-5 transition-all duration-300 md:translate-x-0 md:static md:flex shrink-0 m-0 md:m-4 md:mr-0 md:rounded-3xl shadow-sm ${
         isMobileOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
         <div>
@@ -57,13 +62,13 @@ export default function FranchiseLayout({ children }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-indigo-600"></span>
-                <h1 className="text-sm font-black tracking-wider text-slate-900 uppercase font-sans">
+                <h1 className="text-sm font-black tracking-wider text-slate-900 dark:text-white uppercase font-sans">
                   SMART ABACUS
                 </h1>
               </div>
-              <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 ml-4 uppercase">FRANCHISE CONSOLE</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-widest mt-0.5 ml-4 uppercase">FRANCHISE CONSOLE</p>
             </div>
-            <button onClick={() => setIsMobileOpen(false)} className="md:hidden text-slate-400 hover:text-slate-900 p-1 cursor-pointer">
+            <button onClick={() => setIsMobileOpen(false)} className="md:hidden text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white p-1 cursor-pointer">
               <X size={18} />
             </button>
           </div>
@@ -77,14 +82,14 @@ export default function FranchiseLayout({ children }) {
                 <Link
                   key={item.name}
                   href={item.href}
-                  onClick={() => setIsOpen ? setIsMobileOpen(false) : null} 
+                  onClick={() => setIsMobileOpen(false)} 
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer ${
                     isActive
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 translate-x-1"
-                      : "text-slate-500 hover:bg-slate-100/80 hover:text-slate-900"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-none translate-x-1"
+                      : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  <IconComponent size={16} className={isActive ? "text-white" : "text-slate-400"} />
+                  <IconComponent size={16} className={isActive ? "text-white" : "text-slate-400 dark:text-slate-500"} />
                   <span>{item.name}</span>
                 </Link>
               );
@@ -93,19 +98,19 @@ export default function FranchiseLayout({ children }) {
         </div>
 
         {/* Sidebar Footer Profile */}
-        <div className="border-t border-slate-100 pt-4 mt-4">
-          <div className="flex items-center gap-3 p-2 bg-slate-50/80 rounded-xl mb-2 border border-slate-100">
+        <div className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
+          <div className="flex items-center gap-3 p-2 bg-slate-50/80 dark:bg-slate-955/40 rounded-xl mb-2 border border-slate-100 dark:border-slate-800">
             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-black text-white shrink-0">
               MW
             </div>
             <div className="truncate">
-              <p className="text-xs font-black text-slate-800 truncate">Mumbai West Center</p>
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Franchise Owner</p>
+              <p className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">Mumbai West Center</p>
+              <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Franchise Owner</p>
             </div>
           </div>
           <button 
             onClick={handleSignOut} 
-            className="w-full text-left text-xs text-red-500 hover:text-red-600 font-bold px-3 py-2 transition-colors flex items-center gap-2 rounded-lg hover:bg-red-50 cursor-pointer"
+            className="w-full text-left text-xs text-red-500 dark:text-rose-400 hover:text-red-600 dark:hover:text-rose-300 font-bold px-3 py-2 transition-colors flex items-center gap-2 rounded-lg hover:bg-red-50 dark:hover:bg-rose-950/20 cursor-pointer"
           >
             <LogOut size={14} /> <span>Exit Session</span>
           </button>
@@ -120,17 +125,31 @@ export default function FranchiseLayout({ children }) {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsMobileOpen(true)}
-              className="p-2 rounded-xl bg-white/80 border border-slate-200 md:hidden text-slate-700 cursor-pointer shadow-sm"
+              className="p-2 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 md:hidden text-slate-700 dark:text-slate-300 cursor-pointer shadow-sm"
             >
               <Menu size={16} />
             </button>
-            <div className="text-[10px] md:text-xs font-bold text-slate-400 tracking-wider font-mono">
-              WORKSPACE / <span className="text-indigo-600 uppercase font-sans font-black">{pageTitle}</span>
+            <div className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider font-mono">
+              WORKSPACE / <span className="text-indigo-600 dark:text-indigo-450 uppercase font-sans font-black">{pageTitle}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3 text-[10px] md:text-xs">
-            <span className="bg-emerald-500/10 text-emerald-600 px-3 py-1 rounded-full font-bold border border-emerald-500/20 flex items-center gap-1.5">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-white/85 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 cursor-pointer shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Toggle Theme"
+              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {mounted && theme === "dark" ? (
+                <Sun size={14} className="text-amber-400" />
+              ) : (
+                <Moon size={14} />
+              )}
+            </button>
+            
+            <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full font-bold border border-emerald-500/20 dark:border-emerald-500/30 flex items-center gap-1.5 animate-fade-in">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Live Sync Active
             </span>

@@ -7,6 +7,7 @@ import React, {
   useContext,
 } from "react";
 import { login as apiLogin } from "@/services/auth.services";
+import { storageService } from "@/services/storage.services";
 
 export const AuthContext = createContext();
 
@@ -29,6 +30,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     setUser(null);
+    storageService.clearAuth();
   }, []);
 
   const value = {

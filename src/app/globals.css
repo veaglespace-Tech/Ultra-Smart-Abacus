@@ -1,8 +1,116 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  /* Global dark mode overrides for hardcoded classes in pages */
+  body, html, main {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  /* Target all elements using light background utilities */
+  .bg-white, .bg-slate-50, .bg-gray-50 {
+    background-color: #0f172a !important; /* bg-slate-900 */
+  }
+
+  /* Target outer body/main wrappers that use greyish colors */
+  .bg-\[\#edf2f9\], .bg-\[\#eceffd\], .bg-slate-100, .bg-gray-100 {
+    background-color: #020617 !important; /* bg-slate-950 */
+  }
+
+  /* Card highlights and hover states */
+  .hover\:bg-slate-50:hover, .hover\:bg-gray-50:hover, .hover\:bg-slate-100:hover, .hover\:bg-slate-100\/80:hover {
+    background-color: #1e293b !important; /* bg-slate-800 */
+  }
+
+  /* Text overrides */
+  .text-slate-900, .text-slate-800, .text-slate-700, .text-gray-900, .text-gray-800, .text-gray-700 {
+    color: #f8fafc !important; /* text-slate-50 */
+  }
+  .text-slate-600, .text-slate-500, .text-gray-600, .text-gray-500 {
+    color: #cbd5e1 !important; /* text-slate-300 */
+  }
+  .text-slate-400, .text-gray-400 {
+    color: #94a3b8 !important; /* text-slate-400 */
+  }
+
+  /* Borders */
+  .border-slate-100, .border-slate-200, .border-slate-250, .border-gray-100, .border-gray-200 {
+    border-color: #1e293b !important; /* border-slate-800 */
+  }
+
+  /* Input fields / forms */
+  input, select, textarea {
+    background-color: #020617 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+  }
+  input::placeholder, textarea::placeholder {
+    color: #475569 !important;
+  }
+
+  /* Table specific tags */
+  table, thead, tbody, th, td, tr {
+    border-color: #1e293b !important;
+  }
+
+  /* Overrides for custom dashboard warm/clay palette classes in dark theme */
+  [class*="bg-[#fcfbfa]"], [class*="bg-[#fbfaf7]"] {
+    background-color: #0f172a !important; /* bg-slate-900 */
+  }
+  [class*="bg-[#f4f0e6]"] {
+    background-color: #1e293b !important; /* bg-slate-800 */
+  }
+  [class*="bg-[#f5f2eb]"] {
+    background-color: #1e293b !important;
+  }
+  [class*="border-[#e2dcd0]"] {
+    border-color: #1e293b !important;
+  }
+  [class*="text-[#1a202c]"], [class*="text-[#2c3539]"] {
+    color: #f8fafc !important; /* text-slate-50 */
+  }
+  [class*="text-[#4a5d4e]"] {
+    color: #34d399 !important; /* sage/emerald-400 green */
+  }
+  [class*="text-[#8a9485]"], [class*="text-[#7a8475]"] {
+    color: #94a3b8 !important; /* text-slate-400 */
+  }
+  [class*="bg-[#4a5d4e]/10"] {
+    background-color: rgba(52, 211, 153, 0.15) !important;
+  }
+  [class*="bg-[#f5f2eb]"]:hover, [class*="hover:bg-[#f5f2eb]"]:hover {
+    background-color: rgba(30, 41, 59, 0.6) !important;
+  }
+
+  /* Attendance table status button overrides */
+  .bg-emerald-50 {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+  }
+  .text-emerald-700 {
+    color: #34d399 !important;
+  }
+  .border-emerald-200 {
+    border-color: rgba(16, 185, 129, 0.3) !important;
+  }
+  .bg-rose-50 {
+    background-color: rgba(244, 63, 94, 0.15) !important;
+  }
+  .text-rose-700 {
+    color: #f87171 !important;
+  }
+  .border-rose-200 {
+    border-color: rgba(244, 63, 94, 0.3) !important;
+  }
 }
 
 @theme inline {
@@ -10,13 +118,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
