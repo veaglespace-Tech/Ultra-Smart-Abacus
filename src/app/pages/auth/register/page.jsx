@@ -74,7 +74,7 @@ export default function RegisterPage() {
           </div>
 
           <h1 className="mt-5 text-4xl font-black text-blue-700">
-            SMART <span className="text-orange-500">ABACUS</span>
+            SMART <span className="text-blue-500">ABACUS</span>
           </h1>
 
           <p className="text-gray-500 mt-2 tracking-widest uppercase text-sm">
@@ -83,7 +83,7 @@ export default function RegisterPage() {
 
           <div className="mt-8">
 
-            <span className="px-5 py-2 rounded-full bg-orange-100 text-orange-600 text-xs font-bold uppercase tracking-widest">
+            <span className="px-5 py-2 rounded-full bg-blue-100 text-blue-600 text-xs font-bold uppercase tracking-widest">
               Member Registration
             </span>
 
