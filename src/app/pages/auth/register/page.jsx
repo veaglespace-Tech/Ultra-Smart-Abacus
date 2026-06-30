@@ -30,8 +30,7 @@ export default function RegisterPage() {
     gender: "Male",
     city: "",
     emergencyContact: "",
-    currentAddress: "",
-    permanentAddress: "",
+  Address:""
   });
 
   const handleChange = (e) => {
@@ -315,36 +314,14 @@ export default function RegisterPage() {
             </div>
                       </div>
 
-          {/* Emergency Contact */}
-          <div>
-
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Emergency Contact
-            </label>
-
-            <div className="relative">
-
-              <Phone className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-
-              <input
-                type="tel"
-                name="emergencyContact"
-                value={formData.emergencyContact}
-                onChange={handleChange}
-                placeholder="Emergency Contact Number"
-                className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-12 pr-4 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
-              />
-
-            </div>
-
-          </div>
+          
 
           {/* Current Address */}
 
           <div>
 
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Current Address
+               Address
             </label>
 
             <div className="relative">
@@ -353,8 +330,8 @@ export default function RegisterPage() {
 
               <textarea
                 rows={3}
-                name="currentAddress"
-                value={formData.currentAddress}
+                name="Address"
+                value={formData.Address}
                 onChange={handleChange}
                 placeholder="Enter Current Address"
                 className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-12 pr-4 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 resize-none"
@@ -364,30 +341,7 @@ export default function RegisterPage() {
 
           </div>
 
-          {/* Permanent Address */}
-
-          <div>
-
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Permanent Address
-            </label>
-
-            <div className="relative">
-
-              <MapPin className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
-
-              <textarea
-                rows={3}
-                name="permanentAddress"
-                value={formData.permanentAddress}
-                onChange={handleChange}
-                placeholder="Enter Permanent Address"
-                className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-12 pr-4 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 resize-none"
-              />
-
-            </div>
-
-          </div>
+         
 
           {/* Register Button */}
 

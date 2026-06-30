@@ -205,16 +205,7 @@ export default function LoginPage() {
 
         <div className="mt-8 border-t border-gray-200 pt-6">
 
-          <div className=" m-2 flex items-center gap-2 mb-4">
-
-            <KeyRound className="h-5 w-5 text-orange-500" />
-
-            <span className="text-sm font-bold text-gray-700">
-              Quick Demo Login
-            </span>
-
-          </div>
-
+       
         <div className="grid grid-cols-2 gap-4">
   {[
     {
