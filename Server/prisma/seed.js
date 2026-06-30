@@ -1,0 +1,35 @@
+import { PrismaClient } from "@prisma/client";
+
+import { studentSeed } from "./seeds/studentSeed.js";
+import { courseSeed } from "./seeds/courseSeed.js";
+import { batchSeed } from "./seeds/batchSeed.js";
+
+const prisma = new PrismaClient();
+
+async function main() {
+
+    await courseSeed(prisma);
+    await batchSeed(prisma);
+    await studentSeed(prisma);
+
+}
+
+main()
+
+    .then(async () => {
+
+        console.log("✅ Database Seeded");
+
+        await prisma.$disconnect();
+
+    })
+
+    .catch(async (error) => {
+
+        console.error(error);
+
+        await prisma.$disconnect();
+
+        process.exit(1);
+
+    });
