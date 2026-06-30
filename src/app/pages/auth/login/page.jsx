@@ -11,6 +11,7 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 
 export default function LoginPage() {
@@ -80,6 +81,16 @@ export default function LoginPage() {
       <div className="absolute -top-40 -left-40 w-[450px] h-[450px] rounded-full bg-blue-300/30 blur-[120px]" />
       <div className="absolute -bottom-40 -right-40 w-[450px] h-[450px] rounded-full bg-purple-300/30 blur-[120px]" />
     <div className="relative z-10 w-full max-w-md rounded-3xl bg-white shadow-2xl border border-gray-200 p-8">
+
+        {/* Back Button */}
+        <button
+          type="button"
+          onClick={() => router.push("/")}
+          className="group mb-6 flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+        >
+          <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
+          <span>Back to Home</span>
+        </button>
 
         {/* Logo */}
 
