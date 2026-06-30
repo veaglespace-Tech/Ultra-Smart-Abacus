@@ -10,6 +10,7 @@ import errorMiddleware from "./middleware/errorMiddleware.js"
 import studentRoutes from "./routes/studentRoutes.js";
 import batchRoutes from "./routes/batchRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
+import attendanceRoutes from "./routes/attendanceRoutes.js";
 
 import notificationRoutes from "./routes/notificationRoutes.js";
 
@@ -38,6 +39,8 @@ app.use("/api/batches", batchRoutes)
 app.use("/api/courses", courseRoutes)
 app.use("/api/notifications", notificationRoutes)
 app.use("/api/fees", feeRoutes)
+
+app.use("/api/attendance", attendanceRoutes);
 
 app.use(errorMiddleware)
 

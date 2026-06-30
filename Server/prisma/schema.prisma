@@ -37,6 +37,8 @@ model Teacher {
   userId Int @unique
 
   user User @relation(fields: [userId], references: [id])
+
+  attendances Attendance[]
 }
 
 model Franchise {
@@ -82,16 +84,21 @@ model Inventory {
 }
 
 model Student {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  rollNo    String   @unique
+  id Int @id @default(autoincrement())
+
+  name String
+
+  email String @unique
+
+  rollNo String @unique
 
    batchId Int?
 
   batch Batch? @relation(fields: [batchId], references: [id])
 
   notifications Notification[]
+
+  attendances Attendance[]
 
   createdAt DateTime @default(now())
 }
@@ -115,28 +122,38 @@ model Course {
 }
 
 model Batch {
-  id   Int    @id @default(autoincrement())
+  id Int @id @default(autoincrement())
+
   name String
 
   courseId Int?
-  course   Course? @relation(fields: [courseId], references: [id])
 
-  code        String  @unique
+  course Course? @relation(fields: [courseId], references: [id])
+
+  code String @unique
+
   description String?
 
-  level String? // Beginner / Intermediate / Advanced
+  level String?
 
   startDate DateTime?
-  endDate   DateTime?
+
+  endDate DateTime?
 
   maxStudents Int?
- 
+
+  notifications Notification[]
+
   notifications Notification[]
 
   students Student[]
 
-}
+  attendances Attendance[]
 
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
 
 enum NotificationType {
   GENERAL
@@ -156,10 +173,9 @@ enum RecipientType {
 }
 
 model Notification {
-
   id Int @id @default(autoincrement())
 
-  title String
+  title   String
   message String
 
   type NotificationType @default(GENERAL)
@@ -167,17 +183,16 @@ model Notification {
   recipientType RecipientType
 
   batchId Int?
-  batch Batch? @relation(fields: [batchId], references: [id])
+  batch   Batch? @relation(fields: [batchId], references: [id])
 
   studentId Int?
-  student Student? @relation(fields: [studentId], references: [id])
+  student   Student? @relation(fields: [studentId], references: [id])
 
   createdBy Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 
 model Fee {
   id Int @id @default(autoincrement())
@@ -205,3 +220,36 @@ enum FeeStatus {
   PENDING
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+}
+
+model Attendance {
+  id Int @id @default(autoincrement())
+
+  studentId Int
+
+  teacherId Int
+
+  batchId Int
+
+  attendanceDate DateTime @default(now())
+
+  status AttendanceStatus
+
+  remarks String?
+
+  student Student @relation(fields: [studentId], references: [id])
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  batch Batch @relation(fields: [batchId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, attendanceDate])
+}
