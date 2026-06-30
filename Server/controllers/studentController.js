@@ -1,76 +1,107 @@
 import prisma from "../config/prisma.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-export const createStudent = async (req, res) => {
-  try {
+export const createStudent = asyncHandler(async (req, res) => {
+
     const { name, email, rollNo, batchId } = req.body;
 
     const student = await prisma.student.create({
-      data: {
-        name,
-        email,
-        rollNo,
-        batchId
-      }
+        data: {
+            name,
+            email,
+            rollNo,
+            batchId
+        }
     });
 
-    res.status(201).json(student);
-
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
+    res.status(201).json({
+        success: true,
+        message: "Student created successfully",
+        data: student
     });
-  }
-};
 
-export const getAllStudents = async (req, res) => {
-  const students = await prisma.student.findMany({
-    include:{
+});
 
-batch:true
+export const getAllStudents = asyncHandler(async (req, res) => {
 
-}
-  });
-
-  res.status(200).json(students);
-};
-
-export const getStudentById = async (req, res) => {
-  const { id } = req.params;
-
-  const student = await prisma.student.findUnique({
-    where: {
-      id: Number(id),
-      include:{
-
-batch:true
-      }
-      }
-  });
-
-  if (!student) {
-    return res.status(404).json({
-      error: "Student not found"
+    const students = await prisma.student.findMany({
+        include: {
+            batch: true
+        }
     });
-  }
 
-  res.status(200).json(student);
-};
+    res.status(200).json({
+        success: true,
+        count: students.length,
+        data: students
+    });
 
-export const updateStudent = async (req, res) => {
-  const { id } = req.params;
-  
-   const student = await prisma.student.update({
-    where: { id: Number(id) },
-    data: req.body
-  });
-  res.status(200).json(student);
-};
+});
 
-export const deleteStudent = async (req, res) => {
-  const { id } = req.params;
+export const getStudentById = asyncHandler(async (req, res) => {
 
-  const student =  await prisma.student.delete({
-    where: { id: Number(id) }
-  });
-  res.status(200).json(student);
-};
+    const student = await prisma.student.findUnique({
+
+        where: {
+            id: Number(req.params.id)
+        },
+
+        include: {
+            batch: true
+        }
+
+    });
+
+    if (!student) {
+
+        return res.status(404).json({
+            success: false,
+            message: "Student not found"
+        });
+
+    }
+
+    res.status(200).json({
+        success: true,
+        data: student
+    });
+
+});
+
+export const updateStudent = asyncHandler(async (req, res) => {
+
+    const student = await prisma.student.update({
+
+        where: {
+            id: Number(req.params.id)
+        },
+
+        data: req.body
+
+    });
+
+    res.status(200).json({
+        success: true,
+        message: "Student updated successfully",
+        data: student
+    });
+
+});
+
+
+export const deleteStudent = asyncHandler(async (req, res) => {
+
+    await prisma.student.delete({
+
+        where: {
+            id: Number(req.params.id)
+        }
+
+    });
+
+    res.status(200).json({
+        success: true,
+        message: "Student deleted successfully"
+    });
+
+});

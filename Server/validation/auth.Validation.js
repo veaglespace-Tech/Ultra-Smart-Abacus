@@ -8,9 +8,9 @@ export const registerValidation = [
         .notEmpty()
         .withMessage("Name is required")
         .bail()
-        .isLength({ min: 2 })
+        .isLength({ min: 3 })
         .withMessage(
-            "Name must be at least 2 characters"
+            "Name must be at least 3 characters"
         ),
 
     body("email")

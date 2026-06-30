@@ -144,7 +144,7 @@ model Batch {
 
   notifications Notification[]
 
-  notifications Notification[]
+  //notifications Notification[]
 
   students Student[]
 
@@ -249,7 +249,7 @@ model Attendance {
 
   createdAt DateTime @default(now())
 
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@unique([studentId, attendanceDate])
 }
