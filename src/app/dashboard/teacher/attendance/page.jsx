@@ -1,212 +1,286 @@
 // src/app/dashboard/teacher/attendance/page.jsx
 "use client";
-import React, { useState } from 'react';
 
-export default function AttendanceFinalFrontend() {
+import React, { useState, useEffect } from 'react';
+import { Calendar, CheckCircle2, ChevronRight, Download, Users, FileSpreadsheet, Loader2, ArrowLeft } from 'lucide-react';
+import confetti from 'canvas-confetti';
+
+export default function AttendancePage() {
   const [selectedBatch, setSelectedBatch] = useState('');
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [currentStudent, setCurrentStudent] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   
   const [batches] = useState([
-    { id: 'b1', name: 'Batch Alpha (Saturday)' },
-    { id: 'b2', name: 'Batch Beta (Mon-Wed)' }
+    { id: 'b1', name: 'Batch Alpha (Saturday)', studentsCount: 14 },
+    { id: 'b2', name: 'Batch Beta (Mon-Wed)', studentsCount: 12 },
+    { id: 'b3', name: 'Batch Gamma (Sunday)', studentsCount: 16 }
   ]);
 
   const [students, setStudents] = useState([
     { id: '101', name: 'Abhishek Kulkarni', isPresent: true, pages: 4, notes: 'Good calculation speed.' },
     { id: '102', name: 'Pranjal Patil', isPresent: true, pages: 7, notes: 'All formulas checked.' },
-    { id: '103', name: 'Siddharth Joshi', isPresent: false, pages: 0, notes: 'Absent.' }
+    { id: '103', name: 'Siddharth Joshi', isPresent: false, pages: 0, notes: 'Absent.' },
+    { id: '104', name: 'Rohan Deshmukh', isPresent: true, pages: 5, notes: 'Excellent visual recall.' },
+    { id: '105', name: 'Neha Patel', isPresent: true, pages: 6, notes: 'Strong focus today.' }
   ]);
+
+  const [history] = useState([
+    { date: '2026-06-27', batch: 'Batch Alpha (Saturday)', present: 13, absent: 1, rate: '92.8%' },
+    { date: '2026-06-24', batch: 'Batch Beta (Mon-Wed)', present: 12, absent: 0, rate: '100%' },
+    { date: '2026-06-22', batch: 'Batch Beta (Mon-Wed)', present: 10, absent: 2, rate: '83.3%' },
+    { date: '2026-06-21', batch: 'Batch Gamma (Sunday)', present: 15, absent: 1, rate: '93.7%' }
+  ]);
+
+  // Hook to pull batch query from URI (useful when clicking "Attendance" link in Batch Card)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const batchParam = params.get('batch');
+    if (batchParam) {
+      if (batchParam.includes('Alpha')) setSelectedBatch('b1');
+      else if (batchParam.includes('Beta')) setSelectedBatch('b2');
+      else if (batchParam.includes('Gamma')) setSelectedBatch('b3');
+    }
+  }, []);
 
   const toggleAttendance = (id) => {
     setStudents(prev => prev.map(s => {
       if (s.id === id) {
         const nextPresent = !s.isPresent;
-        return { ...s, isPresent: nextPresent, pages: nextPresent ? s.pages : 0 };
+        return { ...s, isPresent: nextPresent, pages: nextPresent ? 5 : 0 };
       }
       return s;
     }));
   };
 
+  const handlePageChange = (id, val) => {
+    setStudents(prev => prev.map(s => s.id === id ? { ...s, pages: parseInt(val) || 0 } : s));
+  };
+
+  const handleNotesChange = (id, val) => {
+    setStudents(prev => prev.map(s => s.id === id ? { ...s, notes: val } : s));
+  };
+
   const downloadExcel = () => {
-    let csv = "Roll No,Student Name,Attendance,Pages,Remarks\n";
+    let csv = "Roll No,Student Name,AttendanceStatus,Workbook Pages,Remarks\n";
     students.forEach(s => {
       csv += `${s.id},${s.name},${s.isPresent ? 'Present' : 'Absent'},${s.pages},${s.notes}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `Attendance_${attendanceDate}.csv`);
+    link.setAttribute("download", `Attendance_${selectedBatch}_${attendanceDate}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.7 }
+      });
+      alert("Attendance Logs Successfully Synchronized with Cloud Database.");
+    }, 1500);
+  };
+
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6">
       
-      {/* FILTER BAR */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-bold text-[#8a9485] uppercase tracking-wide">Select Batch</span>
-            <select
-              value={selectedBatch}
-              onChange={(e) => setSelectedBatch(e.target.value)}
-              className="bg-[#f4f0e6]/60 border border-[#e2dcd0] text-xs font-semibold rounded-lg px-3 py-2 focus:outline-none focus:border-[#4a5d4e] cursor-pointer"
-            >
-              <option value="">-- Choose Batch --</option>
-              {batches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-bold text-[#8a9485] uppercase tracking-wide">Select Date</span>
-            <input 
-              type="date" 
-              value={attendanceDate} 
-              onChange={(e) => setAttendanceDate(e.target.value)} 
-              className="bg-[#f4f0e6]/60 border border-[#e2dcd0] text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-[#4a5d4e]"
-            />
-          </div>
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
+        <div>
+          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">ATTENDANCE MODULE</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Select a batch, track attendees, and log curriculum pages completed.</p>
         </div>
-
-        {selectedBatch && (
-          <div className="flex gap-2 w-full md:w-auto justify-end">
-            <button 
-              onClick={downloadExcel}
-              className="bg-[#f4f0e6] hover:bg-[#eae5da] text-[#4a5d4e] border border-[#e2dcd0] text-xs font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer"
-            >
-              📥 Download Excel
-            </button>
-            <button className="bg-[#4a5d4e] hover:bg-[#3d4d40] text-[#fbfaf7] text-xs font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer">
-              Save Attendance
-            </button>
-          </div>
-        )}
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+        >
+          <Calendar size={14} />
+          <span>{showHistory ? "Back to Tracker" : "Attendance Logs History"}</span>
+        </button>
       </div>
 
-      {/* STUDENT DATA DISPLAY */}
-      {selectedBatch ? (
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6] text-[11px] font-bold text-[#7a8475] tracking-wider">
-                  <th className="py-3 px-4">Attendance</th>
-                  <th className="py-3 px-4">Student Info</th>
-                  <th className="py-3 px-4 hidden sm:table-cell">Pages Done</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e2dcd0]/40 text-xs text-[#2c3539]">
-                {students.map((student) => (
-                  <tr key={student.id} className="hover:bg-[#f5f2eb]/30 transition-colors">
-                    
-                    {/* Status Button */}
-                    <td className="py-3 px-4">
-                      <button
-                        onClick={() => toggleAttendance(student.id)}
-                        className={`px-3 py-1 rounded-md text-[10px] font-bold tracking-widest transition-colors border cursor-pointer ${
-                          student.isPresent 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                            : 'bg-rose-50 text-rose-700 border-rose-200'
-                        }`}
-                      >
-                        {student.isPresent ? '● PRESENT' : '○ ABSENT'}
-                      </button>
-                    </td>
-
-                    {/* Meta info */}
-                    <td className="py-3 px-4">
-                      <span className="font-bold text-[#1a202c] text-sm block">{student.name}</span>
-                      <span className="text-[10px] text-[#8a9485] font-mono">Roll No: {student.id}</span>
-                    </td>
-
-                    {/* Numeric Tracking Column */}
-                    <td className="py-3 px-4 hidden sm:table-cell">
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="number" 
-                          disabled={!student.isPresent}
-                          value={student.isPresent ? student.pages : 0} 
-                          onChange={(e) => setStudents(prev => prev.map(s => s.id === student.id ? { ...s, pages: parseInt(e.target.value) || 0 } : s))}
-                          className="w-12 bg-[#f4f0e6]/50 border border-[#e2dcd0] text-center rounded p-1 text-xs focus:outline-none"
-                        />
-                        <span className="text-[11px] text-[#8a9485]">pages</span>
-                      </div>
-                    </td>
-
-                    {/* Configuration options */}
-                    <td className="py-3 px-4 text-right">
-                      <button 
-                        onClick={() => { setCurrentStudent(student); setIsPopupOpen(true); }}
-                        className="text-[11px] bg-white hover:bg-[#f4f0e6] text-[#4a5d4e] border border-[#e2dcd0] px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer"
-                      >
-                        Edit Profile
-                      </button>
-                    </td>
-
+      {showHistory ? (
+        /* HISTORY MODULE */
+        <div className="space-y-4">
+          <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider pl-1">Historical Session Logs</h4>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-[10px] uppercase font-black tracking-widest text-slate-500 dark:text-slate-450">
+                    <th className="py-4 px-6">Session Date</th>
+                    <th className="py-4 px-6">Batch Allocated</th>
+                    <th className="py-4 px-6">Present Count</th>
+                    <th className="py-4 px-6">Absent Count</th>
+                    <th className="py-4 px-6">Attendance Ratio</th>
+                    <th className="py-4 px-6 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-355">
+                  {history.map((h, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                      <td className="py-4 px-6 font-mono font-bold text-slate-900 dark:text-slate-100">{h.date}</td>
+                      <td className="py-4 px-6 text-slate-800 dark:text-slate-300">{h.batch}</td>
+                      <td className="py-4 px-6 text-emerald-600 font-bold font-mono">{h.present}</td>
+                      <td className="py-4 px-6 text-rose-500 font-bold font-mono">{h.absent}</td>
+                      <td className="py-4 px-6">
+                        <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 px-2.5 py-0.5 rounded-lg font-mono font-bold">
+                          {h.rate}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <button className="text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer">
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       ) : (
-        <div className="border border-dashed border-[#e2dcd0] text-center py-12 text-xs text-[#8a9485] rounded-xl bg-[#fcfbfa]">
-          Please select a batch from the dropdown filter menu above.
-        </div>
-      )}
-
-      {/* REUSABLE LIGHT MODAL POP-UP */}
-      {isPopupOpen && currentStudent && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-[#fbfaf7] border border-[#e2dcd0] w-full max-w-sm rounded-xl p-5 space-y-4 shadow-lg animate-fade-in">
-            
-            <div className="flex justify-between items-center border-b border-[#e2dcd0] pb-2">
-              <div>
-                <h3 className="font-bold text-[#1a202c]">Student Profile View</h3>
-                <p className="text-[10px] text-[#8a9485]">ID Ref: {currentStudent.id}</p>
-              </div>
-              <button onClick={() => setIsPopupOpen(false)} className="text-[#8a9485] hover:text-black font-bold cursor-pointer">✕</button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <span className="block text-[10px] font-bold text-[#8a9485] mb-1 uppercase tracking-wider">Student Name</span>
-                <p className="font-bold text-[#1a202c] bg-[#f4f0e6]/40 p-2 rounded-lg border border-[#e2dcd0]">{currentStudent.name}</p>
+        /* ATTENDANCE TRACKER */
+        <div className="space-y-6">
+          {/* FILTER CRITERIA */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row gap-5 items-center justify-between shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-0.5">Select Class Cohort</span>
+                <select
+                  value={selectedBatch}
+                  onChange={(e) => setSelectedBatch(e.target.value)}
+                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500 cursor-pointer text-slate-700 dark:text-slate-200 w-full sm:w-60"
+                >
+                  <option value="">-- Select Class --</option>
+                  {batches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
               </div>
 
-              <div>
-                <span className="block text-[10px] font-bold text-[#8a9485] mb-1 uppercase tracking-wider">Teacher Remarks</span>
-                <textarea 
-                  rows="2"
-                  value={currentStudent.notes}
-                  onChange={(e) => setStudents(prev => prev.map(s => s.id === currentStudent.id ? { ...s, notes: e.target.value } : s))}
-                  className="w-full bg-white border border-[#e2dcd0] rounded-lg p-2 focus:outline-none focus:border-[#4a5d4e] text-xs"
-                  placeholder="Enter remarks..."
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-0.5">Select Session Date</span>
+                <input 
+                  type="date" 
+                  value={attendanceDate} 
+                  onChange={(e) => setAttendanceDate(e.target.value)} 
+                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-200 w-full sm:w-48"
                 />
               </div>
             </div>
 
-            <div className="flex gap-2 justify-end pt-2 border-t border-[#e2dcd0]">
-              <button 
-                onClick={() => setIsPopupOpen(false)}
-                className="bg-[#f4f0e6] text-[#4a5d4e] text-xs font-bold px-3 py-2 rounded-lg border border-[#e2dcd0] cursor-pointer"
-              >
-                Back
-              </button>
-              <button 
-                onClick={() => setIsPopupOpen(false)}
-                className="bg-[#4a5d4e] text-[#fbfaf7] text-xs font-bold px-4 py-2 rounded-lg cursor-pointer"
-              >
-                Save Changes
-              </button>
-            </div>
-
+            {selectedBatch && (
+              <div className="flex gap-2.5 w-full md:w-auto justify-end pt-2 md:pt-0">
+                <button 
+                  onClick={downloadExcel}
+                  className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                >
+                  <Download size={14} />
+                  <span>Download CSV</span>
+                </button>
+                <button 
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10 flex items-center gap-1.5 disabled:opacity-70"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={14} />
+                      <span>Submit Logs</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* STUDENT DATA */}
+          {selectedBatch ? (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-[10px] uppercase font-black tracking-widest text-slate-500 dark:text-slate-450">
+                      <th className="py-4 px-6 w-32">Attendance</th>
+                      <th className="py-4 px-6">Roll & Student Details</th>
+                      <th className="py-4 px-6 w-40">Bead Pages Completed</th>
+                      <th className="py-4 px-6">Session Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-350">
+                    {students.map((student) => (
+                      <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all">
+                        
+                        {/* Toggle Status Button */}
+                        <td className="py-4 px-6">
+                          <button
+                            onClick={() => toggleAttendance(student.id)}
+                            className={`w-28 text-center py-1.5 rounded-xl text-[10px] font-black tracking-wider transition-colors border cursor-pointer ${
+                              student.isPresent 
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40' 
+                                : 'bg-rose-50 text-rose-700 border-rose-250 dark:bg-rose-950/30 dark:text-rose-450 dark:border-rose-900/40'
+                            }`}
+                          >
+                            {student.isPresent ? '● PRESENT' : '○ ABSENT'}
+                          </button>
+                        </td>
+
+                        {/* Name Info */}
+                        <td className="py-4 px-6">
+                          <span className="font-bold text-slate-900 dark:text-slate-50 text-sm block">{student.name}</span>
+                          <span className="text-[10px] text-slate-450 font-mono">Roll: STU-{student.id}</span>
+                        </td>
+
+                        {/* Pages Input */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="number" 
+                              disabled={!student.isPresent}
+                              value={student.isPresent ? student.pages : 0} 
+                              onChange={(e) => handlePageChange(student.id, e.target.value)}
+                              className="w-16 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center rounded-xl p-1.5 text-xs font-bold focus:outline-none focus:border-indigo-500 disabled:opacity-50 text-slate-800 dark:text-slate-100"
+                            />
+                            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">pages</span>
+                          </div>
+                        </td>
+
+                        {/* Remarks Input */}
+                        <td className="py-4 px-6 pr-8">
+                          <input 
+                            type="text"
+                            disabled={!student.isPresent}
+                            value={student.isPresent ? student.notes : 'Absent'}
+                            onChange={(e) => handleNotesChange(student.id, e.target.value)}
+                            placeholder="Add student performance remarks..."
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-indigo-500 disabled:opacity-50 text-slate-700 dark:text-slate-300 placeholder-slate-400"
+                          />
+                        </td>
+
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="border border-dashed border-slate-200 dark:border-slate-800 text-center py-16 text-xs text-slate-400 dark:text-slate-550 rounded-2xl bg-white dark:bg-slate-900 font-semibold">
+              Please select a class cohort from the dropdown menu to initialize roster tracking.
+            </div>
+          )}
         </div>
       )}
 

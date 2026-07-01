@@ -1,65 +1,140 @@
 // src/app/dashboard/teacher/batches/page.jsx
 "use client";
+
 import React, { useState } from 'react';
-
-function BatchCard({ name, level, studentsCount, timing, room }) {
-  return (
-    <div className="bg-[#fcfbfa] border border-[#e2dcd0] p-5 rounded-xl shadow-sm shadow-[#4a5d4e]/5 flex flex-col justify-between space-y-4">
-      <div>
-        <div className="flex justify-between items-start">
-          <h3 className="text-sm font-black text-[#1a202c] tracking-wide">{name}</h3>
-          <span className="px-2.5 py-0.5 bg-[#4a5d4e]/10 text-[#4a5d4e] rounded-md text-[10px] font-bold uppercase tracking-wider">
-            {level}
-          </span>
-        </div>
-        <p className="text-[11px] text-[#8a9485] font-mono mt-2 font-bold flex items-center gap-1.5">
-          🕒 {timing}
-        </p>
-      </div>
-
-      <div className="border-t border-[#e2dcd0]/50 pt-3 flex justify-between items-center text-xs">
-        <span className="text-[#4a5d4e] font-medium">
-          Roster: <strong className="text-[#1a202c] font-bold">{studentsCount} Students</strong>
-        </span>
-        <span className="text-[11px] text-[#8a9485] bg-[#f4f0e6] px-2 py-0.5 rounded border border-[#e2dcd0]/40">
-          {room}
-        </span>
-      </div>
-    </div>
-  );
-}
+import Link from 'next/link';
+import { Eye, CalendarDays, Plus, Search, BookOpen, Clock } from 'lucide-react';
 
 export default function TeacherBatchesPage() {
+  const [searchQuery, setSearchQuery] = useState('');
   const [batches] = useState([
-    { id: 1, name: "Batch Alpha", level: "Level 1 Core", studentsCount: 14, timing: "Sat: 09:00 AM - 10:30 AM", room: "Room A" },
-    { id: 2, name: "Batch Beta", level: "Level 3 Advanced", studentsCount: 12, timing: "Mon-Wed: 11:00 AM - 12:30 PM", room: "Room B" },
-    { id: 3, name: "Batch Gamma", level: "Level 2 Foundations", studentsCount: 16, timing: "Sun: 03:30 PM - 05:00 PM", room: "Room A" },
-    { id: 4, name: "Batch Delta", level: "Level 4 Master", studentsCount: 10, timing: "Fri: 05:30 PM - 07:00 PM", room: "Room B" }
+    { id: 1, name: "Batch Alpha", level: "Level 1 Core", students: 14, timing: "Saturday 09:00 AM - 10:30 AM", room: "Room A", status: "Active" },
+    { id: 2, name: "Batch Beta", level: "Level 3 Advanced", students: 12, timing: "Mon & Wed 11:00 AM - 12:30 PM", room: "Room B", status: "Active" },
+    { id: 3, name: "Batch Gamma", level: "Level 2 Foundations", students: 16, timing: "Sunday 03:30 PM - 05:00 PM", room: "Room A", status: "Active" },
+    { id: 4, name: "Batch Delta", level: "Level 4 Master", students: 10, timing: "Friday 05:30 PM - 07:00 PM", room: "Room B", status: "Upcoming" }
   ]);
+
+  const filteredBatches = batches.filter(batch => 
+    batch.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    batch.level.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
       
       {/* HEADER SECTION */}
-      <div className="flex justify-between items-center border-b border-[#e2dcd0] pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-base font-black text-[#1a202c] tracking-tight uppercase">Batch Allocations</h2>
-          <p className="text-[11px] text-[#8a9485] font-medium mt-0.5">Manage and observe your currently deployed runtime rosters.</p>
+          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">MY BATCH ALLOCATIONS</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Manage, track, and record attendance for your assigned learning cohorts.</p>
         </div>
       </div>
 
-      {/* BATCH CARDS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {batches.map((batch) => (
-          <BatchCard 
-            key={batch.id} 
-            name={batch.name} 
-            level={batch.level} 
-            studentsCount={batch.studentsCount} 
-            timing={batch.timing} 
-            room={batch.room} 
+      {/* SEARCH AND FILTERS */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm w-full">
+        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl w-full sm:w-80">
+          <Search size={14} className="text-slate-400" />
+          <input 
+            type="text" 
+            placeholder="Search batch or curriculum..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="bg-transparent border-none text-xs focus:outline-none w-full placeholder-slate-400 text-slate-700 dark:text-slate-200"
           />
-        ))}
+        </div>
+        <div className="flex gap-2 w-full sm:w-auto justify-end">
+          <button className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-indigo-600/10">
+            <Plus size={14} />
+            <span>Request Batch</span>
+          </button>
+        </div>
+      </div>
+
+      {/* BATCHES TABLE CONTAINER */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-[10px] uppercase font-black tracking-widest text-slate-500 dark:text-slate-450">
+                <th className="py-4 px-6">Batch Name</th>
+                <th className="py-4 px-6">Curriculum Track</th>
+                <th className="py-4 px-6">Schedule Time</th>
+                <th className="py-4 px-6">Students Assigned</th>
+                <th className="py-4 px-6">Status</th>
+                <th className="py-4 px-6 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-350">
+              {filteredBatches.map((batch) => (
+                <tr key={batch.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-150">
+                  {/* Name */}
+                  <td className="py-4 px-6">
+                    <span className="font-bold text-slate-900 dark:text-slate-50 text-sm block">{batch.name}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">ID: BTCH-00{batch.id} • {batch.room}</span>
+                  </td>
+                  
+                  {/* Level */}
+                  <td className="py-4 px-6">
+                    <span className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-indigo-100/50 dark:border-indigo-900/30">
+                      <BookOpen size={10} />
+                      {batch.level}
+                    </span>
+                  </td>
+
+                  {/* Time */}
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-mono text-[11px]">
+                      <Clock size={12} className="text-slate-400" />
+                      {batch.timing}
+                    </div>
+                  </td>
+
+                  {/* Students */}
+                  <td className="py-4 px-6">
+                    <span className="font-bold text-slate-900 dark:text-slate-100">{batch.students}</span>
+                    <span className="text-slate-450 font-normal"> students</span>
+                  </td>
+
+                  {/* Status */}
+                  <td className="py-4 px-6">
+                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${
+                      batch.status === 'Active'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/30 dark:text-emerald-450 dark:border-emerald-900/40'
+                        : 'bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/30 dark:text-amber-450 dark:border-amber-900/40'
+                    }`}>
+                      {batch.status}
+                    </span>
+                  </td>
+
+                  {/* Actions */}
+                  <td className="py-4 px-6 text-right">
+                    <div className="flex justify-end gap-2">
+                      <Link 
+                        href={`/dashboard/teacher/progress?batch=${encodeURIComponent(batch.name)}`}
+                        className="inline-flex items-center gap-1 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer"
+                      >
+                        <Eye size={12} />
+                        <span>View</span>
+                      </Link>
+                      <Link
+                        href={`/dashboard/teacher/attendance?batch=${encodeURIComponent(batch.name)}`}
+                        className="inline-flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/40 border border-indigo-100/50 dark:border-indigo-900/30 text-indigo-700 dark:text-indigo-400 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer"
+                      >
+                        <CalendarDays size={12} />
+                        <span>Attendance</span>
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {filteredBatches.length === 0 && (
+          <div className="py-12 text-center text-xs text-slate-400 font-semibold border-t border-slate-100 dark:border-slate-800">
+            No cohorts found matching your search.
+          </div>
+        )}
       </div>
 
     </div>
