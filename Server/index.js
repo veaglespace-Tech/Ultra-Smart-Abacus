@@ -16,6 +16,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 
 import feeRoutes from "./routes/feeRoutes.js";
 
+app.use(cors());
 
 dotenv.config()
 
