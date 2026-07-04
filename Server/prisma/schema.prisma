@@ -55,6 +55,26 @@ model Franchise {
   userId Int @unique
 
   user User @relation(fields: [userId], references: [id])
+
+  referrals Referral[]
+}
+
+model Referral {
+  id           Int      @id @default(autoincrement())
+
+  token        String   @unique
+
+  role         Role
+
+  franchiseId  Int
+
+  franchise    Franchise @relation(fields: [franchiseId], references: [id])
+
+  isUsed       Boolean  @default(false)
+
+  expiresAt    DateTime
+
+  createdAt    DateTime @default(now())
 }
 
 enum Role {
@@ -253,3 +273,5 @@ model Attendance {
 
   @@unique([studentId, attendanceDate])
 }
+
+

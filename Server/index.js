@@ -11,14 +11,9 @@ import studentRoutes from "./routes/studentRoutes.js";
 import batchRoutes from "./routes/batchRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
-
 import notificationRoutes from "./routes/notificationRoutes.js";
-
 import feeRoutes from "./routes/feeRoutes.js";
-
-app.use(cors());
-
-dotenv.config()
+import referralRoutes from "./routes/referralRoutes.js";
 
 
 const app = express()
@@ -28,21 +23,18 @@ app.use(cors())
 app.use(express.json())
 
 
+
 app.use("/api/auth", authRoutes)
-
 app.use("/api/teachers", teacherRoutes)
-
 app.use("/api/franchise", franchiseRoutes)
-
 app.use("/api/inventory", inventoryRoutes)
 app.use("/api/students", studentRoutes)
 app.use("/api/batches", batchRoutes)
 app.use("/api/courses", courseRoutes)
 app.use("/api/notifications", notificationRoutes)
 app.use("/api/fees", feeRoutes)
-
 app.use("/api/attendance", attendanceRoutes);
-
+app.use("/api/referral", referralRoutes);
 app.use(errorMiddleware)
 
 
