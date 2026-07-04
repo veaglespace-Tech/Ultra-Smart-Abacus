@@ -23,6 +23,16 @@ body("qualification")
 
 
 body("experience")
-.isNumeric()
+.isNumeric(),
+
+body("specialization")
+.notEmpty()
+.withMessage("Specialization required"),    
+
+body("phone")
+.isMobilePhone()
+.withMessage("Invalid phone number")
+
+
 
 ]

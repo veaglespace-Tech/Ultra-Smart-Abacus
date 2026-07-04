@@ -17,7 +17,10 @@ name,
 email,
 password,
 qualification,
-experience
+experience,
+specialization,
+phone
+
 
 
 }=req.body

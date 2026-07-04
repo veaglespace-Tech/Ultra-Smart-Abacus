@@ -3,16 +3,23 @@ import asyncHandler from "../utils/asyncHandler.js";
 
 export const createStudent = asyncHandler(async (req, res) => {
 
-    const { name, email, rollNo, batchId } = req.body;
+    const { name, email, password, dateOfBirth, gender, phone, address, fatherName, batchId } = req.body;
 
     const student = await prisma.student.create({
         data: {
             name,
             email,
-            rollNo,
+            password,
+            dateOfBirth,
+            gender,
+            phone,
+            address,
+            fatherName,
             batchId
         }
     });
+
+ 
 
     res.status(201).json({
         success: true,

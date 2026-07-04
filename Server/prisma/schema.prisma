@@ -34,6 +34,10 @@ model Teacher {
 
   experience Int
 
+  specialization String?
+
+  phone String?
+
   userId Int @unique
 
   user User @relation(fields: [userId], references: [id])
@@ -60,21 +64,21 @@ model Franchise {
 }
 
 model Referral {
-  id           Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  token        String   @unique
+  token String @unique
 
-  role         Role
+  role Role
 
-  franchiseId  Int
+  franchiseId Int
 
-  franchise    Franchise @relation(fields: [franchiseId], references: [id])
+  franchise Franchise @relation(fields: [franchiseId], references: [id])
 
-  isUsed       Boolean  @default(false)
+  isUsed Boolean @default(false)
 
-  expiresAt    DateTime
+  expiresAt DateTime
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 enum Role {
@@ -110,9 +114,19 @@ model Student {
 
   email String @unique
 
-  rollNo String @unique
+  password  String
 
-   batchId Int?
+  dateOfBirth DateTime?
+
+  gender String?
+
+  phone String?
+
+  address String?
+
+  fatherName String?
+
+  batchId Int?
 
   batch Batch? @relation(fields: [batchId], references: [id])
 
@@ -273,5 +287,3 @@ model Attendance {
 
   @@unique([studentId, attendanceDate])
 }
-
-
