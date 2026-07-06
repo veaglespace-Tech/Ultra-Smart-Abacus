@@ -38,7 +38,9 @@ function RegisterPageContent() {
     gender: "Male",
     city: "",
     Address: "",
-    role: "STUDENT"
+    role: "STUDENT",
+    parentGuardianName: "",
+    dateOfBirth: ""
   });
 
   // Pre-select role if passed in query parameters (e.g. ?role=TEACHER)
@@ -78,7 +80,12 @@ function RegisterPageContent() {
           name: formData.fullName,
           email: formData.email,
           password: formData.password,
-          role: formData.role
+          role: formData.role,
+          parentGuardianName: formData.role === "STUDENT" ? formData.parentGuardianName : undefined,
+          phone: formData.mobileCode && formData.mobileNumber ? `${formData.mobileCode} ${formData.mobileNumber}` : undefined,
+          gender: formData.gender,
+          address: formData.Address,
+          dateOfBirth: formData.role === "STUDENT" ? formData.dateOfBirth : undefined
         })
       });
 
@@ -165,6 +172,46 @@ function RegisterPageContent() {
                 />
               </div>
             </div>
+
+            {/* Parent/Guardian Name (Only visible for STUDENT role) */}
+            {formData.role === "STUDENT" && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Parent / Guardian Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="parentGuardianName"
+                    required
+                    value={formData.parentGuardianName}
+                    onChange={handleChange}
+                    placeholder="Jane Doe"
+                    className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-12 pr-4 text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Date of Birth (Only visible for STUDENT role) */}
+            {formData.role === "STUDENT" && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Date of Birth
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    name="dateOfBirth"
+                    required
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
+                    className="w-full bg-white border border-gray-300 rounded-xl py-3 px-4 text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Email */}
             <div>
