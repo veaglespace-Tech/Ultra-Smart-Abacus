@@ -253,6 +253,6 @@ export const loginUser =
         res.status(200).json({
 
             message:
-                "Password reset successful"
+                "Password reset successfull"
         })
     })
