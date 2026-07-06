@@ -47,6 +47,25 @@ export const registerValidation = [
         .withMessage(
             "Invalid role"
         ),
+    body("parentGuardianName")
+        .optional()
+        .trim(),
+
+    body("phone")
+        .optional()
+        .trim(),
+
+    body("gender")
+        .optional()
+        .trim(),
+
+    body("address")
+        .optional()
+        .trim(),
+
+    body("dateOfBirth")
+        .optional()
+        .trim(),
 ];
 
 export const loginValidation = [
