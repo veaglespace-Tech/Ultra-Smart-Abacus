@@ -1,3 +1,8 @@
+
+
+
+
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +12,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+
+  FRANCHISE
+
+  TEACHER
+
+  STUDENT
+}
 model User {
   id Int @id @default(autoincrement())
 
@@ -15,6 +29,11 @@ model User {
   email String @unique
 
   password String
+
+  otp String?
+
+  otpExpiry DateTime?
+
 
   role Role
 
@@ -34,15 +53,12 @@ model Teacher {
 
   experience Int
 
-  specialization String?
-
-  phone String?
-
   userId Int @unique
 
   user User @relation(fields: [userId], references: [id])
 
   attendances Attendance[]
+  exams       Exam[]
 }
 
 model Franchise {
@@ -59,37 +75,9 @@ model Franchise {
   userId Int @unique
 
   user User @relation(fields: [userId], references: [id])
-
-  referrals Referral[]
 }
 
-model Referral {
-  id Int @id @default(autoincrement())
 
-  token String @unique
-
-  role Role
-
-  franchiseId Int
-
-  franchise Franchise @relation(fields: [franchiseId], references: [id])
-
-  isUsed Boolean @default(false)
-
-  expiresAt DateTime
-
-  createdAt DateTime @default(now())
-}
-
-enum Role {
-  ADMIN
-
-  FRANCHISE
-
-  TEACHER
-
-  STUDENT
-}
 
 model Inventory {
   id Int @id @default(autoincrement())
@@ -114,17 +102,7 @@ model Student {
 
   email String @unique
 
-  password  String
-
-  dateOfBirth DateTime?
-
-  gender String?
-
-  phone String?
-
-  address String?
-
-  fatherName String?
+  rollNo String @unique
 
   batchId Int?
 
@@ -133,6 +111,7 @@ model Student {
   notifications Notification[]
 
   attendances Attendance[]
+  examResults ExamResult[]
 
   createdAt DateTime @default(now())
 }
@@ -178,11 +157,10 @@ model Batch {
 
   notifications Notification[]
 
-  //notifications Notification[]
-
   students Student[]
 
   attendances Attendance[]
+  exams       Exam[]
 
   createdAt DateTime @default(now())
 
@@ -283,7 +261,72 @@ model Attendance {
 
   createdAt DateTime @default(now())
 
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([studentId, attendanceDate])
+}
+
+enum ExamType {
+  WEEKLY
+  MONTHLY
+  LEVEL
+  FINAL
+}
+
+model Exam {
+  id Int @id @default(autoincrement())
+
+  title String
+
+  description String?
+
+  examType ExamType
+
+  examDate DateTime
+
+  totalMarks Int
+
+  passingMarks Int
+
+  duration Int? // minutes
+
+  isPublished Boolean @default(false)
+
+  teacherId Int
+
+  batchId Int
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  batch Batch @relation(fields: [batchId], references: [id])
+
+  results ExamResult[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+model ExamResult {
+  id Int @id @default(autoincrement())
+
+  examId Int
+
+  studentId Int
+
+  obtainedMarks Int
+
+  isPassed Boolean @default(false)
+
+  remarks String?
+
+  exam Exam @relation(fields: [examId], references: [id])
+
+  student Student @relation(fields: [studentId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([examId, studentId])
 }

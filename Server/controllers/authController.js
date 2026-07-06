@@ -173,7 +173,7 @@ export const loginUser =
 
         await sendEmail(
             email,
-            "CRM Password Reset OTP",
+            "Abacus Password Reset OTP",
             `Your OTP is ${otp}`
         )
 

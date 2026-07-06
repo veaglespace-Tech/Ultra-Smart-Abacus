@@ -15,22 +15,51 @@ const sendEmail = async (to, subject, text) => {
     },
   });
 
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+ try {
+  await transporter.sendMail({
+    from: `"Ultra Smart Abacus" <${process.env.EMAIL_USER}>`,
     to,
     subject,
-    text,
-  };
+    html: `
+      <div style="font-family:Arial,sans-serif;padding:20px">
+        <h2 style="color:#2563eb;">Ultra Smart Abacus</h2>
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`[EMAIL SUCCESS] Real SMTP email sent successfully to ${to}`);
-  } catch (err) {
-    console.error(`[EMAIL ERROR] Failed to send email via SMTP: ${err.message}`);
-    throw new Error(
-      "Failed to send OTP email. Check EMAIL_USER and EMAIL_PASS in Server/.env."
-    );
-  }
+        <p>Hello,</p>
+
+        <p>You requested to reset your password.</p>
+
+        <p>Your OTP is:</p>
+
+        <h1 style="
+          background:#2563eb;
+          color:white;
+          padding:15px;
+          display:inline-block;
+          border-radius:8px;
+          letter-spacing:5px;
+        ">
+          ${text}
+        </h1>
+
+        <p>This OTP will expire in <b>5 minutes</b>.</p>
+
+        <p>If you didn't request this password reset, you can safely ignore this email.</p>
+
+        <hr>
+
+        <small>Ultra Smart Abacus Team</small>
+      </div>
+    `,
+  });
+
+  console.log(`[EMAIL SUCCESS] Email sent successfully to ${to}`);
+} catch (err) {
+  console.error(`[EMAIL ERROR] ${err.message}`);
+
+  throw new Error(
+    "Failed to send OTP email. Check EMAIL_USER and EMAIL_PASS in Server/.env."
+  );
+}
 };
 
 export default sendEmail;
