@@ -1,19 +1,18 @@
-const users = [
-  { email: "admin@abacus.com", password: "password", role: "ADMIN", name: "Admin User" },
-  { email: "franchise@abacus.com", password: "password", role: "FRANCHISE", name: "Franchise Manager" },
-  { email: "teacher@abacus.com", password: "password", role: "TEACHER", name: "Teacher" },
-  { email: "student@abacus.com", password: "password", role: "STUDENT", name: "Student" },
-];
+import { apiHelper } from './apiHelper';
+import { storageService } from './storage.services';
 
 export async function login(email, password) {
-  const normalizedEmail = (email || "").trim().toLowerCase();
-  const profile = users.find(
-    (user) => user.email === normalizedEmail && user.password === password
-  );
-
-  if (!profile) {
-    throw new Error("Invalid credentials. Please try again.");
+  try {
+    const resData = await apiHelper.post('/auth/login', { email, password });
+    const { token, user } = resData;
+    
+    // Save token and user in localStorage
+    storageService.setToken(token);
+    storageService.setUser(user);
+    
+    return user;
+  } catch (error) {
+    const message = error.message || "Invalid credentials. Please try again.";
+    throw new Error(message);
   }
-
-  return profile;
 }

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
@@ -108,9 +108,101 @@
   .text-rose-700 {
     color: #f87171 !important;
   }
-  .border-rose-200 {
-    border-color: rgba(244, 63, 94, 0.3) !important;
+  /* Attendance page specific dark overrides */
+  .bg-white\/70, .bg-white\/80, .bg-white\/40 {
+    background-color: rgba(15, 23, 42, 0.8) !important;
   }
+  
+  .border-white\/80 {
+    border-color: rgba(30, 41, 59, 0.8) !important;
+  }
+
+  .bg-indigo-50 {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+  }
+
+  .border-indigo-100 {
+    border-color: rgba(99, 102, 241, 0.3) !important;
+  }
+
+  .bg-indigo-50\/50 {
+    background-color: rgba(99, 102, 241, 0.1) !important;
+  }
+
+  .bg-emerald-50\/40 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+  }
+
+  .bg-rose-50\/40 {
+    background-color: rgba(244, 63, 94, 0.1) !important;
+  }
+
+  .bg-white\/80 {
+    background-color: #020617 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+  }
+}
+
+/* Light mode overrides for student dashboard glassmorphism elements */
+html:not(.dark) .bg-white\/\[0\.02\] {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+html:not(.dark) .bg-white\/\[0\.02\] text-white,
+html:not(.dark) .bg-white\/\[0\.02\] h3 {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .bg-slate-900\/40 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .bg-slate-900\/40 .text-white,
+html:not(.dark) .bg-slate-900\/40 td.text-white,
+html:not(.dark) .bg-slate-900\/40 h4,
+html:not(.dark) .bg-slate-900\/40 h3,
+html:not(.dark) .bg-slate-900\/40 span.text-white {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .bg-slate-900\/40 .text-slate-300,
+html:not(.dark) .bg-slate-900\/40 .text-slate-200 {
+  color: #334155 !important;
+}
+
+html:not(.dark) .bg-slate-900\/40 .text-slate-400 {
+  color: #64748b !important;
+}
+
+html:not(.dark) .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #f1f5f9 !important;
+}
+
+html:not(.dark) .border-white\/5 {
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) h3.text-white {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .border-white\/10 {
+  border-color: #cbd5e1 !important;
+}
+
+html:not(.dark) .hover\:bg-white\/5:hover {
+  background-color: #f1f5f9 !important;
+}
+
+html:not(.dark) .bg-slate-950 {
+  background-color: #f1f5f9 !important;
+}
+
+html:not(.dark) .bg-slate-950\/40 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
 }
 
 @theme inline {

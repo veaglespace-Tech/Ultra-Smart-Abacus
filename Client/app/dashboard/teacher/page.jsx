@@ -7,6 +7,7 @@ import {
   GraduationCap, DollarSign, Play, CheckCircle 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useAuth } from '@/context/AuthContext';
 
 function MetricCard({ title, value, subtext, icon: Icon, color }) {
   return (
@@ -24,6 +25,7 @@ function MetricCard({ title, value, subtext, icon: Icon, color }) {
 }
 
 export default function TeacherOverviewPage() {
+  const { user } = useAuth();
   const [classStatus, setClassStatus] = useState({});
 
   const stats = [
@@ -60,7 +62,9 @@ export default function TeacherOverviewPage() {
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">Welcome Back, Instructor</h2>
+          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">
+            Welcome Back, {user?.name || "Instructor"}
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Observe current metrics, batch statistics, and schedule queues below.</p>
         </div>
         <div className="text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-3 py-1.5 rounded-xl border border-indigo-100 dark:border-indigo-900/50">

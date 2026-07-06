@@ -112,11 +112,11 @@ export default function FranchiseLayout({ children }) {
             onClick={handleSignOut} 
             className="w-full text-left text-xs text-red-500 dark:text-rose-400 hover:text-red-600 dark:hover:text-rose-300 font-bold px-3 py-2 transition-colors flex items-center gap-2 rounded-lg hover:bg-red-50 dark:hover:bg-rose-950/20 cursor-pointer"
           >
-            <LogOut size={14} /> <span>Exit Session</span>
+            <LogOut size={14} /> <span>Logout</span>
           </button>
         </div>
       </aside>
-
+ 
       {/* Main Content Viewport */}
       <div className="flex-1 flex flex-col h-full overflow-hidden z-10">
         
@@ -133,7 +133,7 @@ export default function FranchiseLayout({ children }) {
               WORKSPACE / <span className="text-indigo-600 dark:text-indigo-450 uppercase font-sans font-black">{pageTitle}</span>
             </div>
           </div>
-
+ 
           <div className="flex items-center gap-3 text-[10px] md:text-xs">
             {/* Theme Toggle Button */}
             <button
@@ -147,6 +147,16 @@ export default function FranchiseLayout({ children }) {
               ) : (
                 <Moon size={14} />
               )}
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleSignOut}
+              className="p-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 border border-red-200 dark:border-rose-900/30 text-red-600 dark:text-rose-450 cursor-pointer shadow-sm transition-colors flex items-center gap-1.5"
+              title="Logout"
+            >
+              <LogOut size={14} />
+              <span className="hidden sm:inline font-bold">Logout</span>
             </button>
             
             <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full font-bold border border-emerald-500/20 dark:border-emerald-500/30 flex items-center gap-1.5 animate-fade-in">
