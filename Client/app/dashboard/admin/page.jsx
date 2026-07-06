@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useAdminData } from "./AdminContext";
+import { Share2, Copy, Check } from "lucide-react";
 
 export default function AdminOverview() {
   const {
@@ -13,6 +14,16 @@ export default function AdminOverview() {
     users,
     franchises
   } = useAdminData();
+
+  const [copiedRole, setCopiedRole] = useState("");
+  
+  const copyInviteLink = (role) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3001";
+    const link = `${origin}/auth/register?role=${role}`;
+    navigator.clipboard.writeText(link);
+    setCopiedRole(role);
+    setTimeout(() => setCopiedRole(""), 2000);
+  };
 
   return (
     <div className="space-y-6">
@@ -87,62 +98,88 @@ export default function AdminOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* Quick actions panel */}
-        <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/40 p-6 backdrop-blur-md shadow-sm dark:shadow-none">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-wide uppercase border-b border-slate-100 dark:border-white/5 pb-3 mb-4">
+        <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-6 backdrop-blur-md shadow-sm dark:shadow-none">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-wide uppercase border-b border-slate-100 dark:border-slate-850 pb-3 mb-4">
             Quick Operations
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <Link
               href="/dashboard/admin/users?add=true"
-              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-white/5 dark:bg-white/[0.02] dark:hover:bg-white/[0.06] text-left transition-all duration-300 cursor-pointer block"
+              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-850/60 text-left transition-all duration-300 cursor-pointer block"
             >
-              <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 dark:border-blue-500/20 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-3">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-9 1.5h.008v.008H7.5V12zm.008 3h.008v.008H7.5v-.008zm0 3h.008v.008H7.5v-.008zM12 7.5h.008v.008H12V7.5zm.008 3h.008v.008H12v-.008zm0 3h.008v.008H12v-.008zm0 3h.008v.008H12v-.008z" />
                 </svg>
               </div>
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Create Account</span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 block mt-0.5">Add teacher/student</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-400 block mt-0.5">Add teacher/student</span>
             </Link>
 
             <Link
               href="/dashboard/admin/franchise?add=true"
-              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-white/5 dark:bg-white/[0.02] dark:hover:bg-white/[0.06] text-left transition-all duration-300 cursor-pointer block"
+              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-850/60 text-left transition-all duration-300 cursor-pointer block"
             >
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 dark:border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
               </div>
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Add Franchise</span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 block mt-0.5">Approve new branch</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-400 block mt-0.5">Approve new branch</span>
             </Link>
 
             <Link
               href="/dashboard/admin/inventory"
-              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-white/5 dark:bg-white/[0.02] dark:hover:bg-white/[0.06] text-left transition-all duration-300 cursor-pointer block"
+              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-850/60 text-left transition-all duration-300 cursor-pointer block"
             >
-              <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-500 dark:text-rose-400 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 dark:border-rose-500/20 flex items-center justify-center text-rose-500 dark:text-rose-400 mb-3">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Check Stock</span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 block mt-0.5">{lowStockItemsCount} items at alert limit</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-400 block mt-0.5">{lowStockItemsCount} items at alert limit</span>
             </Link>
 
             <Link
               href="/dashboard/admin/settings"
-              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-white/5 dark:bg-white/[0.02] dark:hover:bg-white/[0.06] text-left transition-all duration-300 cursor-pointer block"
+              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-850/60 text-left transition-all duration-300 cursor-pointer block"
             >
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-500 dark:text-indigo-400 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 dark:border-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400 mb-3">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10.34 15.84c-.68-.68-.86-1.72-.4-2.59M13.66 8.16c.68.68.86 1.72.4 2.59M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87" />
                 </svg>
               </div>
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Access Settings</span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 block mt-0.5">Toggle signups & alerts</span>
             </Link>
+          </div>
+
+          {/* Share Referral Links */}
+          <div className="mt-6 border-t border-slate-100 dark:border-white/5 pt-5">
+            <h4 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Share2 className="w-4 h-4 text-blue-500" />
+              Referral / Invite Links
+            </h4>
+            <div className="space-y-2">
+              {[
+                { name: "Student", val: "STUDENT" },
+                { name: "Teacher", val: "TEACHER" },
+                { name: "Franchise", val: "FRANCHISE" },
+              ].map((roleObj) => (
+                <div key={roleObj.val} className="flex items-center justify-between p-2 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.01]">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Invite {roleObj.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => copyInviteLink(roleObj.val)}
+                    className="p-1.5 px-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer border-0"
+                  >
+                    {copiedRole === roleObj.val ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    {copiedRole === roleObj.val ? "Copied" : "Copy Link"}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

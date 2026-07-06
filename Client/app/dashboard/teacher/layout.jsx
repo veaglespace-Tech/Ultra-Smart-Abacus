@@ -16,7 +16,7 @@ export default function TeacherLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme, mounted } = useTheme();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
 
@@ -274,10 +274,12 @@ export default function TeacherLayout({ children }) {
             {/* Profile Avatar / Quick dropdown */}
             <Link href="/dashboard/teacher/profile" className="flex items-center gap-2 hover:opacity-90">
               <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-                TA
+                {user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "TA"}
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">Teacher Admin</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">
+                  {user?.name || "Teacher Admin"}
+                </p>
                 <span className="text-[9px] text-slate-400 font-bold">online</span>
               </div>
             </Link>

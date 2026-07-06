@@ -1,18 +1,30 @@
 // src/app/dashboard/teacher/profile/page.jsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Award, Briefcase, Lock, ShieldCheck, Camera } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useAuth } from '@/context/AuthContext';
 
 export default function TeacherProfilePage() {
+  const { user } = useAuth();
   const [profile, setProfile] = useState({
     name: 'Teacher Admin',
     email: 'faculty@smartabacus.com',
-    phone: '+1 415 555 2671',
+    phone: '+91 98765 43210',
     qualification: 'Masters in Elementary Mathematics Education',
     experience: '8+ Years Math Instructor & Senior Trainer'
   });
+
+  useEffect(() => {
+    if (user) {
+      setProfile(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email
+      }));
+    }
+  }, [user]);
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -68,7 +80,7 @@ export default function TeacherProfilePage() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm text-center space-y-4">
           <div className="relative w-28 h-28 mx-auto">
             <div className="w-full h-full rounded-2xl bg-gradient-to-tr from-indigo-500 to-blue-600 flex items-center justify-center text-white text-3xl font-black shadow-md">
-              TA
+              {profile.name ? profile.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "TA"}
             </div>
             <button className="absolute bottom-1 right-1 p-2 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-slate-655 cursor-pointer">
               <Camera size={14} />

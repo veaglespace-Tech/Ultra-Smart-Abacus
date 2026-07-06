@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 const StudentDataContext = createContext();
 
@@ -48,7 +49,18 @@ const INITIAL_ASSIGNMENTS = [
 ];
 
 export function StudentDataProvider({ children }) {
+  const { user } = useAuth();
   const [profile, setProfile] = useState(INITIAL_PROFILE);
+
+  useEffect(() => {
+    if (user) {
+      setProfile((prev) => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
   const [exams, setExams] = useState(INITIAL_EXAMS);
   const [fees, setFees] = useState(INITIAL_FEES);
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);

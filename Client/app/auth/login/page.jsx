@@ -71,16 +71,13 @@ export default function LoginPage() {
     }
   };
 
-  const fillCredentials = (roleEmail) => {
-    setEmail(roleEmail);
-    setPassword("password");
-  };
+
 
   return (
     <div className="min-h-screen flex items-start justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 pt-24 pb-10 px-8 relative overflow-hidden">
       <div className="absolute -top-40 -left-40 w-[450px] h-[450px] rounded-full bg-blue-300/30 blur-[120px]" />
       <div className="absolute -bottom-40 -right-40 w-[450px] h-[450px] rounded-full bg-purple-300/30 blur-[120px]" />
-    <div className="relative z-10 w-full max-w-md rounded-3xl bg-white shadow-2xl border border-gray-200 p-8">
+      <div className="relative z-10 w-full max-w-md rounded-3xl bg-white shadow-2xl border border-gray-200 p-8">
 
         {/* Back Button */}
         <button
@@ -148,7 +145,7 @@ export default function LoginPage() {
             </div>
 
           </div>
-                    {/* Password */}
+          {/* Password */}
 
           <div>
 
@@ -160,7 +157,8 @@ export default function LoginPage() {
 
               <button
                 type="button"
-                className="text-sm font-medium text-blue-600 hover:text-purple-600"
+                onClick={() => router.push("/auth/forgot-password")}
+                className="text-sm font-medium text-blue-600 hover:text-purple-600 cursor-pointer"
               >
                 Forgot Password?
               </button>
@@ -212,65 +210,18 @@ export default function LoginPage() {
 
         </form>
 
-        {/* Quick Login */}
-
-        <div className="mt-8 border-t border-gray-200 pt-6">
-
-       
-        <div className="grid grid-cols-2 gap-4">
-  {[
-    {
-      label: "System Admin",
-      email: "admin@abacus.com",
-    },
-    {
-      label: "Franchise Desk",
-      email: "franchise@abacus.com",
-    },
-    {
-      label: "Teacher Portal",
-      email: "teacher@abacus.com",
-    },
-    {
-      label: "Student Module",
-      email: "student@abacus.com",
-    },
-  ].map((credential) => (
-    <button
-      key={credential.label}
-      type="button"
-      onClick={() => fillCredentials(credential.email)}
-      className="rounded-xl border border-gray-300 bg-white p-4 text-left shadow-sm transition-all hover:border-blue-500 hover:bg-blue-50 hover:shadow-md"
-    >
-      <span className="block text-sm font-bold text-gray-800">
-        {credential.label}
-      </span>
-
-      <span className="mt-2 block text-xs text-gray-500">
-        {credential.email}
-      </span>
-    </button>
-  ))}
-</div>
-          {/* Register Link */}
-
-          <div className="mt-6 text-center">
-
-            <p className="text-sm text-gray-600">
-              Dont have an account?
-
-              <button
-                type="button"
-                onClick={() => router.push("/auth/register")}
-                className="ml-2 font-bold text-blue-600 hover:text-purple-600 transition-colors"
-              >
-                Register
-              </button>
-
-            </p>
-
-          </div>
-
+        {/* Register Link */}
+        <div className="mt-8 border-t border-gray-200 pt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Dont have an account?
+            <button
+              type="button"
+              onClick={() => router.push("/auth/register")}
+              className="ml-2 font-bold text-blue-600 hover:text-purple-600 transition-colors cursor-pointer"
+            >
+              Register
+            </button>
+          </p>
         </div>
 
       </div>

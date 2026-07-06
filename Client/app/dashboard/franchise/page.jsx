@@ -1,9 +1,18 @@
 "use client";
 
-import React from "react";
-import { GraduationCap, Users, IndianRupee, Box, TrendingUp } from "lucide-react";
+import React, { useState } from "react";
+import { GraduationCap, Users, IndianRupee, Box, TrendingUp, Share2, Copy, Check } from "lucide-react";
 
 export default function FranchiseOverview() {
+  const [copiedRole, setCopiedRole] = useState("");
+
+  const copyInviteLink = (role) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3001";
+    const link = `${origin}/auth/register?role=${role}`;
+    navigator.clipboard.writeText(link);
+    setCopiedRole(role);
+    setTimeout(() => setCopiedRole(""), 2000);
+  };
   
   const stats = [
     { title: "Total Students", count: "148", change: "+12 this month", icon: GraduationCap, color: "text-indigo-600", bg: "bg-indigo-50" },
@@ -56,60 +65,106 @@ export default function FranchiseOverview() {
         })}
       </div>
 
-      {/* Recent Activity Table Container */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Today's Hub Activity Queue
-          </h3>
-        </div>
+      {/* Recent Activity & Referral Invite Links Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column: Recent Activity Table */}
+        <div className="lg:col-span-2 space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Today's Hub Activity Queue
+            </h3>
+          </div>
 
-        <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                  <th className="py-3.5 px-5">Activity ID</th>
-                  <th className="py-3.5 px-5">Description / Name</th>
-                  <th className="py-3.5 px-5">Type</th>
-                  <th className="py-3.5 px-5">Date</th>
-                  <th className="py-3.5 px-5">Amount</th>
-                  <th className="py-3.5 px-5 text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-600 font-medium">
-                {recentActivity.map((activity) => (
-                  <tr key={activity.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3.5 px-5 font-mono text-indigo-600 font-bold">
-                      {activity.id}
-                    </td>
-                    <td className="py-3.5 px-5 font-bold text-slate-900">
-                      {activity.student}
-                    </td>
-                    <td className="py-3.5 px-5 text-slate-400">
-                      {activity.type}
-                    </td>
-                    <td className="py-3.5 px-5 font-mono text-slate-500">
-                      {activity.date}
-                    </td>
-                    <td className="py-3.5 px-5 font-black text-slate-900 font-mono">
-                      {activity.amount}
-                    </td>
-                    <td className="py-3.5 px-5 text-right">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold inline-block border ${
-                        activity.status === "Paid"
-                          ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                          : "bg-amber-50 text-amber-600 border-amber-200"
-                      }`}>
-                        {activity.status}
-                      </span>
-                    </td>
+          <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                    <th className="py-3.5 px-5">Activity ID</th>
+                    <th className="py-3.5 px-5">Description / Name</th>
+                    <th className="py-3.5 px-5">Type</th>
+                    <th className="py-3.5 px-5">Date</th>
+                    <th className="py-3.5 px-5">Amount</th>
+                    <th className="py-3.5 px-5 text-right">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-600 font-medium">
+                  {recentActivity.map((activity) => (
+                    <tr key={activity.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-3.5 px-5 font-mono text-indigo-600 font-bold">
+                        {activity.id}
+                      </td>
+                      <td className="py-3.5 px-5 font-bold text-slate-900">
+                        {activity.student}
+                      </td>
+                      <td className="py-3.5 px-5 text-slate-400">
+                        {activity.type}
+                      </td>
+                      <td className="py-3.5 px-5 font-mono text-slate-500">
+                        {activity.date}
+                      </td>
+                      <td className="py-3.5 px-5 font-black text-slate-900 font-mono">
+                        {activity.amount}
+                      </td>
+                      <td className="py-3.5 px-5 text-right">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold inline-block border ${
+                          activity.status === "Paid"
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                            : "bg-amber-50 text-amber-600 border-amber-200"
+                        }`}>
+                          {activity.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
+        {/* Right Column: Invite / Referral Links (Only visible to Franchise Admin) */}
+        <div className="lg:col-span-1 space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Referrals & Invites
+            </h3>
+          </div>
+          <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+            <div>
+              <h4 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                <Share2 size={16} className="text-indigo-600" />
+                Invite Members
+              </h4>
+              <p className="text-[10px] text-slate-500 mt-1 font-medium">
+                Share invite links to pre-select user roles on the register page.
+              </p>
+            </div>
+
+            <div className="space-y-2.5">
+              {[
+                { name: "Student", val: "STUDENT" },
+                { name: "Teacher", val: "TEACHER" },
+              ].map((roleObj) => (
+                <div key={roleObj.val} className="flex flex-col gap-1.5 p-3 rounded-xl border border-slate-100 bg-slate-50/50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-700">{roleObj.name} Sign Up Link</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyInviteLink(roleObj.val)}
+                    className="w-full py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0"
+                  >
+                    {copiedRole === roleObj.val ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedRole === roleObj.val ? "Copied Link!" : "Copy Invite Link"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
