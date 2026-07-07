@@ -24,8 +24,12 @@ export default function NotificationsPage() {
     const newNotification = {
       id: Date.now(),
       type: "info",
-      title: `${title} (To: ${targetAudience})`,
+      title: title,
       message,
+      recipientType: targetAudience === "All" ? "ALL" :
+                     targetAudience === "Teachers" ? "TEACHERS" :
+                     targetAudience === "Franchise Owners" ? "FRANCHISES" :
+                     targetAudience === "Students" ? "STUDENTS" : "ALL",
       time: "Just now",
       read: false
     };

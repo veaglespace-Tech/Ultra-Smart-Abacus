@@ -1,9 +1,13 @@
 import express from "express";
 import {createNotification,
+    getAllNotifications,
     getNotificationById,
     updateNotification,
     deleteNotification,
-    getStudentNotifications} from "../controllers/notificationController.js";
+    getStudentNotifications,
+    getTeacherNotifications,
+    getMyStudentNotifications,
+    getFranchiseNotifications} from "../controllers/notificationController.js";
 import { createNotificationValidation } from "../validation/notificationValidation.js";
 import { validate } from "../middleware/notificationMiddleware.js";
 import  authMiddleware from "../middleware/authMiddleware.js";
@@ -16,6 +20,28 @@ authorize("ADMIN","FRANCHISE"),
 createNotificationValidation,
 validate,
 createNotification);
+
+router.get("/", authMiddleware, authorize("ADMIN", "FRANCHISE"), getAllNotifications);
+
+router.get(
+    "/teacher",
+    authMiddleware,
+    authorize("TEACHER"),
+    getTeacherNotifications
+);
+
+router.get(
+    "/franchise",
+    authMiddleware,
+    authorize("FRANCHISE"),
+    getFranchiseNotifications
+);
+
+router.get(
+    "/student/me",
+    authMiddleware,
+    getMyStudentNotifications
+);
 
 router.get(
     "/student/:studentId",
