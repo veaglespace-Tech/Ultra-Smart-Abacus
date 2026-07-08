@@ -35,9 +35,9 @@ function RegisterPageContent() {
     mobileNumber: "",
     password: "",
     confirmPassword: "",
-    gender: "Male",
+    gender: "MALE",
     city: "",
-    Address: "",
+    address: "",
     role: "STUDENT"
   });
 
@@ -75,10 +75,14 @@ function RegisterPageContent() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          name: formData.fullName,
+          fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
-          role: formData.role
+          role: formData.role,
+          gender: formData.gender,
+          phone: `${formData.mobileCode}${formData.mobileNumber}`,
+          city: formData.city,
+          address: formData.address
         })
       });
 
@@ -284,9 +288,9 @@ function RegisterPageContent() {
                   onChange={handleChange}
                   className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-12 pr-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 appearance-none font-semibold"
                 >
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
                 </select>
               </div>
             </div>
@@ -340,8 +344,8 @@ function RegisterPageContent() {
               <MapPin className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
               <textarea
                 rows={3}
-                name="Address"
-                value={formData.Address}
+                name="address"
+                value={formData.address}
                 onChange={handleChange}
                 placeholder="Enter Current Address"
                 className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-12 pr-4 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 resize-none"

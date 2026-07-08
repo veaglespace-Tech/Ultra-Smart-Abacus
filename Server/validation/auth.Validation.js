@@ -3,14 +3,14 @@ import { body } from "express-validator";
 
 export const registerValidation = [
 
-    body("name")
+    body("fullName")
         .trim()
         .notEmpty()
-        .withMessage("Name is required")
+        .withMessage("Full name is required")
         .bail()
         .isLength({ min: 3 })
         .withMessage(
-            "Name must be at least 3 characters"
+            "Full name must be at least 3 characters"
         ),
 
     body("email")

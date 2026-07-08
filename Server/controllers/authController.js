@@ -12,10 +12,14 @@ export const registerUser = asyncHandler(
     async (req, res) => {
 
         const {
-            name,
+            fullName,
             email,
             password,
-            role
+            role,
+            gender,
+            phone,
+            city,
+            address
         } = req.body
 
         const existingUser =
@@ -41,11 +45,15 @@ export const registerUser = asyncHandler(
             await prisma.user.create({
 
                 data: {
-                    name,
+                    fullName,
                     email,
                     password:
                         hashedPassword,
-                    role
+                    role,
+                    gender,
+                    phone,
+                    city,
+                    address
                 }
             })
 
@@ -57,6 +65,11 @@ export const registerUser = asyncHandler(
             ...safeUser
         } = user
 
+        const safeUserWithName = {
+            ...safeUser,
+            name: safeUser.fullName
+        }
+
         res.status(201).json({
 
             message:
@@ -64,7 +77,7 @@ export const registerUser = asyncHandler(
 
             token,
 
-            user: safeUser
+            user: safeUserWithName
         })
     }
 )
@@ -115,6 +128,11 @@ export const loginUser =
             ...safeUser
         } = user
 
+        const safeUserWithName = {
+            ...safeUser,
+            name: safeUser.fullName
+        }
+
         res.status(200).json({
 
             message:
@@ -122,7 +140,7 @@ export const loginUser =
 
             token,
 
-            user: safeUser
+            user: safeUserWithName
         })
     })
 

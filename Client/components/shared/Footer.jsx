@@ -85,9 +85,9 @@ export default function Footer() {
 
          
           <div>
-            <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-6 font-mono">
+            <h2 className="text-xs font-bold text-white uppercase tracking-widest mb-6 font-mono">
               Quick Links
-            </h3>
+            </h2>
 
             <ul className="space-y-3.5 text-xs font-medium text-slate-400">
               <li><Link href="/" className="hover:text-orange-400 transition-colors">Home Portal</Link></li>
@@ -100,9 +100,9 @@ export default function Footer() {
 
           
           <div>
-            <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-6 font-mono">
+            <h2 className="text-xs font-bold text-white uppercase tracking-widest mb-6 font-mono">
               Our Presence
-            </h3>
+            </h2>
 
             <p className="text-xs text-slate-400 leading-relaxed font-medium">
               Pune, Mumbai, Nashik, Kolhapur, Satara, Nagpur and several
@@ -116,9 +116,9 @@ export default function Footer() {
 
         
           <div>
-            <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-6 font-mono">
+            <h2 className="text-xs font-bold text-white uppercase tracking-widest mb-6 font-mono">
               Contact Us
-            </h3>
+            </h2>
 
             <div className="space-y-6">
               <div className="flex gap-4">
