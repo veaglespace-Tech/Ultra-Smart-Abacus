@@ -80,34 +80,24 @@ export const getStudentById = asyncHandler(async (req, res) => {
 
 export const updateStudent = asyncHandler(async (req, res) => {
     console.log("Reached updateStudent controller with params:", req.params, "and body:", req.body);
-    try {
-        const student = await prisma.student.update({
-            where: {
-                id: Number(req.params.id)
-            },
-            data: req.body
-        });
 
-    const { profilePhoto, ...restBody } = req.body;
+    const { profilePhoto, ...restBody } = req.body || {};
     const updateData = {
         ...restBody,
-        profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || undefined
+        profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || undefined,
     };
 
     const student = await prisma.student.update({
-
         where: {
-            id: Number(req.params.id)
+            id: Number(req.params.id),
         },
-
-        data: updateData
-
+        data: updateData,
     });
 
     res.status(200).json({
         success: true,
         message: "Student updated successfully",
-        data: student
+        data: student,
     });
 
 });
