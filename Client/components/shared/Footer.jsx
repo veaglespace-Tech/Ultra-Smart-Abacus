@@ -175,6 +175,8 @@ export default function Footer() {
                   <p className="text-sm text-slate-300 leading-relaxed" style={{ fontFamily: "Inter, sans-serif" }}>123 Abacus Street, Pune,<br/>Maharashtra – 411001</p>
                 </div>
               </div>
+
+              <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,107,43,0.15)", border: "1px solid rgba(255,107,43,0.3)" }}>
                   <Phone size={14} className="text-[#FF6B2B]" />
                 </div>
