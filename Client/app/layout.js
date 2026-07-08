@@ -5,8 +5,9 @@ import StoreProvider from "@/store/provider";
 import Script from "next/script";
 
 export const metadata = {
-  title: "Ultra Smart Abacus - Class Management System",
-  description: "Class Management System for Ultra Smart Abacus",
+  title: "Smart Abacus Academy | India's #1 Abacus & Mental Arithmetic Training",
+  description: "Smart Abacus Academy — Empowering young minds with world-class Abacus, Mental Math, Vedic Mathematics, Speed Reading and Brain Gym programs. 15+ years of excellence, 10,000+ students, 50+ centres across India.",
+  keywords: "abacus classes, mental arithmetic, smart abacus, abacus training, vedic math, speed reading, kids education, math olympiad, abacus academy India",
 };
 
 export default function RootLayout({ children }) {
