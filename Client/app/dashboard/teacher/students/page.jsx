@@ -1,22 +1,62 @@
 // src/app/dashboard/teacher/students/page.jsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Eye, Filter, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { api } from '@/services/api';
 
 export default function TeacherStudentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState('All');
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [students] = useState([
-    { id: 'STU-101', name: 'Abhishek Kulkarni', batch: 'Batch Alpha', level: 'Level 1 Core', attendance: 95.8, progress: 75, email: 'abhishek@gmail.com', phone: '+1 234 567 8901', enrollment: 'Jan 2026' },
-    { id: 'STU-102', name: 'Pranjal Patil', batch: 'Batch Alpha', level: 'Level 1 Core', attendance: 91.2, progress: 68, email: 'pranjal@gmail.com', phone: '+1 234 567 8902', enrollment: 'Feb 2026' },
-    { id: 'STU-103', name: 'Siddharth Joshi', batch: 'Batch Beta', level: 'Level 3 Advanced', attendance: 97.4, progress: 92, email: 'siddharth@gmail.com', phone: '+1 234 567 8903', enrollment: 'Nov 2025' },
-    { id: 'STU-104', name: 'Rohan Deshmukh', batch: 'Batch Beta', level: 'Level 3 Advanced', attendance: 88.0, progress: 54, email: 'rohan@gmail.com', phone: '+1 234 567 8904', enrollment: 'Dec 2025' },
-    { id: 'STU-105', name: 'Neha Patel', batch: 'Batch Gamma', level: 'Level 2 Foundations', attendance: 92.5, progress: 80, email: 'neha@gmail.com', phone: '+1 234 567 8905', enrollment: 'Jan 2026' },
-    { id: 'STU-106', name: 'Ananya Rao', batch: 'Batch Gamma', level: 'Level 2 Foundations', attendance: 78.4, progress: 42, email: 'ananya@gmail.com', phone: '+1 234 567 8906', enrollment: 'Mar 2026' }
-  ]);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [studentsRes, batchesRes] = await Promise.all([
+        api.admin.getStudents(),
+        api.batches.getAll()
+      ]);
+
+      let loadedBatches = [];
+      if (batchesRes && batchesRes.success) {
+        loadedBatches = batchesRes.data.map(b => ({
+          dbId: b.id,
+          name: b.name || `Batch - ${b.code}`,
+          level: b.level || "Level 1"
+        }));
+        setBatches(loadedBatches);
+      }
+
+      if (studentsRes && studentsRes.success) {
+        const mapped = studentsRes.data.map(s => ({
+          id: s.rollNo || `STU-${s.id}`,
+          dbId: s.id,
+          name: s.name,
+          batchId: s.batchId,
+          batch: s.batch ? (s.batch.name || `Batch - ${s.batch.code}`) : 'Unassigned',
+          level: s.batch ? (s.batch.level || 'Level 1 Core') : 'Level 1 Core',
+          attendance: 95.8,
+          progress: 75,
+          email: s.email,
+          phone: s.phone || 'N/A',
+          enrollment: new Date(s.createdAt).toLocaleDateString()
+        }));
+        setStudents(mapped);
+      }
+    } catch (error) {
+      console.error("Failed to load students and batches", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const filteredStudents = students.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.id.toLowerCase().includes(searchQuery.toLowerCase());
@@ -191,6 +231,36 @@ export default function TeacherStudentsPage() {
                   <span className="text-[9px] uppercase tracking-wider text-slate-400 block">Enrollment Date</span>
                   <span className="text-slate-800 dark:text-slate-200 text-xs font-bold">{selectedStudent.enrollment}</span>
                 </div>
+              </div>
+
+              <div className="border-t border-slate-100 dark:border-slate-850 pt-3">
+                <label className="block text-[9px] uppercase tracking-wider text-slate-400 mb-1 font-bold">Reassign to Batch</label>
+                <select 
+                  value={selectedStudent.batchId || ''} 
+                  onChange={async (e) => {
+                    const newBatchId = e.target.value ? Number(e.target.value) : null;
+                    try {
+                      await api.admin.updateStudent(selectedStudent.dbId, { batchId: newBatchId });
+                      // Reload students
+                      fetchData();
+                      // Update modal view
+                      setSelectedStudent(prev => ({
+                        ...prev,
+                        batchId: newBatchId,
+                        batch: newBatchId ? (batches.find(b => b.dbId === newBatchId)?.name || 'Assigned') : 'Unassigned'
+                      }));
+                    } catch (error) {
+                      console.error("Failed to reassign batch", error);
+                      alert(error.message || "Error updating student batch");
+                    }
+                  }}
+                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none cursor-pointer text-slate-700 dark:text-slate-200 w-full"
+                >
+                  <option value="">-- Select Batch (Unassigned) --</option>
+                  {batches.map((b) => (
+                    <option key={b.dbId} value={b.dbId}>{b.name} ({b.level})</option>
+                  ))}
+                </select>
               </div>
             </div>
 

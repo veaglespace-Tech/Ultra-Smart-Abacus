@@ -1,18 +1,16 @@
 // src/app/dashboard/franchise/batches/page.jsx
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { 
   Plus, Calendar, Users, Clock, Pencil, Trash, X, Save, 
   Search, Download, BookOpen, Video, MapPin, CheckCircle
 } from "lucide-react";
+import { api } from "@/services/api";
 
 export default function FranchiseBatches() {
-  const [batches, setBatches] = useState([
-    { id: "BTC-101", slot: "Sat | 04:00 PM", teacher: "Aman Sharma", level: "Level 1", totalStudents: 12, maxCapacity: 15, mode: "Offline", room: "Lab A", status: "Active" },
-    { id: "BTC-102", slot: "Sat | 05:30 PM", teacher: "Sarah Jenkins", level: "Level 4", totalStudents: 8, maxCapacity: 10, mode: "Online", room: "Zoom Room 1", status: "Active" },
-    { id: "BTC-103", slot: "Sun | 10:30 AM", teacher: "Neha Patel", level: "Level 2", totalStudents: 15, maxCapacity: 15, mode: "Offline", room: "Lab B", status: "Full" },
-  ]);
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [isFormOpen, setIsFormOpen] = useState(false); 
   const [isViewOpen, setIsViewOpen] = useState(false); 
@@ -27,6 +25,51 @@ export default function FranchiseBatches() {
     slot: "Sat | 04:00 PM", teacher: "Aman Sharma", level: "Level 1", maxCapacity: 15, mode: "Offline", room: "Lab A", totalStudents: 0
   });
 
+  const fetchBatches = async () => {
+    try {
+      setLoading(true);
+      const res = await api.batches.getAll();
+      if (res && res.success) {
+        const mapped = res.data.map(dbBatch => {
+          let extra = {};
+          try {
+            extra = JSON.parse(dbBatch.description || '{}');
+          } catch (e) {
+            extra = {
+              slot: "TBD",
+              teacher: "TBD",
+              mode: "Offline",
+              room: dbBatch.description || "Room A"
+            };
+          }
+          return {
+            id: dbBatch.id,
+            dbId: dbBatch.id,
+            code: dbBatch.code,
+            name: dbBatch.name,
+            level: dbBatch.level || "Level 1",
+            maxCapacity: dbBatch.maxStudents || 15,
+            totalStudents: dbBatch.students?.length || 0,
+            slot: extra.slot || "Sat | 04:00 PM",
+            teacher: extra.teacher || "Aman Sharma",
+            mode: extra.mode || "Offline",
+            room: extra.room || "Lab A",
+            status: (dbBatch.students?.length || 0) >= (dbBatch.maxStudents || 15) ? "Full" : "Active"
+          };
+        });
+        setBatches(mapped);
+      }
+    } catch (error) {
+      console.error("Failed to load batches", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBatches();
+  }, []);
+
   const metrics = useMemo(() => {
     return {
       total: batches.length,
@@ -37,7 +80,7 @@ export default function FranchiseBatches() {
 
   const filteredBatches = useMemo(() => {
     return batches.filter(batch => {
-      const matchesSearch = batch.teacher.toLowerCase().includes(searchQuery.toLowerCase()) || batch.id.toLowerCase().includes(searchQuery.toLowerCase()) || batch.level.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = batch.teacher.toLowerCase().includes(searchQuery.toLowerCase()) || String(batch.id).toLowerCase().includes(searchQuery.toLowerCase()) || batch.level.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesMode = filterMode === "All" || batch.mode === filterMode;
       const matchesStatus = filterStatus === "All" || batch.status === filterStatus;
       return matchesSearch && matchesMode && matchesStatus;
@@ -65,26 +108,49 @@ export default function FranchiseBatches() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const computedStatus = formData.totalStudents >= formData.maxCapacity ? "Full" : "Active";
-    const recordPayload = { ...formData, status: computedStatus };
+    const payload = {
+      name: `Batch ${formData.level}`,
+      code: editingBatch ? editingBatch.code : `BTC-${Math.floor(1000 + Math.random() * 9000)}`,
+      level: formData.level,
+      maxStudents: Number(formData.maxCapacity),
+      startDate: new Date().toISOString(),
+      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      description: JSON.stringify({
+        slot: formData.slot,
+        teacher: formData.teacher,
+        mode: formData.mode,
+        room: formData.room
+      })
+    };
 
-    if (editingBatch) {
-      setBatches(batches.map(b => b.id === editingBatch.id ? { ...b, ...recordPayload } : b));
+    try {
+      if (editingBatch) {
+        await api.batches.update(editingBatch.dbId, payload);
+      } else {
+        await api.batches.create(payload);
+      }
+      fetchBatches();
+      setIsFormOpen(false);
+      resetForm();
       setEditingBatch(null);
-    } else {
-      const newId = `BTC-${Math.floor(100 + Math.random() * 900)}`;
-      setBatches([...batches, { id: newId, ...recordPayload }]);
+    } catch (error) {
+      console.error("Failed to save batch", error);
+      alert(error.message || "Error saving batch");
     }
-    setIsFormOpen(false);
-    resetForm();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this batch slot?")) {
-      setBatches(batches.filter(b => b.id !== id));
-      setIsViewOpen(false);
+      try {
+        await api.batches.delete(id);
+        fetchBatches();
+        setIsViewOpen(false);
+      } catch (error) {
+        console.error("Failed to delete batch", error);
+        alert(error.message || "Error deleting batch");
+      }
     }
   };
 

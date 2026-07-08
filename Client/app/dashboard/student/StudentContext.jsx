@@ -59,11 +59,36 @@ export function StudentDataProvider({ children }) {
 
   useEffect(() => {
     if (user) {
-      setProfile((prev) => ({
-        ...prev,
-        name: user.name || prev.name,
-        email: user.email || prev.email,
-      }));
+      const fetchStudentProfile = async () => {
+        try {
+          const res = await api.student.getProfile();
+          if (res && res.success && res.data) {
+            const s = res.data;
+            setProfile((prev) => ({
+              ...prev,
+              name: s.name || user.name || prev.name,
+              email: s.email || user.email || prev.email,
+              rollNo: s.rollNo || prev.rollNo,
+              phone: s.phone || prev.phone,
+              parentName: s.fatherName || prev.parentName,
+              admissionDate: s.createdAt ? new Date(s.createdAt).toLocaleDateString() : prev.admissionDate,
+              gender: s.gender || prev.gender,
+              address: s.address || prev.address,
+              batch: s.batch ? (s.batch.name || `Batch - ${s.batch.code}`) : 'Unassigned',
+              level: s.batch ? (s.batch.level || prev.level) : prev.level,
+            }));
+          }
+        } catch (err) {
+          console.error("Failed to fetch student profile:", err);
+          setProfile((prev) => ({
+            ...prev,
+            name: user.name || prev.name,
+            email: user.email || prev.email,
+          }));
+        }
+      };
+
+      fetchStudentProfile();
       
       // Fetch dynamic student notifications
       const fetchNotifications = async () => {

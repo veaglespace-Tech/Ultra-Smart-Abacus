@@ -1,23 +1,63 @@
 // src/app/dashboard/teacher/batches/page.jsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, CalendarDays, Plus, Search, BookOpen, Clock } from 'lucide-react';
+import { api } from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
 
 export default function TeacherBatchesPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [batches] = useState([
-    { id: 1, name: "Batch Alpha", level: "Level 1 Core", students: 14, timing: "Saturday 09:00 AM - 10:30 AM", room: "Room A", status: "Active" },
-    { id: 2, name: "Batch Beta", level: "Level 3 Advanced", students: 12, timing: "Mon & Wed 11:00 AM - 12:30 PM", room: "Room B", status: "Active" },
-    { id: 3, name: "Batch Gamma", level: "Level 2 Foundations", students: 16, timing: "Sunday 03:30 PM - 05:00 PM", room: "Room A", status: "Active" },
-    { id: 4, name: "Batch Delta", level: "Level 4 Master", students: 10, timing: "Friday 05:30 PM - 07:00 PM", room: "Room B", status: "Upcoming" }
-  ]);
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredBatches = batches.filter(batch => 
-    batch.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    batch.level.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchBatches = async () => {
+      try {
+        setLoading(true);
+        const res = await api.batches.getAll();
+        if (res && res.success) {
+          const mapped = res.data.map(dbBatch => {
+            let extra = {};
+            try {
+              extra = JSON.parse(dbBatch.description || '{}');
+            } catch (e) {
+              extra = {
+                slot: "TBD",
+                teacher: "TBD",
+                room: dbBatch.description || "Room A"
+              };
+            }
+            return {
+              id: dbBatch.id,
+              name: dbBatch.name || `Batch - ${dbBatch.code}`,
+              level: dbBatch.level || "Level 1",
+              students: dbBatch.students?.length || 0,
+              timing: extra.slot || "Saturday 09:00 AM - 10:30 AM",
+              room: extra.room || "Room A",
+              teacher: extra.teacher || "TBD",
+              status: (dbBatch.students?.length || 0) >= (dbBatch.maxStudents || 15) ? "Full" : "Active"
+            };
+          });
+          setBatches(mapped);
+        }
+      } catch (error) {
+        console.error("Failed to load teacher batches", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBatches();
+  }, []);
+
+  const filteredBatches = batches.filter(batch => {
+    const matchesSearch = batch.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          batch.level.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTeacher = user && user.name ? batch.teacher.toLowerCase() === user.name.toLowerCase() : true;
+    return matchesSearch && matchesTeacher;
+  });
 
   return (
     <div className="space-y-6">
