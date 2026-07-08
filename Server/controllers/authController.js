@@ -16,10 +16,18 @@ export const registerUser = asyncHandler(
             email,
             password,
             role,
+<<<<<<< HEAD
             gender,
             phone,
             city,
             address
+=======
+            parentGuardianName,
+            phone,
+            gender,
+            address,
+            dateOfBirth
+>>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
         } = req.body
 
         const existingUser =
@@ -50,12 +58,32 @@ export const registerUser = asyncHandler(
                     password:
                         hashedPassword,
                     role,
+<<<<<<< HEAD
                     gender,
                     phone,
                     city,
                     address
+=======
+                    parentGuardianName
+>>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
                 }
             })
+
+        if (role === "STUDENT") {
+            await prisma.student.create({
+                data: {
+                    name,
+                    email,
+                    password: hashedPassword,
+                    phone: phone || null,
+                    gender: gender || null,
+                    address: address || null,
+                    fatherName: parentGuardianName || null,
+                    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+                    userId: user.id
+                }
+            })
+        }
 
         const token =
             generateToken(user)

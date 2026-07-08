@@ -53,7 +53,7 @@ router.get(
 "/",
 authMiddleware,
 
-authorize("TEACHER"),
+authorize("ADMIN", "FRANCHISE", "TEACHER"),
 
 getTeachers
 )

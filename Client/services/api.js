@@ -28,5 +28,40 @@ export const api = {
     
     // Payroll Ledger
     getSalaryHistory: () => apiHelper.get('/teacher/salary'),
+
+    // Notifications
+    getNotifications: () => apiHelper.get('/notifications/teacher'),
+  },
+  student: {
+    getNotifications: () => apiHelper.get('/notifications/student/me'),
+  },
+  franchise: {
+    getNotifications: () => apiHelper.get('/notifications/franchise'),
+  },
+  admin: {
+    getTeachers: () => apiHelper.get('/teachers'),
+    getFranchises: () => apiHelper.get('/franchise'),
+    getStudents: () => apiHelper.get('/students'),
+    getInventory: () => apiHelper.get('/inventory'),
+    getNotifications: () => apiHelper.get('/notifications'),
+    
+    createTeacher: (data) => apiHelper.post('/teachers/register', data),
+    createFranchise: (data) => apiHelper.post('/franchise/register', data),
+    createStudent: (data) => apiHelper.post('/auth/register', { ...data, role: 'STUDENT' }),
+    
+    updateTeacher: (id, data) => apiHelper.put(`/teachers/${id}`, data),
+    updateFranchise: (id, data) => apiHelper.put(`/franchise/${id}`, data),
+    updateStudent: (id, data) => apiHelper.put(`/students/${id}`, data),
+    
+    deleteTeacher: (id) => apiHelper.delete(`/teachers/${id}`),
+    deleteFranchise: (id) => apiHelper.delete(`/franchise/${id}`),
+    deleteStudent: (id) => apiHelper.delete(`/students/${id}`),
+    
+    createInventoryItem: (data) => apiHelper.post('/inventory', data),
+    updateInventoryItem: (id, data) => apiHelper.put(`/inventory/${id}`, data),
+    deleteInventoryItem: (id) => apiHelper.delete(`/inventory/${id}`),
+    
+    createNotification: (data) => apiHelper.post('/notifications', data),
+    deleteNotification: (id) => apiHelper.delete(`/notifications/${id}`),
   }
 };

@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { Camera } from "lucide-react";
 import { useStudentData } from "../StudentContext";
 
 export default function StudentProfilePage() {
   const { profile, updateProfile } = useStudentData();
+  const fileInputRef = useRef(null);
+const [profileImage, setProfileImage] = useState(null);
 
   // Edit Profile form states
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -46,11 +49,45 @@ export default function StudentProfilePage() {
         
         {/* Visual profile detail summary card */}
         <div className="lg:col-span-4 rounded-2xl border border-white/5 bg-slate-900/40 p-6 backdrop-blur-md flex flex-col items-center text-center shadow-lg">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-1 mb-4">
-            <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-black text-2xl text-blue-300">
-              {initials}
-            </div>
-          </div>
+          <div className="relative w-24 h-24 mb-4">
+
+  {profileImage ? (
+    <img
+      src={profileImage}
+      alt="Profile"
+      className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
+    />
+  ) : (
+    <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-1">
+      <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-black text-2xl text-blue-300">
+        {initials}
+      </div>
+    </div>
+  )}
+
+  <input
+    ref={fileInputRef}
+    type="file"
+    accept="image/*"
+    className="hidden"
+    onChange={(e) => {
+      const file = e.target.files[0];
+
+      if (file) {
+        setProfileImage(URL.createObjectURL(file));
+      }
+    }}
+  />
+
+  <button
+    type="button"
+    onClick={() => fileInputRef.current.click()}
+    className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg"
+  >
+    <Camera size={14} />
+  </button>
+
+</div>
           
           <h3 className="text-base font-bold text-white">{profile.name}</h3>
           <span className="text-xs text-slate-500 font-mono mt-0.5">{profile.rollNo}</span>

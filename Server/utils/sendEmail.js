@@ -1,23 +1,26 @@
 import nodemailer from "nodemailer";
 
 const sendEmail = async (to, subject, text) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  const emailUser = process.env.EMAIL_USER || process.env.SMTP_USER;
+  const emailPass = process.env.EMAIL_PASS || process.env.SMTP_PASS;
+
+  if (!emailUser || !emailPass) {
     throw new Error(
-      "Email is not configured. Set EMAIL_USER and EMAIL_PASS in Server/.env."
+      "Email is not configured. Set EMAIL_USER and EMAIL_PASS (or SMTP_USER and SMTP_PASS) in Server/.env."
     );
   }
 
   const transporter = nodemailer.createTransport({
     service: process.env.EMAIL_SERVICE || "gmail",
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user: emailUser,
+      pass: emailPass,
     },
   });
 
  try {
   await transporter.sendMail({
-    from: `"Ultra Smart Abacus" <${process.env.EMAIL_USER}>`,
+    from: `"Ultra Smart Abacus" <${emailUser}>`,
     to,
     subject,
     html: `
