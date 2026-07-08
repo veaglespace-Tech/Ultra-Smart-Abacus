@@ -142,25 +142,22 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Our Courses */}
+          {/* Column 3: Our Presence */}
           <div>
             <h3 className="font-bold text-sm uppercase tracking-widest mb-6 text-white/90" style={{ fontFamily: "Outfit, sans-serif" }}>
-              Our Courses
+              Our Presence
             </h3>
-            <ul className="space-y-3">
-              {courses.map((course, i) => (
-                <li key={i}>
-                  <Link
-                    href="/courses"
-                    className="group flex items-center gap-2 text-sm text-slate-300 hover:text-[#FFCA28] transition-colors duration-200"
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B2B] flex-shrink-0 group-hover:bg-[#FFCA28] transition-colors" />
-                    {course}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-4">
+              <p className="text-sm text-slate-300 leading-relaxed font-medium" style={{ fontFamily: "Inter, sans-serif" }}>
+                Pune, Mumbai, Nashik, Kolhapur, Satara, Nagpur and several
+                cities across India.
+              </p>
+              <div className="border-t border-white/10 pt-4">
+                <p className="text-sm text-slate-300 leading-relaxed font-medium" style={{ fontFamily: "Inter, sans-serif" }}>
+                  International footprint in UAE, USA and Canada.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Column 4: Contact */}
@@ -178,8 +175,6 @@ export default function Footer() {
                   <p className="text-sm text-slate-300 leading-relaxed" style={{ fontFamily: "Inter, sans-serif" }}>123 Abacus Street, Pune,<br/>Maharashtra – 411001</p>
                 </div>
               </div>
-
-              <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,107,43,0.15)", border: "1px solid rgba(255,107,43,0.3)" }}>
                   <Phone size={14} className="text-[#FF6B2B]" />
                 </div>

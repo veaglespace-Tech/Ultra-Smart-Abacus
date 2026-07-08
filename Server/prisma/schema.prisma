@@ -7,6 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model attendance {
+  id             Int               @id @default(autoincrement())
+  studentId      Int
+  teacherId      Int
+  batchId        Int
+  attendanceDate DateTime          @default(now())
+  status         attendance_status
+  remarks        String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @default(now())
+  batch          batch             @relation(fields: [batchId], references: [id], map: "Attendance_batchId_fkey")
+  student        student           @relation(fields: [studentId], references: [id], map: "Attendance_studentId_fkey")
+  teacher        teacher           @relation(fields: [teacherId], references: [id], map: "Attendance_teacherId_fkey")
+
+<<<<<<< HEAD
+  @@unique([studentId, attendanceDate], map: "Attendance_studentId_attendanceDate_key")
+  @@index([batchId], map: "Attendance_batchId_fkey")
+  @@index([teacherId], map: "Attendance_teacherId_fkey")
+=======
+  FRANCHISE
+
+  TEACHER
+
+  STUDENT
+}
 model User {
   id Int @id @default(autoincrement())
 
@@ -16,18 +41,45 @@ model User {
 
   password String
 
+  otp String?
+
+  otpExpiry DateTime?
+
+
   role Role
+
+  parentGuardianName String?
 
   teacher Teacher?
 
   franchise Franchise?
 
+  student Student?
+
   createdAt DateTime @default(now())
+>>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
 }
 
-model Teacher {
-  id Int @id @default(autoincrement())
+model batch {
+  id           Int            @id @default(autoincrement())
+  name         String
+  courseId     Int?
+  code         String         @unique(map: "Batch_code_key")
+  description  String?
+  level        String?
+  startDate    DateTime?
+  endDate      DateTime?
+  maxStudents  Int?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now())
+  attendance   attendance[]
+  course       course?        @relation(fields: [courseId], references: [id], map: "Batch_courseId_fkey")
+  notification notification[]
+  student      student[]
 
+<<<<<<< HEAD
+  @@index([courseId], map: "Batch_courseId_fkey")
+=======
   qualification String
 
   name String
@@ -40,81 +92,82 @@ model Teacher {
 
   userId Int @unique
 
+
   user User @relation(fields: [userId], references: [id])
 
   attendances Attendance[]
+  exams       Exam[]
+>>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
 }
 
-model Franchise {
-  id Int @id @default(autoincrement())
-
-  name String
-
-  email String @unique
-
-  phone String?
-
-  address String?
-
-  userId Int @unique
-
-  user User @relation(fields: [userId], references: [id])
-
-  referrals Referral[]
-}
-
-model Referral {
-  id Int @id @default(autoincrement())
-
-  token String @unique
-
-  role Role
-
-  franchiseId Int
-
-  franchise Franchise @relation(fields: [franchiseId], references: [id])
-
-  isUsed Boolean @default(false)
-
-  expiresAt DateTime
-
-  createdAt DateTime @default(now())
-}
-
-enum Role {
-  ADMIN
-
-  FRANCHISE
-
-  TEACHER
-
-  STUDENT
-}
-
-model Inventory {
-  id Int @id @default(autoincrement())
-
-  itemName String
-
+model course {
+  id          Int      @id @default(autoincrement())
+  name        String
+  code        String   @unique(map: "Course_code_key")
   description String?
-
-  quantity Int
-
-  price Float
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
+  duration    Int?
+  fees        Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  batch       batch[]
 }
 
-model Student {
-  id Int @id @default(autoincrement())
+model fee {
+  id            Int        @id @default(autoincrement())
+  studentId     Int
+  totalAmount   Float
+  paidAmount    Float      @default(0)
+  pendingAmount Float
+  status        fee_status @default(PENDING)
+  paymentDate   DateTime?
+  createdAt     DateTime   @default(now())
+}
 
+model franchise {
+  id      Int     @id @default(autoincrement())
+  name    String
+  email   String  @unique(map: "Franchise_email_key")
+  phone   String?
+  address String?
+  userId  Int     @unique(map: "Franchise_userId_key")
+  user    user    @relation(fields: [userId], references: [id], map: "Franchise_userId_fkey")
+}
+
+model inventory {
+  id          Int      @id @default(autoincrement())
+  itemName    String
+  description String?
+  quantity    Int
+  price       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+}
+
+model notification {
+  id            Int                        @id @default(autoincrement())
+  title         String
+  message       String
+  type          notification_type          @default(GENERAL)
+  recipientType notification_recipientType
+  batchId       Int?
+  studentId     Int?
+  createdBy     Int?
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @default(now())
+  batch         batch?                     @relation(fields: [batchId], references: [id], map: "Notification_batchId_fkey")
+  student       student?                   @relation(fields: [studentId], references: [id], map: "Notification_studentId_fkey")
+
+<<<<<<< HEAD
+  @@index([batchId], map: "Notification_batchId_fkey")
+  @@index([studentId], map: "Notification_studentId_fkey")
+=======
   name String
 
   email String @unique
 
-  password  String
+  password  String?
+
+  rollNo String? @unique
 
   dateOfBirth DateTime?
 
@@ -133,63 +186,57 @@ model Student {
   notifications Notification[]
 
   attendances Attendance[]
+  examResults ExamResult[]
+
+  userId Int? @unique
+
+  user User? @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
+>>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
 }
 
-model Course {
-  id Int @id @default(autoincrement())
+model student {
+  id           Int            @id @default(autoincrement())
+  name         String
+  email        String         @unique(map: "Student_email_key")
+  rollNo       String         @unique(map: "Student_rollNo_key")
+  createdAt    DateTime       @default(now())
+  batchId      Int?
+  attendance   attendance[]
+  notification notification[]
+  batch        batch?         @relation(fields: [batchId], references: [id], map: "Student_batchId_fkey")
 
-  name String
-  code String @unique
-
-  description String?
-
-  duration Int? // months
-
-  fees Float?
-
-  Batches Batch[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@index([batchId], map: "Student_batchId_fkey")
 }
 
-model Batch {
-  id Int @id @default(autoincrement())
-
-  name String
-
-  courseId Int?
-
-  course Course? @relation(fields: [courseId], references: [id])
-
-  code String @unique
-
-  description String?
-
-  level String?
-
-  startDate DateTime?
-
-  endDate DateTime?
-
-  maxStudents Int?
-
-  notifications Notification[]
-
-  //notifications Notification[]
-
-  students Student[]
-
-  attendances Attendance[]
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
+model teacher {
+  id            Int          @id @default(autoincrement())
+  name          String
+  qualification String
+  experience    Int
+  userId        Int          @unique(map: "Teacher_userId_key")
+  attendance    attendance[]
+  user          user         @relation(fields: [userId], references: [id], map: "Teacher_userId_fkey")
 }
 
-enum NotificationType {
+model user {
+  id        Int         @id @default(autoincrement())
+  email     String      @unique(map: "User_email_key")
+  createdAt DateTime    @default(now())
+  password  String
+  role      user_role
+  address   String?
+  city      String
+  fullName  String
+  gender    user_gender
+  phone     String      @unique(map: "User_phone_key")
+  updatedAt DateTime    @default(now())
+  franchise franchise?
+  teacher   teacher?
+}
+
+enum notification_type {
   GENERAL
   EXAM
   FEE
@@ -197,7 +244,14 @@ enum NotificationType {
   ANNOUNCEMENT
 }
 
-enum RecipientType {
+enum user_role {
+  ADMIN
+  FRANCHISE
+  TEACHER
+  STUDENT
+}
+
+enum notification_recipientType {
   ALL
   STUDENTS
   TEACHERS
@@ -206,84 +260,20 @@ enum RecipientType {
   STUDENT
 }
 
-model Notification {
-  id Int @id @default(autoincrement())
-
-  title   String
-  message String
-
-  type NotificationType @default(GENERAL)
-
-  recipientType RecipientType
-
-  batchId Int?
-  batch   Batch? @relation(fields: [batchId], references: [id])
-
-  studentId Int?
-  student   Student? @relation(fields: [studentId], references: [id])
-
-  createdBy Int?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Fee {
-  id Int @id @default(autoincrement())
-
-  studentId Int
-
-  totalAmount Float
-
-  paidAmount Float @default(0)
-
-  pendingAmount Float
-
-  status FeeStatus @default(PENDING)
-
-  paymentDate DateTime?
-
-  createdAt DateTime @default(now())
-}
-
-enum FeeStatus {
+enum fee_status {
   PAID
-
   PARTIAL
-
   PENDING
 }
 
-enum AttendanceStatus {
+enum attendance_status {
   PRESENT
   ABSENT
   LEAVE
 }
 
-model Attendance {
-  id Int @id @default(autoincrement())
-
-  studentId Int
-
-  teacherId Int
-
-  batchId Int
-
-  attendanceDate DateTime @default(now())
-
-  status AttendanceStatus
-
-  remarks String?
-
-  student Student @relation(fields: [studentId], references: [id])
-
-  teacher Teacher @relation(fields: [teacherId], references: [id])
-
-  batch Batch @relation(fields: [batchId], references: [id])
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @default(now())
-
-  @@unique([studentId, attendanceDate])
+enum user_gender {
+  MALE
+  FEMALE
+  OTHER
 }

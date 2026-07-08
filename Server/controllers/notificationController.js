@@ -126,20 +126,23 @@ export const getAllNotifications = asyncHandler(async (req, res) => {
 
 
 export const getNotificationById = asyncHandler(async (req, res) => {
-
     const { id } = req.params;
 
-    const notification = await prisma.notification.findUnique({
+    if (isNaN(id)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid notification ID format"
+        });
+    }
 
+    const notification = await prisma.notification.findUnique({
         where: {
             id: Number(id)
         },
-
         include: {
             batch: true,
             student: true
         }
-
     });
 
     if (!notification) {
@@ -228,15 +231,19 @@ export const deleteNotification = asyncHandler(async (req, res) => {
 });
 
 export const getStudentNotifications = asyncHandler(async (req, res) => {
-
     const { studentId } = req.params;
 
-    const student = await prisma.student.findUnique({
+    if (isNaN(studentId)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid student ID format"
+        });
+    }
 
+    const student = await prisma.student.findUnique({
         where: {
             id: Number(studentId)
         }
-
     });
 
     if (!student) {
@@ -294,6 +301,138 @@ export const getStudentNotifications = asyncHandler(async (req, res) => {
 
     });
 
+});
+
+export const getTeacherNotifications = asyncHandler(async (req, res) => {
+    const notifications = await prisma.notification.findMany({
+        where: {
+            OR: [
+                {
+                    recipientType: "ALL"
+                },
+                {
+                    recipientType: "TEACHERS"
+                },
+                {
+                    createdBy: req.user.id
+                }
+            ]
+        },
+        orderBy: {
+            createdAt: "desc"
+        }
+    });
+
+    res.status(200).json({
+        success: true,
+        count: notifications.length,
+        data: notifications
+    });
+});
+
+export const getMyStudentNotifications = asyncHandler(async (req, res) => {
+    let student = await prisma.student.findFirst({
+        where: {
+            userId: req.user.id
+        }
+    });
+
+    if (!student) {
+        const user = await prisma.user.findUnique({
+            where: { id: req.user.id }
+        });
+
+        if (user) {
+            student = await prisma.student.findFirst({
+                where: { email: user.email }
+            });
+
+            // Auto-link student record with user record if not linked
+            if (student && !student.userId) {
+                student = await prisma.student.update({
+                    where: { id: student.id },
+                    data: { userId: user.id }
+                });
+            }
+
+            // Fallback: If no student record exists for this student user, create one on the fly
+            if (!student) {
+                student = await prisma.student.create({
+                    data: {
+                        name: user.name,
+                        email: user.email,
+                        rollNo: `ST-${user.id}-${Math.floor(100 + Math.random() * 900)}`,
+                        userId: user.id
+                    }
+                });
+            }
+        }
+    }
+
+    if (!student) {
+        console.error(`Student profile not found for user ID: ${req.user.id}, Role: ${req.user.role}`);
+        return res.status(404).json({
+            success: false,
+            message: `Student profile not found for user ID ${req.user.id} (Role: ${req.user.role})`
+        });
+    }
+
+    const notifications = await prisma.notification.findMany({
+        where: {
+            OR: [
+                {
+                    recipientType: "ALL"
+                },
+                {
+                    recipientType: "STUDENTS"
+                },
+                {
+                    recipientType: "STUDENT",
+                    studentId: student.id
+                },
+                {
+                    recipientType: "BATCH",
+                    batchId: student.batchId || -1
+                }
+            ]
+        },
+        orderBy: {
+            createdAt: "desc"
+        }
+    });
+
+    res.status(200).json({
+        success: true,
+        count: notifications.length,
+        data: notifications
+    });
+});
+
+export const getFranchiseNotifications = asyncHandler(async (req, res) => {
+    const notifications = await prisma.notification.findMany({
+        where: {
+            OR: [
+                {
+                    recipientType: "ALL"
+                },
+                {
+                    recipientType: "FRANCHISES"
+                },
+                {
+                    createdBy: req.user.id
+                }
+            ]
+        },
+        orderBy: {
+            createdAt: "desc"
+        }
+    });
+
+    res.status(200).json({
+        success: true,
+        count: notifications.length,
+        data: notifications
+    });
 });
 
     

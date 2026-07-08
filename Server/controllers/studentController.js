@@ -9,8 +9,8 @@ export const createStudent = asyncHandler(async (req, res) => {
         data: {
             name,
             email,
-            password,
-            dateOfBirth,
+            password: hashedPassword,
+            dateOfBirth: new Date(req.body.dateOfBirth),
             gender,
             phone,
             address,

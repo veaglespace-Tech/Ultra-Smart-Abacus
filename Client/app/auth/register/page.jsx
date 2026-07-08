@@ -50,7 +50,7 @@ function RegisterPageContent() {
     mobileNumber: "",
     password: "",
     confirmPassword: "",
-    gender: "Male",
+    gender: "MALE",
     city: "",
     Address: "",
     role: "STUDENT",
@@ -86,7 +86,7 @@ function RegisterPageContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.fullName,
+          fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
           role: formData.role,
@@ -265,6 +265,48 @@ function RegisterPageContent() {
               </div>
             </div>
 
+            {/* Parent/Guardian Name (Only visible for STUDENT role) */}
+            {formData.role === "STUDENT" && (
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+                  Parent / Guardian Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type="text"
+                    name="parentGuardianName"
+                    required
+                    value={formData.parentGuardianName || ""}
+                    onChange={handleChange}
+                    placeholder="Jane Doe"
+                    className={inputClass}
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Date of Birth (Only visible for STUDENT role) */}
+            {formData.role === "STUDENT" && (
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+                  Date of Birth
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    name="dateOfBirth"
+                    required
+                    value={formData.dateOfBirth || ""}
+                    onChange={handleChange}
+                    className={inputClass}
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Email + Mobile Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -360,9 +402,9 @@ function RegisterPageContent() {
                   className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 px-4 text-slate-800 text-sm focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all appearance-none font-semibold"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
                 </select>
               </div>
 

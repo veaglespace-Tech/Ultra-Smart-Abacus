@@ -12,10 +12,22 @@ export const registerUser = asyncHandler(
     async (req, res) => {
 
         const {
-            name,
+            fullName,
             email,
             password,
-            role
+            role,
+<<<<<<< HEAD
+            gender,
+            phone,
+            city,
+            address
+=======
+            parentGuardianName,
+            phone,
+            gender,
+            address,
+            dateOfBirth
+>>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
         } = req.body
 
         const existingUser =
@@ -41,13 +53,37 @@ export const registerUser = asyncHandler(
             await prisma.user.create({
 
                 data: {
-                    name,
+                    fullName,
                     email,
                     password:
                         hashedPassword,
-                    role
+                    role,
+<<<<<<< HEAD
+                    gender,
+                    phone,
+                    city,
+                    address
+=======
+                    parentGuardianName
+>>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
                 }
             })
+
+        if (role === "STUDENT") {
+            await prisma.student.create({
+                data: {
+                    name,
+                    email,
+                    password: hashedPassword,
+                    phone: phone || null,
+                    gender: gender || null,
+                    address: address || null,
+                    fatherName: parentGuardianName || null,
+                    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+                    userId: user.id
+                }
+            })
+        }
 
         const token =
             generateToken(user)
@@ -57,6 +93,11 @@ export const registerUser = asyncHandler(
             ...safeUser
         } = user
 
+        const safeUserWithName = {
+            ...safeUser,
+            name: safeUser.fullName
+        }
+
         res.status(201).json({
 
             message:
@@ -64,7 +105,7 @@ export const registerUser = asyncHandler(
 
             token,
 
-            user: safeUser
+            user: safeUserWithName
         })
     }
 )
@@ -115,6 +156,11 @@ export const loginUser =
             ...safeUser
         } = user
 
+        const safeUserWithName = {
+            ...safeUser,
+            name: safeUser.fullName
+        }
+
         res.status(200).json({
 
             message:
@@ -122,7 +168,7 @@ export const loginUser =
 
             token,
 
-            user: safeUser
+            user: safeUserWithName
         })
     })
 
@@ -173,7 +219,7 @@ export const loginUser =
 
         await sendEmail(
             email,
-            "CRM Password Reset OTP",
+            "Abacus Password Reset OTP",
             `Your OTP is ${otp}`
         )
 
