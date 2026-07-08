@@ -63,6 +63,7 @@ model Teacher {
 
   userId Int @unique
 
+
   user User @relation(fields: [userId], references: [id])
 
   attendances Attendance[]
