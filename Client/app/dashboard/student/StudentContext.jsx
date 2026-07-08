@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { api } from "@/services/api";
 
 const StudentDataContext = createContext();
 
@@ -51,6 +52,10 @@ const INITIAL_ASSIGNMENTS = [
 export function StudentDataProvider({ children }) {
   const { user } = useAuth();
   const [profile, setProfile] = useState(INITIAL_PROFILE);
+  const [exams, setExams] = useState(INITIAL_EXAMS);
+  const [fees, setFees] = useState(INITIAL_FEES);
+  const [notifications, setNotifications] = useState([]);
+  const [assignments, setAssignments] = useState(INITIAL_ASSIGNMENTS);
 
   useEffect(() => {
     if (user) {
@@ -59,12 +64,27 @@ export function StudentDataProvider({ children }) {
         name: user.name || prev.name,
         email: user.email || prev.email,
       }));
+      
+      // Fetch dynamic student notifications
+      const fetchNotifications = async () => {
+        try {
+          const res = await api.student.getNotifications();
+          const list = (res.data || []).map(n => ({
+            id: n.id,
+            title: n.title,
+            sender: "Academy Office",
+            time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "",
+            text: n.message
+          }));
+          setNotifications(list);
+        } catch (err) {
+          console.error("Failed to fetch student notifications:", err);
+        }
+      };
+      
+      fetchNotifications();
     }
   }, [user]);
-  const [exams, setExams] = useState(INITIAL_EXAMS);
-  const [fees, setFees] = useState(INITIAL_FEES);
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
-  const [assignments, setAssignments] = useState(INITIAL_ASSIGNMENTS);
 
   const updateProfile = (updatedProfile) => {
     setProfile(prev => ({ ...prev, ...updatedProfile }));

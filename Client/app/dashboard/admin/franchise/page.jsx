@@ -17,8 +17,12 @@ function FranchiseListContent() {
   // New Franchise Form States
   const [franchiseName, setFranchiseName] = useState("");
   const [franchiseOwner, setFranchiseOwner] = useState("");
+  const [franchiseEmail, setFranchiseEmail] = useState("");
+  const [franchisePhone, setFranchisePhone] = useState("");
+  const [franchisePassword, setFranchisePassword] = useState("");
   const [franchiseLocation, setFranchiseLocation] = useState("");
   const [showAddFranchiseModal, setShowAddFranchiseModal] = useState(false);
+  const [error, setError] = useState(null);
 
   // Trigger add modal if query param is set
   useEffect(() => {
@@ -28,9 +32,10 @@ function FranchiseListContent() {
   }, [shouldAdd]);
 
   // Add Franchise Handler
-  const submitAddFranchise = (e) => {
+  const submitAddFranchise = async (e) => {
     e.preventDefault();
-    if (!franchiseName || !franchiseOwner) return;
+    if (!franchiseName || !franchiseOwner || !franchiseEmail || !franchisePassword) return;
+    setError(null);
 
     const newFranchise = {
       id: Date.now(),
@@ -44,19 +49,27 @@ function FranchiseListContent() {
     const newFranchiseUser = {
       id: Date.now() + 1,
       name: franchiseOwner,
-      email: `${franchiseOwner.toLowerCase().replace(/\s+/g, "")}@abacus.com`,
+      email: franchiseEmail,
+      phone: franchisePhone || "9876543210",
+      password: franchisePassword,
       role: "Franchise",
       status: "Active",
       date: new Date().toISOString().split("T")[0],
       location: franchiseName
     };
 
-    handleAddFranchise(newFranchise, newFranchiseUser);
-
-    setFranchiseName("");
-    setFranchiseOwner("");
-    setFranchiseLocation("");
-    setShowAddFranchiseModal(false);
+    try {
+      await handleAddFranchise(newFranchise, newFranchiseUser);
+      setFranchiseName("");
+      setFranchiseOwner("");
+      setFranchiseEmail("");
+      setFranchisePhone("");
+      setFranchisePassword("");
+      setFranchiseLocation("");
+      setShowAddFranchiseModal(false);
+    } catch (err) {
+      setError(err.message || "Failed to add franchise");
+    }
   };
 
   return (
@@ -151,7 +164,10 @@ function FranchiseListContent() {
             <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-5">
               <h3 className="text-base font-bold text-white">Add New Academy Center</h3>
               <button
-                onClick={() => setShowAddFranchiseModal(false)}
+                onClick={() => {
+                  setShowAddFranchiseModal(false);
+                  setError(null);
+                }}
                 className="text-slate-400 hover:text-white transition-all cursor-pointer"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -159,6 +175,12 @@ function FranchiseListContent() {
                 </svg>
               </button>
             </div>
+
+            {error && (
+              <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-[11px] text-red-300 shadow-inner mb-4">
+                {error}
+              </div>
+            )}
 
             <form onSubmit={submitAddFranchise} className="space-y-4">
               <div>
@@ -171,7 +193,7 @@ function FranchiseListContent() {
                   value={franchiseName}
                   onChange={(e) => setFranchiseName(e.target.value)}
                   placeholder="e.g. Pune Central Training Center"
-                  className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 transition-all"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs text-black placeholder-slate-400 outline-none focus:border-blue-500 transition-all"
                 />
               </div>
 
@@ -185,7 +207,50 @@ function FranchiseListContent() {
                   value={franchiseOwner}
                   onChange={(e) => setFranchiseOwner(e.target.value)}
                   placeholder="e.g. Suresh Deshmukh"
-                  className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 transition-all"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs text-black placeholder-slate-400 outline-none focus:border-blue-500 transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={franchiseEmail}
+                    onChange={(e) => setFranchiseEmail(e.target.value)}
+                    placeholder="e.g. suresh@abacus.com"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs text-black placeholder-slate-400 outline-none focus:border-blue-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={franchisePhone}
+                    onChange={(e) => setFranchisePhone(e.target.value)}
+                    placeholder="e.g. 9876543210"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs text-black placeholder-slate-400 outline-none focus:border-blue-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  Account Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={franchisePassword}
+                  onChange={(e) => setFranchisePassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs text-black placeholder-slate-400 outline-none focus:border-blue-500 transition-all"
                 />
               </div>
 
@@ -198,14 +263,17 @@ function FranchiseListContent() {
                   value={franchiseLocation}
                   onChange={(e) => setFranchiseLocation(e.target.value)}
                   placeholder="e.g. Deccan Gymkhana, Pune"
-                  className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 transition-all"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs text-black placeholder-slate-400 outline-none focus:border-blue-500 transition-all"
                 />
               </div>
 
               <div className="pt-3 flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowAddFranchiseModal(false)}
+                  onClick={() => {
+                    setShowAddFranchiseModal(false);
+                    setError(null);
+                  }}
                   className="flex-1 px-4 py-2.5 text-xs font-semibold rounded-xl border border-white/10 text-slate-400 hover:bg-white/5 transition-all"
                 >
                   Cancel

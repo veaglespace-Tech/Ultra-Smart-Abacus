@@ -1,17 +1,51 @@
 // src/app/dashboard/teacher/notifications/page.jsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Award, Calendar, FileSpreadsheet, CheckCircle2, Trash2 } from 'lucide-react';
+import { api } from '@/services/api';
 
 export default function TeacherNotificationsPage() {
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'exam', title: "Exam Marks Pending Review", text: "Exam 'Level 1 Core Midterm' marks have been logged. Please review and publish the results.", time: "2 hours ago", icon: FileSpreadsheet, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400" },
-    { id: 2, type: 'attendance', title: "Batch Beta Attendance Synchronized", text: "Attendance logs for Batch Beta (Mon-Wed) were successfully pushed to server records.", time: "4 hours ago", icon: CheckCircle2, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400" },
-    { id: 3, type: 'progress', title: "New Progress Assessment Logged", text: "A Level 3 Advanced evaluation card has been successfully attached to student Siddharth Joshi.", time: "1 day ago", icon: Award, color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400" },
-    { id: 4, type: 'payment', title: "Salary Payout Disbursed", text: "June monthly payroll of $3,200 has been credited to your registered bank account.", time: "1 day ago", icon: CheckCircle2, color: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400" },
-    { id: 5, type: 'batch', title: "Upcoming Batch Delta Activation", text: "Batch Delta (Level 4 Master) is scheduled to start on Friday, 05:30 PM in Room B.", time: "3 days ago", icon: Calendar, color: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400" }
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.teacher.getNotifications();
+      const list = (res.data || []).map(n => {
+        let typeIcon = Bell;
+        let typeColor = "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400";
+        if (n.type === "EXAM") {
+          typeIcon = FileSpreadsheet;
+          typeColor = "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400";
+        } else if (n.type === "ATTENDANCE") {
+          typeIcon = CheckCircle2;
+          typeColor = "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400";
+        } else if (n.type === "ANNOUNCEMENT") {
+          typeIcon = Bell;
+          typeColor = "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400";
+        }
+        return {
+          id: n.id,
+          type: n.type.toLowerCase(),
+          title: n.title,
+          text: n.message,
+          time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "",
+          icon: typeIcon,
+          color: typeColor
+        };
+      });
+      setNotifications(list);
+    } catch (err) {
+      console.error("Failed to load notifications", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const handleDelete = (id) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
