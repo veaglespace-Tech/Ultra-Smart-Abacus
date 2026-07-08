@@ -14,6 +14,10 @@ import attendanceRoutes from "./routes/attendanceRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import feeRoutes from "./routes/feeRoutes.js";
 import referralRoutes from "./routes/referralRoutes.js";
+import path from "path";
+
+
+
 
 
 const app = express()
@@ -35,7 +39,11 @@ app.use("/api/notifications", notificationRoutes)
 app.use("/api/fees", feeRoutes)
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/referral", referralRoutes);
-app.use(errorMiddleware)
+app.use(errorMiddleware);
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "uploads"))
+);
 
 
 const PORT = process.env.PORT || 5000

@@ -3,23 +3,26 @@ import asyncHandler from "../utils/asyncHandler.js";
 
 export const createStudent = asyncHandler(async (req, res) => {
 
-    const { name, email, password, dateOfBirth, gender, phone, address, fatherName, batchId } = req.body;
+    const { name, email, password, dateOfBirth, gender, phone, address, fatherName, batchId, profilePhoto } = req.body;
+    const hashedPassword = password ? await import("bcrypt").then(({ default: bcrypt }) => bcrypt.hash(password, 10)) : null;
 
     const student = await prisma.student.create({
         data: {
             name,
             email,
             password: hashedPassword,
-            dateOfBirth: new Date(req.body.dateOfBirth),
+            dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
             gender,
             phone,
             address,
             fatherName,
-            batchId
+            batchId,
+            profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || null
         }
     });
 
- 
+    console.log(req.file);
+    console.log(req.body);
 
     res.status(201).json({
         success: true,
@@ -77,13 +80,19 @@ export const getStudentById = asyncHandler(async (req, res) => {
 
 export const updateStudent = asyncHandler(async (req, res) => {
 
+    const { profilePhoto, ...restBody } = req.body;
+    const updateData = {
+        ...restBody,
+        profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || undefined
+    };
+
     const student = await prisma.student.update({
 
         where: {
             id: Number(req.params.id)
         },
 
-        data: req.body
+        data: updateData
 
     });
 

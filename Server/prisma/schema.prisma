@@ -51,6 +51,9 @@ model User {
 model Teacher {
   id Int @id @default(autoincrement())
 
+  profilePhoto  String?
+
+
   qualification String
 
   name String
@@ -110,6 +113,9 @@ model Student {
   name String
 
   email String @unique
+
+  profilePhoto  String?
+
 
   password  String?
 

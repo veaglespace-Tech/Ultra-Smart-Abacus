@@ -23,6 +23,10 @@ export const registerUser = asyncHandler(
             dateOfBirth
         } = req.body
 
+        const profilePhoto = req.file
+            ? `/uploads/students/${req.file.filename}`
+            : req.body.profilePhoto || null
+
         const existingUser =
             await prisma.user.findUnique({
                 where: { email }
@@ -66,6 +70,7 @@ export const registerUser = asyncHandler(
                     address: address || null,
                     fatherName: parentGuardianName || null,
                     dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+                    profilePhoto,
                     userId: user.id
                 }
             })
@@ -104,7 +109,8 @@ export const loginUser =
 
         const user =
             await prisma.user.findUnique({
-                where: { email }
+                where: { email },
+                include: { student: true }
             })
 
         if (!user) {
