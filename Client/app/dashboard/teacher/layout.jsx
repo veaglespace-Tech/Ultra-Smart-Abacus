@@ -1,7 +1,7 @@
 // src/app/dashboard/teacher/layout.jsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from "@/context/ThemeContext";
@@ -19,6 +19,11 @@ export default function TeacherLayout({ children }) {
   const { logout, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [isClientMounted, setIsClientMounted] = useState(false);
+
+  useEffect(() => {
+    setIsClientMounted(true);
+  }, []);
 
   const handleLogout = () => {
     if (logout) {
@@ -274,11 +279,11 @@ export default function TeacherLayout({ children }) {
             {/* Profile Avatar / Quick dropdown */}
             <Link href="/dashboard/teacher/profile" className="flex items-center gap-2 hover:opacity-90">
               <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-                {user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "TA"}
+                {isClientMounted && user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "TA"}
               </div>
               <div className="hidden sm:block text-left">
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">
-                  {user?.name || "Teacher Admin"}
+                  {isClientMounted && user?.name ? user.name : "Teacher Admin"}
                 </p>
                 <span className="text-[9px] text-slate-400 font-bold">online</span>
               </div>

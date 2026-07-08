@@ -34,6 +34,7 @@ export const api = {
   },
   student: {
     getNotifications: () => apiHelper.get('/notifications/student/me'),
+    getProfile: () => apiHelper.get('/students/profile/me'),
   },
   franchise: {
     getNotifications: () => apiHelper.get('/notifications/franchise'),
@@ -63,5 +64,13 @@ export const api = {
     
     createNotification: (data) => apiHelper.post('/notifications', data),
     deleteNotification: (id) => apiHelper.delete(`/notifications/${id}`),
+  },
+  batches: {
+    getAll: () => apiHelper.get('/batches'),
+    getById: (id) => apiHelper.get(`/batches/${id}`),
+    create: (data) => apiHelper.post('/batches', data),
+    update: (id, data) => apiHelper.put(`/batches/${id}`, data),
+    delete: (id) => apiHelper.delete(`/batches/${id}`),
+    getByCourse: (courseId) => apiHelper.get(`/batches/course/${courseId}`),
   }
 };
