@@ -7,6 +7,7 @@ import { api } from "@/services/api";
 const StudentDataContext = createContext();
 
 const INITIAL_PROFILE = {
+  id: null,
   name: "Neha Patel",
   rollNo: "SA-2026-089",
   email: "neha@abacus.com",
@@ -16,6 +17,7 @@ const INITIAL_PROFILE = {
   center: "Mumbai West Franchise",
   level: "1",
   batch: "Weekend Batch A",
+  profilePhoto: null,
   progress: 68,
   classesAttended: 12,
   totalClasses: 18,

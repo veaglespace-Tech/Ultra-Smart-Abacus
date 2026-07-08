@@ -1,13 +1,24 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Camera } from "lucide-react";
 import { useStudentData } from "../StudentContext";
+import { storageService } from "@/services/storage.services";
 
 export default function StudentProfilePage() {
   const { profile, updateProfile } = useStudentData();
   const fileInputRef = useRef(null);
-const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState(profile.profilePhoto || null);
+
+  useEffect(() => {
+    setProfileImage(profile.profilePhoto || null);
+  }, [profile.profilePhoto]);
+
+  const resolvedProfilePhoto = profileImage
+    ? profileImage.startsWith("/")
+      ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${profileImage}`
+      : profileImage
+    : null;
 
   // Edit Profile form states
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -17,14 +28,46 @@ const [profileImage, setProfileImage] = useState(null);
   const [editParentName, setEditParentName] = useState(profile.parentName);
   const [profileSuccess, setProfileSuccess] = useState("");
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
-    updateProfile({
-      name: editName,
-      email: editEmail,
-      phone: editPhone,
-      parentName: editParentName
-    });
+    try {
+      const token = storageService.getToken();
+      const formPayload = new FormData();
+      formPayload.append("name", editName);
+      formPayload.append("email", editEmail);
+      formPayload.append("phone", editPhone);
+      formPayload.append("fatherName", editParentName);
+      if (profileImage && profileImage.startsWith("blob:")) {
+        const response = await fetch(profileImage);
+        const blob = await response.blob();
+        const file = new File([blob], "profile-photo.jpg", { type: blob.type || "image/jpeg" });
+        formPayload.append("profilePhoto", file);
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/students/${profile.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formPayload,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Profile update failed");
+      }
+      updateProfile({
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+        parentName: editParentName,
+        profilePhoto: data.data?.profilePhoto || profileImage,
+      });
+      setProfileImage(data.data?.profilePhoto || profileImage);
+    } catch (err) {
+      console.error(err);
+      setProfileSuccess("Unable to update profile photo right now.");
+      return;
+    }
     setIsEditingProfile(false);
     setProfileSuccess("Profile updated successfully!");
     setTimeout(() => setProfileSuccess(""), 3000);
@@ -51,9 +94,9 @@ const [profileImage, setProfileImage] = useState(null);
         <div className="lg:col-span-4 rounded-2xl border border-white/5 bg-slate-900/40 p-6 backdrop-blur-md flex flex-col items-center text-center shadow-lg">
           <div className="relative w-24 h-24 mb-4">
 
-  {profileImage ? (
+  {resolvedProfilePhoto ? (
     <img
-      src={profileImage}
+      src={resolvedProfilePhoto}
       alt="Profile"
       className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
     />

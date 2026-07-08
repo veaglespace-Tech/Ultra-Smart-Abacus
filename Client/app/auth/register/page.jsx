@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   User,
@@ -16,6 +16,7 @@ import {
   Share2,
   Copy,
   Check,
+  Camera,
 } from "lucide-react";
 
 function RegisterPageContent() {
@@ -27,6 +28,9 @@ function RegisterPageContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [copiedRole, setCopiedRole] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -60,6 +64,14 @@ function RegisterPageContent() {
     });
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setProfilePhoto(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -71,22 +83,27 @@ function RegisterPageContent() {
     setLoading(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const formPayload = new FormData();
+      formPayload.append("name", formData.fullName);
+      formPayload.append("email", formData.email);
+      formPayload.append("password", formData.password);
+      formPayload.append("role", formData.role);
+      if (formData.role === "STUDENT") {
+        formPayload.append("parentGuardianName", formData.parentGuardianName);
+        formPayload.append("dateOfBirth", formData.dateOfBirth);
+      }
+      if (formData.mobileCode && formData.mobileNumber) {
+        formPayload.append("phone", `${formData.mobileCode} ${formData.mobileNumber}`);
+      }
+      formPayload.append("gender", formData.gender);
+      formPayload.append("address", formData.Address);
+      if (profilePhoto) {
+        formPayload.append("profilePhoto", profilePhoto);
+      }
+
       const response = await fetch(`${baseUrl}/auth/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-          parentGuardianName: formData.role === "STUDENT" ? formData.parentGuardianName : undefined,
-          phone: formData.mobileCode && formData.mobileNumber ? `${formData.mobileCode} ${formData.mobileNumber}` : undefined,
-          gender: formData.gender,
-          address: formData.Address,
-          dateOfBirth: formData.role === "STUDENT" ? formData.dateOfBirth : undefined
-        })
+        body: formPayload
       });
 
       const resData = await response.json();
@@ -154,6 +171,38 @@ function RegisterPageContent() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
+            <div className="md:col-span-2 flex flex-col items-center md:items-start gap-4">
+              <label className="block text-sm font-semibold text-gray-700">
+                Profile Photo (Optional)
+              </label>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full border-2 border-dashed border-blue-300 bg-blue-50 flex items-center justify-center overflow-hidden">
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="Profile preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <Camera className="w-8 h-8 text-blue-500" />
+                  )}
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-100"
+                  >
+                    Choose Photo
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                  />
+                  <p className="mt-2 text-xs text-gray-500">PNG, JPG, or JPEG up to a few MB.</p>
+                </div>
+              </div>
+            </div>
+
             {/* Full Name */}
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-2">

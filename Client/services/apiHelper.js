@@ -6,9 +6,12 @@ async function request(endpoint, options = {}) {
   const token = storageService.getToken();
   
   const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers || {}),
   };
+
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
   
   if (token) {
     headers.Authorization = `Bearer ${token}`;
