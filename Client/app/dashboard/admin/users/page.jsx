@@ -46,7 +46,7 @@ function UserManagementContent() {
   }, [shouldAdd]);
 
   // Create User Handler
-  const submitCreateUser = (e) => {
+  const submitCreateUser = async (e) => {
     e.preventDefault();
     setUserError("");
     setUserSuccess("");
@@ -71,18 +71,22 @@ function UserManagementContent() {
       location: newUserLocation || "Not Assigned"
     };
 
-    handleCreateUser(newUser);
-    
-    // Clear Form & Close
-    setNewUserName("");
-    setNewUserEmail("");
-    setNewUserPassword("");
-    setNewUserLocation("");
-    setShowAddUserModal(false);
-    
-    // Flash Success Banner
-    setUserSuccess(`Successfully created user "${newUserName}" as ${newUserRole}!`);
-    setTimeout(() => setUserSuccess(""), 4000);
+    try {
+      await handleCreateUser(newUser);
+      
+      // Clear Form & Close
+      setNewUserName("");
+      setNewUserEmail("");
+      setNewUserPassword("");
+      setNewUserLocation("");
+      setShowAddUserModal(false);
+      
+      // Flash Success Banner
+      setUserSuccess(`Successfully created user "${newUserName}" as ${newUserRole}!`);
+      setTimeout(() => setUserSuccess(""), 4000);
+    } catch (err) {
+      setUserError(err.message || "Failed to create user");
+    }
   };
 
   // Edit User Handler
@@ -320,7 +324,7 @@ function UserManagementContent() {
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
                   placeholder="e.g. John Doe / Delhi West Center"
-                  className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                 />
               </div>
 
@@ -334,7 +338,7 @@ function UserManagementContent() {
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
                   placeholder="e.g. user@abacus.com"
-                  className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                 />
               </div>
 
@@ -362,7 +366,7 @@ function UserManagementContent() {
                     value={newUserLocation}
                     onChange={(e) => setNewUserLocation(e.target.value)}
                     placeholder="e.g. Mumbai"
-                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                   />
                 </div>
               </div>
@@ -377,7 +381,7 @@ function UserManagementContent() {
                   value={newUserPassword}
                   onChange={(e) => setNewUserPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                 />
               </div>
 
@@ -444,7 +448,7 @@ function UserManagementContent() {
                   value={editUserName}
                   onChange={(e) => setEditUserName(e.target.value)}
                   placeholder="e.g. John Doe / Delhi West Center"
-                  className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                 />
               </div>
 
@@ -458,7 +462,7 @@ function UserManagementContent() {
                   value={editUserEmail}
                   onChange={(e) => setEditUserEmail(e.target.value)}
                   placeholder="e.g. user@abacus.com"
-                  className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                 />
               </div>
 
@@ -486,7 +490,7 @@ function UserManagementContent() {
                     value={editUserLocation}
                     onChange={(e) => setEditUserLocation(e.target.value)}
                     placeholder="e.g. Mumbai"
-                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                   />
                 </div>
               </div>

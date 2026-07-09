@@ -37,9 +37,13 @@ model User {
 
   role Role
 
+  parentGuardianName String?
+
   teacher Teacher?
 
   franchise Franchise?
+
+  student Student?
 
   createdAt DateTime @default(now())
 }
@@ -47,13 +51,21 @@ model User {
 model Teacher {
   id Int @id @default(autoincrement())
 
+  profilePhoto  String?
+
+
   qualification String
 
   name String
 
   experience Int
 
+  specialization String?
+
+  phone String?
+
   userId Int @unique
+
 
   user User @relation(fields: [userId], references: [id])
 
@@ -102,7 +114,22 @@ model Student {
 
   email String @unique
 
-  rollNo String @unique
+  profilePhoto  String?
+
+
+  password  String?
+
+  rollNo String? @unique
+
+  dateOfBirth DateTime?
+
+  gender String?
+
+  phone String?
+
+  address String?
+
+  fatherName String?
 
   batchId Int?
 
@@ -112,6 +139,10 @@ model Student {
 
   attendances Attendance[]
   examResults ExamResult[]
+
+  userId Int? @unique
+
+  user User? @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 }

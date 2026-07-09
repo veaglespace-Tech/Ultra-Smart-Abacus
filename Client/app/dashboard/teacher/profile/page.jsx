@@ -1,13 +1,15 @@
 // src/app/dashboard/teacher/profile/page.jsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, Mail, Phone, Award, Briefcase, Lock, ShieldCheck, Camera } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
 
 export default function TeacherProfilePage() {
   const { user } = useAuth();
+  const fileInputRef = useRef(null);
+const [profileImage, setProfileImage] = useState(null);
   const [profile, setProfile] = useState({
     name: 'Teacher Admin',
     email: 'faculty@smartabacus.com',
@@ -78,14 +80,49 @@ export default function TeacherProfilePage() {
         
         {/* PROFILE PICTURE CARD */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm text-center space-y-4">
-          <div className="relative w-28 h-28 mx-auto">
-            <div className="w-full h-full rounded-2xl bg-gradient-to-tr from-indigo-500 to-blue-600 flex items-center justify-center text-white text-3xl font-black shadow-md">
-              {profile.name ? profile.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "TA"}
-            </div>
-            <button className="absolute bottom-1 right-1 p-2 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-slate-655 cursor-pointer">
-              <Camera size={14} />
-            </button>
-          </div>
+       <div className="relative w-28 h-28 mx-auto">
+
+  {profileImage ? (
+    <img
+      src={profileImage}
+      alt="Profile"
+      className="w-full h-full rounded-2xl object-cover"
+    />
+  ) : (
+    <div className="w-full h-full rounded-2xl bg-gradient-to-tr from-indigo-500 to-blue-600 flex items-center justify-center text-white text-3xl font-black shadow-md">
+      {profile.name
+        ? profile.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2)
+        : "TA"}
+    </div>
+  )}
+
+  <input
+    type="file"
+    accept="image/*"
+    ref={fileInputRef}
+    className="hidden"
+    onChange={(e) => {
+      const file = e.target.files[0];
+      if (file) {
+        setProfileImage(URL.createObjectURL(file));
+      }
+    }}
+  />
+
+  <button
+    type="button"
+    onClick={() => fileInputRef.current.click()}
+    className="absolute bottom-1 right-1 p-2 bg-white rounded-xl shadow border"
+  >
+    <Camera size={14} />
+  </button>
+
+</div>
           <div>
             <h3 className="font-black text-slate-900 dark:text-slate-50 text-base">{profile.name}</h3>
             <p className="text-[10px] text-slate-450 font-black uppercase tracking-wider">Senior Math Facilitator</p>

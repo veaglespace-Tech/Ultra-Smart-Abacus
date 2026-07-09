@@ -6,9 +6,12 @@ async function request(endpoint, options = {}) {
   const token = storageService.getToken();
   
   const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers || {}),
   };
+
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
   
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -30,9 +33,16 @@ async function request(endpoint, options = {}) {
       throw new Error("Unauthorized");
     }
     
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+
     if (!response.ok) {
-      throw new Error(data.message || 'Request failed');
+      const errMsg = data.message || data.error || (data.errors ? JSON.stringify(data.errors) : null) || `Request failed with status ${response.status}`;
+      throw new Error(errMsg);
     }
     
     return data;

@@ -16,8 +16,17 @@ export const registerUser = asyncHandler(
             name,
             email,
             password,
-            role
+            role,
+            parentGuardianName,
+            phone,
+            gender,
+            address,
+            dateOfBirth
         } = req.body
+
+        const profilePhoto = req.file
+            ? `/uploads/students/${req.file.filename}`
+            : req.body.profilePhoto || null
 
         const existingUser =
             await prisma.user.findUnique({
@@ -46,7 +55,8 @@ export const registerUser = asyncHandler(
                     email,
                     password:
                         hashedPassword,
-                    role
+                    role,
+                    parentGuardianName
                 }
             })
             console.log("Sending welcome email...");
@@ -58,6 +68,23 @@ await sendEmail(
 );
 console.log("Sending welcome email to:", user.email);
 console.log("Welcome email sent successfully!");
+
+        if (role === "STUDENT") {
+            await prisma.student.create({
+                data: {
+                    name,
+                    email,
+                    password: hashedPassword,
+                    phone: phone || null,
+                    gender: gender || null,
+                    address: address || null,
+                    fatherName: parentGuardianName || null,
+                    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+                    profilePhoto,
+                    userId: user.id
+                }
+            })
+        }
 
         const token =
             generateToken(user)
@@ -92,7 +119,8 @@ export const loginUser =
 
         const user =
             await prisma.user.findUnique({
-                where: { email }
+                where: { email },
+                include: { student: true }
             })
 
         if (!user) {

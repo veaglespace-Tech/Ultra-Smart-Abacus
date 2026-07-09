@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, GraduationCap, Users, Calendar, 
-  CheckSquare, CreditCard, Box, BarChart3, Menu, X, LogOut, Sun, Moon
+  CheckSquare, CreditCard, Box, BarChart3, Menu, X, LogOut, Sun, Moon,
+  Bell
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
@@ -27,6 +28,7 @@ export default function FranchiseLayout({ children }) {
     { name: 'Inventory', href: '/dashboard/franchise/inventory', icon: Box },
     { name: 'Payments', href: '/dashboard/franchise/payments', icon: CreditCard },
     { name: 'Reports', href: '/dashboard/franchise/reports', icon: BarChart3 },
+    { name: 'Notifications', href: '/dashboard/franchise/notifications', icon: Bell },
   ];
 
   const handleSignOut = () => {

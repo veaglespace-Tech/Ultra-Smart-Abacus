@@ -25,9 +25,27 @@ export default function FranchiseStudents() {
   const [filterStatus, setFilterStatus] = useState("All");
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
 
-  const [formData, setFormData] = useState({
-    name: "", level: "Level 1", teacher: "Aman Sharma", status: "Active", feeStatus: "Paid", batch: "Sat | 04:00 PM", phone: ""
-  });
+ const [formData, setFormData] = useState({
+  name: "",
+  email: "",
+  password: "",
+  dateOfBirth: "",
+  gender: "",
+  phone: "",
+  address: "",
+  fatherName: "",
+  batchId: "",
+  profilePhoto: null,
+}); 
+
+ const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const metrics = useMemo(() => {
     return {

@@ -3,23 +3,26 @@ import asyncHandler from "../utils/asyncHandler.js";
 
 export const createStudent = asyncHandler(async (req, res) => {
 
-    const { name, email, password, dateOfBirth, gender, phone, address, fatherName, batchId } = req.body;
+    const { name, email, password, dateOfBirth, gender, phone, address, fatherName, batchId, profilePhoto } = req.body;
+    const hashedPassword = password ? await import("bcrypt").then(({ default: bcrypt }) => bcrypt.hash(password, 10)) : null;
 
     const student = await prisma.student.create({
         data: {
             name,
             email,
-            password,
-            dateOfBirth,
+            password: hashedPassword,
+            dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
             gender,
             phone,
             address,
             fatherName,
-            batchId
+            batchId,
+            profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || null
         }
     });
 
- 
+    console.log(req.file);
+    console.log(req.body);
 
     res.status(201).json({
         success: true,
@@ -76,21 +79,25 @@ export const getStudentById = asyncHandler(async (req, res) => {
 });
 
 export const updateStudent = asyncHandler(async (req, res) => {
+    console.log("Reached updateStudent controller with params:", req.params, "and body:", req.body);
+
+    const { profilePhoto, ...restBody } = req.body || {};
+    const updateData = {
+        ...restBody,
+        profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || undefined,
+    };
 
     const student = await prisma.student.update({
-
         where: {
-            id: Number(req.params.id)
+            id: Number(req.params.id),
         },
-
-        data: req.body
-
+        data: updateData,
     });
 
     res.status(200).json({
         success: true,
         message: "Student updated successfully",
-        data: student
+        data: student,
     });
 
 });
@@ -111,4 +118,27 @@ export const deleteStudent = asyncHandler(async (req, res) => {
         message: "Student deleted successfully"
     });
 
+});
+
+export const getMyProfile = asyncHandler(async (req, res) => {
+    const student = await prisma.student.findUnique({
+        where: {
+            userId: Number(req.user.id)
+        },
+        include: {
+            batch: true
+        }
+    });
+
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: "Student profile not found"
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        data: student
+    });
 });

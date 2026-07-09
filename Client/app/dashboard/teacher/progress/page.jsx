@@ -1,14 +1,17 @@
 // src/app/dashboard/teacher/progress/page.jsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   TrendingUp, Award, AwardIcon, Plus, Search, 
   ChevronRight, Sparkles, X, Target, HeartHandshake, AlertCircle 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { api } from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
 
 export default function TeacherProgressPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
@@ -18,12 +21,66 @@ export default function TeacherProgressPage() {
   const [remarks, setRemarks] = useState('');
   const [perfLevel, setPerfLevel] = useState('Satisfactory');
 
-  const [studentProgress, setStudentProgress] = useState([
-    { id: 'STU-101', name: 'Abhishek Kulkarni', batch: 'Batch Alpha', level: 'Level 1 Core', speedRating: 'Excellent', totalPages: 142, accuracy: 92, status: 'Satisfactory' },
-    { id: 'STU-102', name: 'Pranjal Patil', batch: 'Batch Alpha', level: 'Level 1 Core', speedRating: 'Steady', totalPages: 128, accuracy: 88, status: 'Satisfactory' },
-    { id: 'STU-103', name: 'Siddharth Joshi', batch: 'Batch Beta', level: 'Level 3 Advanced', speedRating: 'Accelerated', totalPages: 210, accuracy: 95, status: 'Excellent' },
-    { id: 'STU-104', name: 'Rohan Deshmukh', batch: 'Batch Beta', level: 'Level 3 Advanced', speedRating: 'Needs Practice', totalPages: 94, accuracy: 76, status: 'Needs Improvement' }
-  ]);
+  const [studentProgress, setStudentProgress] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProgressData = async () => {
+    try {
+      setLoading(true);
+      const [studentsRes, batchesRes] = await Promise.all([
+        api.admin.getStudents(),
+        api.batches.getAll()
+      ]);
+
+      let teacherBatchIds = new Set();
+      let batchIdToName = {};
+      let batchIdToLevel = {};
+
+      if (batchesRes && batchesRes.success) {
+        batchesRes.data.forEach(b => {
+          let extra = {};
+          try {
+            extra = JSON.parse(b.description || '{}');
+          } catch (e) {
+            extra = { teacher: "TBD" };
+          }
+          const teacherName = extra.teacher || "TBD";
+          batchIdToName[b.id] = b.name || `Batch - ${b.code}`;
+          batchIdToLevel[b.id] = b.level || "Level 1 Core";
+
+          // If the logged-in user is the teacher of this batch
+          if (user && user.name && teacherName.toLowerCase() === user.name.toLowerCase()) {
+            teacherBatchIds.add(b.id);
+          }
+        });
+      }
+
+      if (studentsRes && studentsRes.success) {
+        const mapped = studentsRes.data
+          .filter(s => s.batchId && teacherBatchIds.has(s.batchId))
+          .map(s => ({
+            id: s.rollNo || `STU-${s.id}`,
+            dbId: s.id,
+            name: s.name,
+            batch: batchIdToName[s.batchId] || 'Assigned',
+            level: batchIdToLevel[s.batchId] || 'Level 1 Core',
+            speedRating: 'Steady', // Fallback defaults
+            totalPages: 120,
+            accuracy: 85,
+            status: 'Satisfactory'
+          }));
+        setStudentProgress(mapped);
+      }
+    } catch (error) {
+      console.error("Failed to load progress details", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProgressData();
+  }, [user]);
 
   const handleOpenAssessment = (studentId) => {
     setSelectedStudentId(studentId);
