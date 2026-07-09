@@ -416,39 +416,47 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Floating Stats Cards */}
-                <div className="absolute -left-16 top-12 px-4 py-3 rounded-2xl shadow-xl transition-transform duration-300"
+                {/* Floating Stats Card 1 (Students Trained) */}
+                <div className="absolute -left-16 top-12 px-5 py-4 rounded-3xl shadow-[0_15px_40px_rgba(139,92,246,0.3)] transition-transform duration-300 flex items-center gap-3.5 border border-[#8b5cf6]/40 backdrop-blur-xl"
                   style={{ 
-                    background: "rgba(255,255,255,0.12)", 
-                    backdropFilter: "blur(20px)", 
-                    border: "1px solid rgba(255,255,255,0.2)",
+                    background: "linear-gradient(135deg, rgba(30, 20, 70, 0.85), rgba(15, 10, 40, 0.9))", 
                     transform: `translate(${mousePos.x * -1.5}px, ${mousePos.y * -1.5}px)`
                   }}>
-                  <div className="text-2xl font-black text-white" style={{ fontFamily: "Poppins, sans-serif" }}>10K+</div>
-                  <div className="text-xs text-white/70">Students Trained</div>
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#8b5cf6]/20 border border-[#8b5cf6]/50 shadow-[0_0_15px_rgba(139,92,246,0.35)] flex-shrink-0">
+                    <Users size={20} className="text-[#a78bfa]" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-black text-white leading-none mb-1 tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>10K+</div>
+                    <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest" style={{ fontFamily: "Outfit, sans-serif" }}>Students Trained</div>
+                  </div>
                 </div>
 
-                <div className="absolute -right-12 bottom-20 px-4 py-3 rounded-2xl shadow-xl transition-transform duration-300"
+                {/* Floating Stats Card 2 (Parent Satisfaction) */}
+                <div className="absolute -right-12 bottom-20 px-5 py-4 rounded-3xl shadow-[0_15px_40px_rgba(255,107,43,0.35)] transition-transform duration-300 flex items-center gap-3.5 border border-[#FF6B2B]/40 backdrop-blur-xl"
                   style={{ 
-                    background: "rgba(255,107,43,0.15)", 
-                    backdropFilter: "blur(20px)", 
-                    border: "1px solid rgba(255,107,43,0.4)",
+                    background: "linear-gradient(135deg, rgba(50, 20, 10, 0.85), rgba(25, 10, 5, 0.9))", 
                     transform: `translate(${mousePos.x * 1.8}px, ${mousePos.y * 1.8}px)`
                   }}>
-                  <div className="text-2xl font-black text-[#FFCA28]" style={{ fontFamily: "Poppins, sans-serif" }}>98%</div>
-                  <div className="text-xs text-white/70">Parent Satisfaction</div>
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#FF6B2B]/20 border border-[#FF6B2B]/50 shadow-[0_0_15px_rgba(255,107,43,0.35)] flex-shrink-0">
+                    <Star size={20} className="text-[#ff9f75] fill-[#ff9f75]" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-black text-[#FFCA28] leading-none mb-1 tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>98%</div>
+                    <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest" style={{ fontFamily: "Outfit, sans-serif" }}>Parent Satisfaction</div>
+                  </div>
                 </div>
 
-                <div className="absolute -right-8 top-8 px-3 py-2.5 rounded-xl shadow-xl transition-transform duration-300"
+                {/* Floating Stats Card 3 (National Winners) */}
+                <div className="absolute -right-8 top-8 px-5 py-3.5 rounded-3xl shadow-[0_15px_40px_rgba(16,185,129,0.35)] transition-transform duration-300 flex items-center gap-3 border border-[#10b981]/40 backdrop-blur-xl"
                   style={{ 
-                    background: "rgba(16,185,129,0.15)", 
-                    backdropFilter: "blur(20px)", 
-                    border: "1px solid rgba(16,185,129,0.4)",
+                    background: "linear-gradient(135deg, rgba(10, 45, 25, 0.85), rgba(5, 25, 12, 0.9))", 
                     transform: `translate(${mousePos.x * 0.9}px, ${mousePos.y * 0.9}px)`
                   }}>
-                  <div className="flex items-center gap-1.5">
-                    <Trophy size={14} className="text-[#FFCA28]" />
-                    <span className="text-xs font-bold text-white">National Winners</span>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#10b981]/20 border border-[#10b981]/50 shadow-[0_0_12px_rgba(16,185,129,0.35)] flex-shrink-0">
+                    <Trophy size={16} className="text-[#34d399]" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-black text-white uppercase tracking-widest" style={{ fontFamily: "Outfit, sans-serif" }}>National Winners</span>
                   </div>
                 </div>
               </div>
