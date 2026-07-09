@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-const sendEmail = async (to, subject, text) => {
+const sendEmail = async (to, subject, text, html = null) => {
   const emailUser = process.env.EMAIL_USER || process.env.SMTP_USER;
   const emailPass = process.env.EMAIL_PASS || process.env.SMTP_PASS;
 
@@ -18,12 +18,7 @@ const sendEmail = async (to, subject, text) => {
     },
   });
 
- try {
-  await transporter.sendMail({
-    from: `"Ultra Smart Abacus" <${emailUser}>`,
-    to,
-    subject,
-    html: `
+  const emailHtml = html || `
       <div style="font-family:Arial,sans-serif;padding:20px">
         <h2 style="color:#2563eb;">Ultra Smart Abacus</h2>
 
@@ -52,17 +47,24 @@ const sendEmail = async (to, subject, text) => {
 
         <small>Ultra Smart Abacus Team</small>
       </div>
-    `,
-  });
+    `;
 
-  console.log(`[EMAIL SUCCESS] Email sent successfully to ${to}`);
-} catch (err) {
-  console.error(`[EMAIL ERROR] ${err.message}`);
+  try {
+    await transporter.sendMail({
+      from: `"Ultra Smart Abacus" <${emailUser}>`,
+      to,
+      subject,
+      html: emailHtml,
+    });
 
-  throw new Error(
-    "Failed to send OTP email. Check EMAIL_USER and EMAIL_PASS in Server/.env."
-  );
-}
+    console.log(`[EMAIL SUCCESS] Email sent successfully to ${to}`);
+  } catch (err) {
+    console.error(`[EMAIL ERROR] ${err.message}`);
+
+    throw new Error(
+      "Failed to send email. Check EMAIL_USER and EMAIL_PASS in Server/.env."
+    );
+  }
 };
 
 export default sendEmail;

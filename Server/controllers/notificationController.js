@@ -1,5 +1,16 @@
 import prisma from '../config/prisma.js';
 import asyncHandler from '../utils/asyncHandler.js';
+import sendEmail from '../utils/sendEmail.js';
+
+const buildNotificationEmailHtml = (title, message, recipientType) => `
+  <div style="font-family:Arial,sans-serif;padding:20px">
+    <h2 style="color:#2563eb; margin-bottom:12px;">${title}</h2>
+    <p style="font-size:15px;color:#111827;line-height:1.7;">${message}</p>
+    <p style="margin-top:24px;color:#6b7280;font-size:13px;">This notification was sent to ${recipientType.toLowerCase()} via Ultra Smart Abacus.</p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
+    <small style="color:#6b7280;">Ultra Smart Abacus Team</small>
+  </div>
+`;
 
 export const createNotification = asyncHandler(async (req, res) => {
 
@@ -87,6 +98,61 @@ export const createNotification = asyncHandler(async (req, res) => {
         }
 
     });
+
+    const notificationSubject = `Ultra Smart Abacus | ${title}`;
+    const notificationHtml = buildNotificationEmailHtml(title, message, recipientType);
+
+    let recipients = [];
+
+    if (recipientType === "ALL") {
+        const [students, teachers, franchises] = await Promise.all([
+            prisma.student.findMany({ select: { name: true, email: true } }),
+            prisma.teacher.findMany({ include: { user: true } }),
+            prisma.franchise.findMany({ select: { name: true, email: true } })
+        ]);
+
+        recipients = [
+            ...students.map((student) => ({ email: student.email, name: student.name })),
+            ...teachers.map((teacher) => ({ email: teacher.user?.email || null, name: teacher.name })),
+            ...franchises.map((franchise) => ({ email: franchise.email, name: franchise.name }))
+        ];
+    } else if (recipientType === "STUDENTS") {
+        recipients = await prisma.student.findMany({ select: { name: true, email: true } });
+    } else if (recipientType === "TEACHERS") {
+        recipients = await prisma.teacher.findMany({ include: { user: true } });
+    } else if (recipientType === "FRANCHISES") {
+        recipients = await prisma.franchise.findMany({ select: { name: true, email: true } });
+    } else if (recipientType === "BATCH") {
+        recipients = await prisma.student.findMany({
+            where: { batchId: Number(batchId) },
+            select: { name: true, email: true }
+        });
+    } else if (recipientType === "STUDENT") {
+        const student = await prisma.student.findUnique({
+            where: { id: Number(studentId) },
+            select: { name: true, email: true }
+        });
+
+        if (student) {
+            recipients = [student];
+        }
+    }
+
+    const uniqueEmails = [
+        ...new Set(
+            recipients
+                .map((recipient) => recipient?.email)
+                .filter((email) => typeof email === "string" && email.trim() !== "")
+        )
+    ];
+
+    if (uniqueEmails.length > 0) {
+        await Promise.allSettled(
+            uniqueEmails.map((email) =>
+                sendEmail(email, notificationSubject, message, notificationHtml)
+            )
+        );
+    }
 
     res.status(201).json({
 
