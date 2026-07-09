@@ -99,12 +99,12 @@ const faqs = [
 
 /* ─── Benefit Items ─── */
 const benefits = [
-  { icon: Brain, label: "Photographic Memory", color: "#2D1B69", bg: "rgba(45,27,105,0.08)" },
+  { icon: Brain, label: "Photographic Memory", color: "#a855f7", bg: "rgba(168,85,247,0.08)" },
   { icon: Zap, label: "Lightning Speed Math", color: "#FF6B2B", bg: "rgba(255,107,43,0.08)" },
-  { icon: Eye, label: "Visualization Skills", color: "#D97706", bg: "rgba(217,119,6,0.08)" },
-  { icon: TrendingUp, label: "Self-Confidence", color: "#059669", bg: "rgba(5,150,105,0.08)" },
-  { icon: BookOpen, label: "Academic Excellence", color: "#2563EB", bg: "rgba(37,99,235,0.08)" },
-  { icon: Users, label: "Listening Skills", color: "#DB2777", bg: "rgba(219,39,119,0.08)" },
+  { icon: Eye, label: "Visualization Skills", color: "#EAB308", bg: "rgba(234,179,8,0.08)" },
+  { icon: TrendingUp, label: "Self-Confidence", color: "#10B981", bg: "rgba(16,185,129,0.08)" },
+  { icon: BookOpen, label: "Academic Excellence", color: "#3B82F6", bg: "rgba(59,130,246,0.08)" },
+  { icon: Users, label: "Listening Skills", color: "#EC4899", bg: "rgba(236,72,153,0.08)" },
 ];
 
 /* ─── Testimonials ─── */
@@ -596,12 +596,11 @@ export default function Home() {
                     style={{ background: color, filter: "blur(20px)" }}
                   />
 
-                  {/* ── Large Background Number ── */}
+                   {/* ── Large Background Number ── */}
                   <div
-                    className="absolute top-3 right-4 font-black select-none pointer-events-none leading-none group-hover:opacity-100 transition-all duration-400"
+                    className="absolute top-3 right-4 font-black select-none pointer-events-none leading-none opacity-[0.12] dark:opacity-[0.16] group-hover:opacity-[0.25] transition-all duration-400"
                     style={{
                       fontSize: "5rem",
-                      opacity: 0.06,
                       color,
                       fontFamily: "Poppins, sans-serif",
                       lineHeight: 1,
@@ -614,18 +613,26 @@ export default function Home() {
                   <div className="relative p-7">
                     {/* Icon Badge (Placed in the top-left circle wrapper) */}
                     <div
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-full mb-5 group-hover:scale-110 transition-transform duration-300 relative"
+                      className="inline-flex items-center justify-center w-9 h-9 rounded-full mb-5 group-hover:scale-110 transition-all duration-300 relative"
                       style={{
-                        background: `${color}18`,
-                        border: `1px solid ${color}30`,
+                        background: `${color}1A`,
+                        border: `1.5px solid ${color}40`,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = `0 0 15px ${color}50`;
+                        e.currentTarget.style.background = `${color}30`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = "";
+                        e.currentTarget.style.background = `${color}1A`;
                       }}
                     >
                       {/* Inner glow pulse */}
                       <div
                         className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-400"
-                        style={{ background: `radial-gradient(circle, ${color}30, transparent 70%)` }}
+                        style={{ background: `radial-gradient(circle, ${color}40, transparent 70%)` }}
                       />
-                      <Icon size={14} style={{ color, position: "relative", zIndex: 1 }} />
+                      <Icon size={16} style={{ color, position: "relative", zIndex: 1 }} />
                     </div>
 
                     {/* Title */}
