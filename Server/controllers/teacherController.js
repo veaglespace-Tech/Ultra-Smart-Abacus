@@ -73,13 +73,21 @@ user:{
 create:{
 
 
-name,
+fullName: name,
 
 email,
 
 password:hashPassword,
 
-role:"TEACHER"
+role:"TEACHER",
+
+gender: "MALE",
+
+phone,
+
+city: "",
+
+address: ""
 
 
 }
