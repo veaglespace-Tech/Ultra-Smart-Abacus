@@ -207,15 +207,102 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-5 animate-blob3"
           style={{ background: "radial-gradient(circle, #FFCA28, transparent 70%)", filter: "blur(80px)" }} />
 
-        {/* Floating geometric shapes & math symbols (Cursor reactive) */}
-        <div className="absolute top-20 left-[10%] w-16 h-16 rounded-2xl border border-white/10 flex items-center justify-center text-white/20 font-black text-2xl transition-transform duration-300" 
-             style={{ transform: `translate(${mousePos.x * 0.7}px, ${mousePos.y * 0.7}px)`, fontFamily: "Poppins, sans-serif" }}>+</div>
-        <div className="absolute top-40 right-[15%] w-8 h-8 rounded-full bg-[#FFCA28]/20 flex items-center justify-center text-[#FFCA28]/30 font-black text-sm transition-transform duration-300" 
-             style={{ transform: `translate(${mousePos.x * -0.9}px, ${mousePos.y * -0.9}px)` }}>×</div>
-        <div className="absolute bottom-32 left-[15%] w-12 h-12 rounded-xl border border-[#FF6B2B]/20 flex items-center justify-center text-[#FF6B2B]/30 font-black text-xl transition-transform duration-300" 
-             style={{ transform: `translate(${mousePos.x * 1.2}px, ${mousePos.y * 1.2}px)` }}>÷</div>
-        <div className="absolute bottom-20 right-[10%] w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/20 font-black text-xs transition-transform duration-300" 
-             style={{ transform: `translate(${mousePos.x * -0.6}px, ${mousePos.y * -0.6}px)` }}>-</div>
+        {/* Floating 3D glowing math tokens (Cursor reactive & auto-floating) */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden hidden lg:block select-none z-10">
+          
+          {/* Token 1: Addition (+) - Top Left */}
+          <div 
+            className="absolute top-24 left-8 transition-transform duration-500 ease-out"
+            style={{ transform: `translate(${mousePos.x * 0.8}px, ${mousePos.y * 0.8}px)` }}
+          >
+            <motion.div
+              animate={{ y: [0, -15, 0], rotate: [0, 5, -5, 0] }}
+              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+              whileHover={{ scale: 1.15, rotate: 15 }}
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white pointer-events-auto cursor-pointer"
+              style={{
+                background: "linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(139, 92, 246, 0.1))",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(139, 92, 246, 0.5)",
+                boxShadow: "0 0 20px rgba(139, 92, 246, 0.3), inset 0 2px 4px rgba(255,255,255,0.2)",
+                fontFamily: "Poppins, sans-serif",
+                textShadow: "0 0 10px rgba(255, 255, 255, 0.6)"
+              }}
+            >
+              +
+            </motion.div>
+          </div>
+
+          {/* Token 2: Multiplication (×) - Mid Right */}
+          <div 
+            className="absolute top-36 right-10 transition-transform duration-500 ease-out"
+            style={{ transform: `translate(${mousePos.x * -0.9}px, ${mousePos.y * -0.9}px)` }}
+          >
+            <motion.div
+              animate={{ y: [0, -18, 0], rotate: [0, -6, 6, 0] }}
+              transition={{ repeat: Infinity, duration: 7, ease: "easeInOut", delay: 0.5 }}
+              whileHover={{ scale: 1.15, rotate: -15 }}
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-black text-[#FFCA28] pointer-events-auto cursor-pointer"
+              style={{
+                background: "linear-gradient(135deg, rgba(255, 202, 40, 0.35), rgba(255, 202, 40, 0.08))",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255, 202, 40, 0.5)",
+                boxShadow: "0 0 20px rgba(255, 202, 40, 0.25), inset 0 2px 4px rgba(255,255,255,0.2)",
+                fontFamily: "Poppins, sans-serif",
+                textShadow: "0 0 8px rgba(255, 202, 40, 0.5)"
+              }}
+            >
+              ×
+            </motion.div>
+          </div>
+
+          {/* Token 3: Division (÷) - Bottom Left */}
+          <div 
+            className="absolute bottom-36 left-12 transition-transform duration-500 ease-out"
+            style={{ transform: `translate(${mousePos.x * 1.1}px, ${mousePos.y * 1.1}px)` }}
+          >
+            <motion.div
+              animate={{ y: [0, -16, 0], rotate: [0, 8, -8, 0] }}
+              transition={{ repeat: Infinity, duration: 6.5, ease: "easeInOut", delay: 1 }}
+              whileHover={{ scale: 1.15, rotate: 10 }}
+              className="w-15 h-15 rounded-2xl flex items-center justify-center text-2xl font-black text-[#FF6B2B] pointer-events-auto cursor-pointer"
+              style={{
+                background: "linear-gradient(135deg, rgba(255, 107, 43, 0.35), rgba(255, 107, 43, 0.08))",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255, 107, 43, 0.5)",
+                boxShadow: "0 0 20px rgba(255, 107, 43, 0.25), inset 0 2px 4px rgba(255,255,255,0.2)",
+                fontFamily: "Poppins, sans-serif",
+                textShadow: "0 0 8px rgba(255, 107, 43, 0.5)"
+              }}
+            >
+              ÷
+            </motion.div>
+          </div>
+
+          {/* Token 4: Subtraction (-) - Bottom Right */}
+          <div 
+            className="absolute bottom-28 right-8 transition-transform duration-500 ease-out"
+            style={{ transform: `translate(${mousePos.x * -0.7}px, ${mousePos.y * -0.7}px)` }}
+          >
+            <motion.div
+              animate={{ y: [0, -14, 0], rotate: [0, -5, 5, 0] }}
+              transition={{ repeat: Infinity, duration: 5.5, ease: "easeInOut", delay: 1.5 }}
+              whileHover={{ scale: 1.15, rotate: -20 }}
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-black text-[#10B981] pointer-events-auto cursor-pointer"
+              style={{
+                background: "linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(16, 185, 129, 0.08))",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(16, 185, 129, 0.5)",
+                boxShadow: "0 0 20px rgba(16, 185, 129, 0.25), inset 0 2px 4px rgba(255,255,255,0.2)",
+                fontFamily: "Poppins, sans-serif",
+                textShadow: "0 0 8px rgba(16, 185, 129, 0.5)"
+              }}
+            >
+              -
+            </motion.div>
+          </div>
+
+        </div>
 
         <div className="relative max-w-7xl mx-auto px-6 py-24 w-full">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
