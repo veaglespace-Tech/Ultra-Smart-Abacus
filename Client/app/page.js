@@ -612,29 +612,20 @@ export default function Home() {
 
                   {/* ── Card Body ── */}
                   <div className="relative p-7">
-                    {/* Small number badge */}
+                    {/* Icon Badge (Placed in the top-left circle wrapper) */}
                     <div
-                      className="inline-flex items-center justify-center w-7 h-7 rounded-xl font-black text-xs mb-5"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-full mb-5 group-hover:scale-110 transition-transform duration-300 relative"
                       style={{
                         background: `${color}18`,
-                        color,
-                        fontFamily: "Outfit, sans-serif",
+                        border: `1px solid ${color}30`,
                       }}
-                    >
-                      {num}
-                    </div>
-
-                    {/* Icon Ring */}
-                    <div
-                      className="relative w-16 h-16 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300"
-                      style={{ background: `${color}12`, border: `1.5px solid ${color}30` }}
                     >
                       {/* Inner glow pulse */}
                       <div
-                        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400"
+                        className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-400"
                         style={{ background: `radial-gradient(circle, ${color}30, transparent 70%)` }}
                       />
-                      <Icon size={26} style={{ color, position: "relative", zIndex: 1 }} />
+                      <Icon size={14} style={{ color, position: "relative", zIndex: 1 }} />
                     </div>
 
                     {/* Title */}
