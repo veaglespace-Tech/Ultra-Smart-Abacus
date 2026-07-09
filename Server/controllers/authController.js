@@ -7,6 +7,7 @@ import sendEmail from "../utils/sendEmail.js"
 
 import asyncHandler from "../utils/asyncHandler.js"
 import CustomError from "../utils/customError.js"
+import welcomeEmail from "../template/welcomeEmail.js";
 
 export const registerUser = asyncHandler(
     async (req, res) => {
@@ -48,6 +49,15 @@ export const registerUser = asyncHandler(
                     role
                 }
             })
+            console.log("Sending welcome email...");
+
+await sendEmail(
+    email,
+    "Welcome to Ultra Smart Abacus",
+    welcomeEmail(name)
+);
+console.log("Sending welcome email to:", user.email);
+console.log("Welcome email sent successfully!");
 
         const token =
             generateToken(user)
