@@ -67,13 +67,21 @@ export const registerFranchise = async (req, res, next) => {
 
                         create: {
 
-                            name,
+                            fullName: name,
 
                             email,
 
                             password: hashPassword,
 
-                            role: "FRANCHISE"
+                            role: "FRANCHISE",
+
+                            phone,
+
+                            city: "",
+
+                            address,
+
+                            gender: "MALE"
 
                         }
 

@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-const sendEmail = async (to, subject, text, html = null) => {
+const sendEmail = async (to, subject, text = "", html = null) => {
   const emailUser = process.env.EMAIL_USER || process.env.SMTP_USER;
   const emailPass = process.env.EMAIL_PASS || process.env.SMTP_PASS;
 
@@ -18,7 +18,9 @@ const sendEmail = async (to, subject, text, html = null) => {
     },
   });
 
-  const emailHtml = html || `
+  const emailHtml =
+    html ||
+    `
       <div style="font-family:Arial,sans-serif;padding:20px">
         <h2 style="color:#2563eb;">Ultra Smart Abacus</h2>
 

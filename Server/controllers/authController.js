@@ -7,20 +7,28 @@ import sendEmail from "../utils/sendEmail.js"
 
 import asyncHandler from "../utils/asyncHandler.js"
 import CustomError from "../utils/customError.js"
+import welcomeEmail from "../template/welcomeEmail.js";
 
 export const registerUser = asyncHandler(
     async (req, res) => {
 
         const {
-            name,
+            fullName,
             email,
             password,
             role,
+<<<<<<< HEAD
+            gender,
+            phone,
+            city,
+            address
+=======
             parentGuardianName,
             phone,
             gender,
             address,
             dateOfBirth
+>>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
         } = req.body
 
         const profilePhoto = req.file
@@ -50,14 +58,30 @@ export const registerUser = asyncHandler(
             await prisma.user.create({
 
                 data: {
-                    name,
+                    fullName,
                     email,
                     password:
                         hashedPassword,
                     role,
+<<<<<<< HEAD
+                    gender,
+                    phone,
+                    city,
+                    address
+=======
                     parentGuardianName
+>>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
                 }
             })
+            console.log("Sending welcome email...");
+
+await sendEmail(
+    email,
+    "Welcome to Ultra Smart Abacus",
+    welcomeEmail(name)
+);
+console.log("Sending welcome email to:", user.email);
+console.log("Welcome email sent successfully!");
 
         if (role === "STUDENT") {
             await prisma.student.create({
@@ -84,6 +108,11 @@ export const registerUser = asyncHandler(
             ...safeUser
         } = user
 
+        const safeUserWithName = {
+            ...safeUser,
+            name: safeUser.fullName
+        }
+
         res.status(201).json({
 
             message:
@@ -91,7 +120,7 @@ export const registerUser = asyncHandler(
 
             token,
 
-            user: safeUser
+            user: safeUserWithName
         })
     }
 )
@@ -143,6 +172,11 @@ export const loginUser =
             ...safeUser
         } = user
 
+        const safeUserWithName = {
+            ...safeUser,
+            name: safeUser.fullName
+        }
+
         res.status(200).json({
 
             message:
@@ -150,7 +184,7 @@ export const loginUser =
 
             token,
 
-            user: safeUser
+            user: safeUserWithName
         })
     })
 

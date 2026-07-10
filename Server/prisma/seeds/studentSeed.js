@@ -6,7 +6,7 @@ for (let i = 1; i <= 55; i++) {
   students.push({
     name: `Student ${i}`,
     email: `student${i}@gmail.com`,
-    rollNo: `A${1000 + i}`,
+    password: `password${i}`,
     batchId: 1
   });
 }
