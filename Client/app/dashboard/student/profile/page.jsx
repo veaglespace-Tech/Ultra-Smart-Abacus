@@ -14,9 +14,12 @@ export default function StudentProfilePage() {
     setProfileImage(profile.profilePhoto || null);
   }, [profile.profilePhoto]);
 
+  const _apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const _publicBase = _apiUrl.replace(/\/api\/?$/, "");
+
   const resolvedProfilePhoto = profileImage
     ? profileImage.startsWith("/")
-      ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${profileImage}`
+      ? `${_publicBase}${profileImage}`
       : profileImage
     : null;
 

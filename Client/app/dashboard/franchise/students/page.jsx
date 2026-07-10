@@ -8,11 +8,7 @@ import {
 } from "lucide-react";
 
 export default function FranchiseStudents() {
-  const [students, setStudents] = useState([
-    { id: "STU-99", name: "Rohan Deshmukh", level: "Level 1", teacher: "Aman Sharma", status: "Active", feeStatus: "Paid", batch: "Sat | 04:00 PM", phone: "9876543210", logs: ["Admission completed (2026-03-12)", "Fee status updated to Paid"] },
-    { id: "STU-102", name: "Isha Sharma", level: "Level 2", teacher: "Neha Patel", status: "Active", feeStatus: "Pending", batch: "Sun | 10:30 AM", phone: "9545123456", logs: ["Admission completed (2026-01-15)"] },
-    { id: "STU-88", name: "Aditya Patil", level: "Level 4", teacher: "Sarah Jenkins", status: "Suspended", feeStatus: "Overdue", batch: "Sat | 05:30 PM", phone: "8888777766", logs: ["Admission completed (2025-11-10)", "Account suspended due to non-payment"] },
-  ]);
+  const [students, setStudents] = useState([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false); 
   const [isViewOpen, setIsViewOpen] = useState(false); 
@@ -164,7 +160,7 @@ export default function FranchiseStudents() {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", level: "Level 1", teacher: "Aman Sharma", status: "Active", feeStatus: "Paid", batch: "Sat | 04:00 PM", phone: "" });
+    setFormData({ name: "", level: "", teacher: "", status: "Active", feeStatus: "Paid", batch: "", phone: "" });
   };
 
   return (
