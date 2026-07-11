@@ -3,12 +3,7 @@
 
 @variant dark (&:where(.dark, .dark *));
 
-/* ============================================================
-   DESIGN TOKENS — Ultra Smart Abacus Color Palette
-   Primary: Deep Indigo #2D1B69
-   Accent:  Vibrant Orange #FF6B2B
-   Gold:    Golden Yellow #FFCA28
-   ============================================================ */
+
 :root {
   --background: #ffffff;
   --foreground: #1a1035;
@@ -101,9 +96,7 @@
   }
 }
 
-/* ============================================================
-   TYPOGRAPHY
-   ============================================================ */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -124,9 +117,7 @@ h1, h2, h3, h4, h5 {
   font-family: "Poppins", Arial, sans-serif;
 }
 
-/* ============================================================
-   SCROLLBAR STYLING
-   ============================================================ */
+
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -141,9 +132,6 @@ h1, h2, h3, h4, h5 {
   background: #FF6B2B;
 }
 
-/* ============================================================
-   REUSABLE UTILITY CLASSES
-   ============================================================ */
 
 /* Gradient Text */
 .gradient-text {
@@ -249,9 +237,7 @@ h1, h2, h3, h4, h5 {
   background-size: cover;
 }
 
-/* ============================================================
-   ANIMATIONS
-   ============================================================ */
+
 
 @keyframes fadeInUp {
   from {
@@ -424,9 +410,7 @@ h1, h2, h3, h4, h5 {
 .delay-700 { animation-delay: 0.7s; }
 .delay-800 { animation-delay: 0.8s; }
 
-/* ============================================================
-   FORM STYLES
-   ============================================================ */
+
 .form-input {
   width: 100%;
   padding: 0.875rem 1rem 0.875rem 3rem;
@@ -448,9 +432,7 @@ h1, h2, h3, h4, h5 {
   color: #9ca3af;
 }
 
-/* ============================================================
-   BUTTON STYLES
-   ============================================================ */
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -504,9 +486,7 @@ h1, h2, h3, h4, h5 {
   transform: translateY(-2px);
 }
 
-/* ============================================================
-   DECORATIVE ELEMENTS
-   ============================================================ */
+
 .dot-pattern {
   background-image: radial-gradient(circle, #2D1B6920 1px, transparent 1px);
   background-size: 24px 24px;
@@ -535,9 +515,7 @@ h1, h2, h3, h4, h5 {
   position: relative;
 }
 
-/* ============================================================
-   SECTION SPACING
-   ============================================================ */
+
 .section-padding {
   padding: 5rem 1.5rem;
 }
@@ -558,9 +536,7 @@ h1, h2, h3, h4, h5 {
   max-width: 600px;
 }
 
-/* ============================================================
-   BADGE / TAG STYLES
-   ============================================================ */
+
 .badge-primary {
   display: inline-flex;
   align-items: center;
@@ -591,15 +567,10 @@ h1, h2, h3, h4, h5 {
   border: 1px solid rgba(255, 107, 43, 0.2);
 }
 
-/* ============================================================
-   STAR RATING
-   ============================================================ */
 .star-filled { color: #FFCA28; }
 .star-empty  { color: #d1d5db; }
 
-/* ============================================================
-   NEXT-LEVEL PREMAP EFFECTS & GLOW KEYFRAMES
-   ============================================================ */
+
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 25px rgba(255, 107, 43, 0.15), 0 0 50px rgba(45, 27, 105, 0.1); }
   50% { box-shadow: 0 0 35px rgba(255, 107, 43, 0.35), 0 0 70px rgba(45, 27, 105, 0.2); }
