@@ -3,6 +3,7 @@
 import React, { useState, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import confetti from "canvas-confetti";
 import {
   User,
   Mail,
@@ -132,10 +133,17 @@ function RegisterPageContent() {
       });
       const resData = await response.json();
       if (!response.ok) throw new Error(resData.message || "Registration failed");
+      confetti({
+        particleCount: 150,
+        spread: 90,
+        origin: { y: 0.6 }
+      });
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      alert("Registration completed successfully!");
-      window.location.href = "/auth/login";
+      setTimeout(() => {
+        alert("Registration completed successfully!");
+        window.location.href = "/auth/login";
+      }, 1000);
     } catch (err) {
       alert(err.message);
     } finally {
@@ -316,46 +324,56 @@ function RegisterPageContent() {
             </div>
 
             {/* Full Name */}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+            <div className="relative">
+              <input
+                type="text"
+                name="fullName"
+                id="fullName"
+                required
+                value={formData.fullName}
+                onChange={handleChange}
+                placeholder=" "
+                className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-6 pb-2.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              />
+              <User className="absolute left-4 top-[22px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
+              <label
+                htmlFor="fullName"
+                className="absolute left-12 top-4.5 text-slate-400 text-xs font-bold uppercase tracking-wider origin-[0] transform scale-75 -translate-y-2.5 transition-all duration-300 pointer-events-none peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-slate-400 peer-placeholder-shown:text-sm peer-focus:scale-75 peer-focus:-translate-y-2.5 peer-focus:text-[#FF6B2B] peer-focus:text-xs"
+                style={{ fontFamily: "Outfit, sans-serif" }}
+              >
                 Full Name
               </label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input
-                  type="text" name="fullName" required
-                  value={formData.fullName} onChange={handleChange}
-                  placeholder="Your Full Name"
-                  className={inputClass} style={{ fontFamily: "Inter, sans-serif" }}
-                />
-              </div>
             </div>
 
             {/* Parent/Guardian Name (Only visible for STUDENT role) */}
             {formData.role === "STUDENT" && (
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="parentGuardianName"
+                  id="parentGuardianName"
+                  required
+                  value={formData.parentGuardianName || ""}
+                  onChange={handleChange}
+                  placeholder=" "
+                  className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-6 pb-2.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                />
+                <User className="absolute left-4 top-[22px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
+                <label
+                  htmlFor="parentGuardianName"
+                  className="absolute left-12 top-4.5 text-slate-400 text-xs font-bold uppercase tracking-wider origin-[0] transform scale-75 -translate-y-2.5 transition-all duration-300 pointer-events-none peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-slate-400 peer-placeholder-shown:text-sm peer-focus:scale-75 peer-focus:-translate-y-2.5 peer-focus:text-[#FF6B2B] peer-focus:text-xs"
+                  style={{ fontFamily: "Outfit, sans-serif" }}
+                >
                   Parent / Guardian Name
                 </label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    type="text"
-                    name="parentGuardianName"
-                    required
-                    value={formData.parentGuardianName || ""}
-                    onChange={handleChange}
-                    placeholder="Jane Doe"
-                    className={inputClass}
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  />
-                </div>
               </div>
             )}
 
             {/* Date of Birth (Only visible for STUDENT role) */}
             {formData.role === "STUDENT" && (
-              <div className="md:col-span-2">
+              <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
                   Date of Birth
                 </label>
@@ -366,7 +384,7 @@ function RegisterPageContent() {
                     required
                     value={formData.dateOfBirth || ""}
                     onChange={handleChange}
-                    className={inputClass}
+                    className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] py-3 text-slate-800 dark:text-white text-sm px-4 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-250"
                     style={{ fontFamily: "Inter, sans-serif" }}
                   />
                 </div>
@@ -375,111 +393,114 @@ function RegisterPageContent() {
 
             {/* Email + Mobile Row */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder=" "
+                  className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-6 pb-2.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                />
+                <Mail className="absolute left-4 top-[22px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
+                <label
+                  htmlFor="email"
+                  className="absolute left-12 top-4.5 text-slate-400 text-xs font-bold uppercase tracking-wider origin-[0] transform scale-75 -translate-y-2.5 transition-all duration-300 pointer-events-none peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-slate-400 peer-placeholder-shown:text-sm peer-focus:scale-75 peer-focus:-translate-y-2.5 peer-focus:text-[#FF6B2B] peer-focus:text-xs"
+                  style={{ fontFamily: "Outfit, sans-serif" }}
+                >
                   Email
                 </label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    type="email" name="email" required
-                    value={formData.email} onChange={handleChange}
-                    placeholder="name@example.com"
-                    className={inputClass} style={{ fontFamily: "Inter, sans-serif" }}
-                  />
-                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
-                  Mobile
-                </label>
-                <div className="flex">
-                  <select
-                    name="mobileCode" value={formData.mobileCode} onChange={handleChange}
-                    className="w-20 rounded-l-2xl border-2 border-r-0 border-slate-200 bg-white text-slate-700 text-sm px-2 focus:outline-none focus:border-[#FF6B2B] transition-all"
+              <div className="flex">
+                <select
+                  name="mobileCode"
+                  value={formData.mobileCode}
+                  onChange={handleChange}
+                  className="w-20 h-[54px] rounded-l-2xl border-2 border-r-0 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] text-slate-700 dark:text-slate-200 text-sm px-2 focus:outline-none focus:border-[#FF6B2B] transition-all"
+                >
+                  <option value="+91">+91</option>
+                  <option value="+1">+1</option>
+                </select>
+                <div className="relative flex-1">
+                  <input
+                    type="tel"
+                    name="mobileNumber"
+                    id="mobileNumber"
+                    required
+                    value={formData.mobileNumber}
+                    onChange={handleChange}
+                    placeholder=" "
+                    className="peer w-full rounded-r-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-6 pb-2.5 pl-10 pr-3 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  />
+                  <Phone className="absolute left-3 top-[22px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={16} />
+                  <label
+                    htmlFor="mobileNumber"
+                    className="absolute left-10 top-4.5 text-slate-400 text-xs font-bold uppercase tracking-wider origin-[0] transform scale-75 -translate-y-2.5 transition-all duration-300 pointer-events-none peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-slate-400 peer-placeholder-shown:text-sm peer-focus:scale-75 peer-focus:-translate-y-2.5 peer-focus:text-[#FF6B2B] peer-focus:text-xs"
+                    style={{ fontFamily: "Outfit, sans-serif" }}
                   >
-                    <option value="+91">+91</option>
-                    <option value="+1">+1</option>
-                  </select>
-                  <div className="relative flex-1">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                    <input
-                      type="tel" name="mobileNumber" required
-                      value={formData.mobileNumber} onChange={handleChange}
-                      placeholder="9876543210"
-                      className="w-full rounded-r-2xl border-2 border-slate-200 bg-white py-3.5 pl-10 pr-3 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
-                      style={{ fontFamily: "Inter, sans-serif" }}
-                    />
-                  </div>
+                    Mobile
+                  </label>
                 </div>
               </div>
             </div>
 
             {/* Password Row */}
             <div className="grid grid-cols-2 gap-4">
-             <div>
-  <label
-    className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
-    style={{ fontFamily: "Outfit, sans-serif" }}
-  >
-    Password
-  </label>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type={showPassword ? "text" : "password"} name="password" required
+                    value={formData.password} onChange={handleChange}
+                    placeholder="Min 6 characters"
+                    className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-12 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FF6B2B] transition-colors">
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+              </div>
 
-  <div className="relative">
-    <Lock
-      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-      size={18}
-    />
-
-    <input
-      type="password"
-      name="password"
-      required
-      value={formData.password}
-      onChange={handleChange}
-      placeholder="Min 6 characters"
-      className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
-      style={{ fontFamily: "Inter, sans-serif" }}
-    />
-  </div>
-</div>
-              
-             <div>
-  <label
-    className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
-    style={{ fontFamily: "Outfit, sans-serif" }}
-  >
-    Confirm Password
-  </label>
-
-  <div className="relative">
-    <Lock
-      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-      size={18}
-    />
-
-    <input
-      type="password"
-      name="confirmPassword"
-      required
-      value={formData.confirmPassword}
-      onChange={handleChange}
-      placeholder="Repeat password"
-      className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
-      style={{ fontFamily: "Inter, sans-serif" }}
-    />
-  </div>
-</div>
-</div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type={showConfirmPassword ? "text" : "password"} name="confirmPassword" required
+                    value={formData.confirmPassword} onChange={handleChange}
+                    placeholder="Repeat password"
+                    className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-12 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  />
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FF6B2B] transition-colors">
+                    {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {/* Gender + City Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>Gender</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-650 dark:text-slate-350 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>Gender</label>
                 <select
-                  name="gender" value={formData.gender} onChange={handleChange}
-                  className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 px-4 text-slate-800 text-sm focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all appearance-none font-semibold"
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  className="w-full h-[54px] rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] text-slate-800 dark:text-white text-sm px-4 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all appearance-none font-semibold"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   <option value="MALE">Male</option>
@@ -488,28 +509,41 @@ function RegisterPageContent() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>City</label>
-                <div className="relative">
-                  <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    type="text" name="city" value={formData.city} onChange={handleChange}
-                    placeholder="Pune"
-                    className={inputClass} style={{ fontFamily: "Inter, sans-serif" }}
-                  />
-                </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="city"
+                  id="city"
+                  required
+                  value={formData.city}
+                  onChange={handleChange}
+                  placeholder=" "
+                  className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-6 pb-2.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                />
+                <Building className="absolute left-4 top-[22px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
+                <label
+                  htmlFor="city"
+                  className="absolute left-12 top-4.5 text-slate-400 text-xs font-bold uppercase tracking-wider origin-[0] transform scale-75 -translate-y-2.5 transition-all duration-300 pointer-events-none peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-slate-400 peer-placeholder-shown:text-sm peer-focus:scale-75 peer-focus:-translate-y-2.5 peer-focus:text-[#FF6B2B] peer-focus:text-xs"
+                  style={{ fontFamily: "Outfit, sans-serif" }}
+                >
+                  City
+                </label>
               </div>
             </div>
 
             {/* Address */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>Address</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-655 dark:text-slate-355 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>Address</label>
               <div className="relative">
                 <MapPin className="absolute left-4 top-4 text-slate-400" size={18} />
                 <textarea
-                  rows={3} name="Address" value={formData.Address} onChange={handleChange}
+                  rows={2}
+                  name="Address"
+                  value={formData.Address}
+                  onChange={handleChange}
                   placeholder="Enter current address..."
-                  className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all resize-none"
+                  className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] py-3.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-slate-450 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all resize-none"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 />
               </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Lock, Mail, AlertTriangle, Eye, EyeOff, ArrowRight, ArrowLeft, Star, Trophy, Users, Brain } from "lucide-react";
 import Link from "next/link";
+import confetti from "canvas-confetti";
 
 const features = [
   { icon: Brain, text: "Mental Math Excellence" },
@@ -44,10 +45,16 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const profile = await login(email, password);
-      redirectByRole(profile.role);
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+      setTimeout(() => {
+        redirectByRole(profile.role);
+      }, 800);
     } catch (err) {
       setError(err.message || "Invalid credentials");
-    } finally {
       setLoading(false);
     }
   };
@@ -199,50 +206,58 @@ export default function LoginPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
 
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+             {/* Email */}
+            <div className="relative">
+              <input
+                type="email"
+                id="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder=" "
+                className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1035] pt-6 pb-2.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/20 transition-all duration-200"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              />
+              <Mail className="absolute left-4 top-[22px] h-4.5 w-4.5 text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
+              <label
+                htmlFor="email"
+                className="absolute left-12 top-4.5 text-slate-400 text-xs font-bold uppercase tracking-wider origin-[0] transform scale-75 -translate-y-2.5 transition-all duration-300 pointer-events-none peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-slate-400 peer-placeholder-shown:text-sm peer-focus:scale-75 peer-focus:-translate-y-2.5 peer-focus:text-[#FF6B2B] peer-focus:text-xs"
+                style={{ fontFamily: "Outfit, sans-serif" }}
+              >
                 Email Address
               </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" size={18} />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@smartabacus.com"
-                  className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                />
-              </div>
             </div>
 
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600" style={{ fontFamily: "Outfit, sans-serif" }}>
-                  Password
-                </label>
-                <Link href="/auth/forgot-password" className="text-xs font-semibold text-[#FF6B2B] hover:text-[#e55a1f] transition-colors">
+                <Link href="/auth/forgot-password" className="ml-auto text-xs font-semibold text-[#FF6B2B] hover:text-[#e55a1f] transition-colors">
                   Forgot Password?
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" size={18} />
                 <input
                   type={showPassword ? "text" : "password"}
+                  id="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-12 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                  placeholder=" "
+                  className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1035] pt-6 pb-2.5 pl-12 pr-12 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/20 transition-all duration-200"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 />
+                <Lock className="absolute left-4 top-[22px] h-4.5 w-4.5 text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
+                <label
+                  htmlFor="password"
+                  className="absolute left-12 top-4.5 text-slate-400 text-xs font-bold uppercase tracking-wider origin-[0] transform scale-75 -translate-y-2.5 transition-all duration-300 pointer-events-none peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-slate-400 peer-placeholder-shown:text-sm peer-focus:scale-75 peer-focus:-translate-y-2.5 peer-focus:text-[#FF6B2B] peer-focus:text-xs"
+                  style={{ fontFamily: "Outfit, sans-serif" }}
+                >
+                  Password
+                </label>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FF6B2B] transition-colors"
+                  className="absolute right-4 top-[22px] text-slate-400 hover:text-[#FF6B2B] transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>

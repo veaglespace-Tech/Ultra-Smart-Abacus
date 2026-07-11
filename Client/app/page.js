@@ -580,8 +580,12 @@ export default function Home() {
             {benefits.map(({ icon: Icon, label, color, bg }, i) => {
               const num = String(i + 1).padStart(2, "0");
               return (
-                <div
+                <motion.div
                   key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
                   className="group relative rounded-3xl overflow-hidden cursor-default bg-white dark:bg-[#1e1445] border border-slate-100 dark:border-slate-850"
                   style={{
                     boxShadow: "0 2px 20px rgba(45,27,105,0.07)",
@@ -685,7 +689,7 @@ export default function Home() {
                     className="absolute left-0 top-6 bottom-6 w-1 rounded-r-full opacity-0 group-hover:opacity-100 transition-all duration-400"
                     style={{ background: `linear-gradient(to bottom, ${color}, ${color}30)` }}
                   />
-                </div>
+                </motion.div>
               );
             })}
           </div>

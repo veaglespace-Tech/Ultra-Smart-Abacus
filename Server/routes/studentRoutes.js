@@ -26,7 +26,12 @@ createStudent);
 router.get("/",getAllStudents);
 router.get("/profile/me", authMiddleware, getMyProfile);
 router.get("/:id",getStudentById);
-router.put("/:id", upload.single("profilePhoto"), createStudentValidation, validate, updateStudent);
+
+router.put("/:id", upload.single("profilePhoto"),
+ createStudentValidation, 
+ validate,
+  updateStudent);
+  
 router.delete("/:id",deleteStudent);
 
 export default router;

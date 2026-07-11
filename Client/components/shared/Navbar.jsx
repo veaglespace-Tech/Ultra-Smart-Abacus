@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X, Sun, Moon, ChevronRight } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -78,24 +79,25 @@ export default function Navbar() {
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
-                <li key={link.href}>
+                <li key={link.href} className="relative">
                   <Link
                     href={link.href}
-                    className={`relative px-3.5 py-2 text-sm font-semibold rounded-lg transition-all duration-200 group flex items-center gap-1 ${
+                    className={`relative z-10 px-3.5 py-2 text-sm font-semibold rounded-lg transition-colors duration-300 group flex items-center gap-1 ${
                       isActive
-                        ? "text-[#FF6B2B] bg-[#FF6B2B]/8"
-                        : "text-slate-600 dark:text-slate-300 hover:text-[#2D1B69] dark:hover:text-violet-300 hover:bg-[#2D1B69]/5"
+                        ? "text-[#FF6B2B]"
+                        : "text-slate-600 dark:text-slate-300 hover:text-[#2D1B69] dark:hover:text-violet-300"
                     }`}
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
                     {link.name}
-                    {/* Active / Hover underline */}
-                    <span
-                      className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 rounded-full bg-gradient-to-r from-[#FF6B2B] to-[#FFCA28] transition-all duration-300 ${
-                        isActive ? "w-4/5" : "w-0 group-hover:w-4/5"
-                      }`}
-                    />
                   </Link>
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute inset-0 bg-[#FF6B2B]/8 dark:bg-[#FF6B2B]/12 rounded-lg"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </li>
               );
             })}
@@ -163,53 +165,59 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Dropdown */}
-      <div
-        className={`lg:hidden overflow-hidden transition-all duration-300 ${
-          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="px-4 pb-6 pt-2 bg-white/95 dark:bg-[#0f0a1e]/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800">
-          <ul className="space-y-1 mb-4">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setIsOpen(false)}
-                    className={`flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                      isActive
-                        ? "bg-gradient-to-r from-[#2D1B69]/10 to-[#FF6B2B]/10 text-[#FF6B2B] border border-[#FF6B2B]/20"
-                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
-                    }`}
-                  >
-                    <span>{link.name}</span>
-                    {isActive && <ChevronRight size={14} className="text-[#FF6B2B]" />}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 26 }}
+            className="lg:hidden overflow-hidden"
+          >
+            <div className="px-4 pb-6 pt-2 bg-white/95 dark:bg-[#0f0a1e]/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800">
+              <ul className="space-y-1 mb-4">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        onClick={() => setIsOpen(false)}
+                        className={`flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                          isActive
+                            ? "bg-gradient-to-r from-[#2D1B69]/10 to-[#FF6B2B]/10 text-[#FF6B2B] border border-[#FF6B2B]/20"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                        }`}
+                      >
+                        <span>{link.name}</span>
+                        {isActive && <ChevronRight size={14} className="text-[#FF6B2B]" />}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
 
-          <div className="flex flex-col gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <Link
-              href="/auth/login"
-              onClick={() => setIsOpen(false)}
-              className="w-full text-center py-3 rounded-full font-bold text-sm text-[#2D1B69] dark:text-violet-300 border-2 border-[#2D1B69]/30 hover:border-[#2D1B69] hover:bg-[#2D1B69]/5 transition-all"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/register"
-              onClick={() => setIsOpen(false)}
-              className="w-full text-center py-3 rounded-full font-bold text-sm text-white transition-all"
-              style={{ background: "linear-gradient(135deg, #FF6B2B, #e55a1f)" }}
-            >
-              Join Now — It&apos;s Free
-            </Link>
-          </div>
-        </div>
-      </div>
+              <div className="flex flex-col gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <Link
+                  href="/auth/login"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full text-center py-3 rounded-full font-bold text-sm text-[#2D1B69] dark:text-violet-300 border-2 border-[#2D1B69]/30 hover:border-[#2D1B69] hover:bg-[#2D1B69]/5 transition-all"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/register"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full text-center py-3 rounded-full font-bold text-sm text-white transition-all"
+                  style={{ background: "linear-gradient(135deg, #FF6B2B, #e55a1f)" }}
+                >
+                  Join Now — It&apos;s Free
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

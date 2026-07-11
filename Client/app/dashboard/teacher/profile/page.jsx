@@ -9,13 +9,13 @@ import { useAuth } from '@/context/AuthContext';
 export default function TeacherProfilePage() {
   const { user } = useAuth();
   const fileInputRef = useRef(null);
-const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState(null);
   const [profile, setProfile] = useState({
-    name: 'Teacher Admin',
-    email: 'faculty@smartabacus.com',
-    phone: '+91 98765 43210',
-    qualification: 'Masters in Elementary Mathematics Education',
-    experience: '8+ Years Math Instructor & Senior Trainer'
+    name: '',
+    email: '',
+    phone: '',
+    qualification: '',
+    experience: ''
   });
 
   useEffect(() => {
@@ -23,10 +23,22 @@ const [profileImage, setProfileImage] = useState(null);
       setProfile(prev => ({
         ...prev,
         name: user.name || prev.name,
-        email: user.email || prev.email
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone
       }));
+      setProfileImage(user?.profilePhoto || null);
     }
   }, [user]);
+
+  const _apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const _publicBase = _apiUrl.replace(/\/api\/?$/, "");
+
+  const _rawImage = profileImage || user?.profilePhoto || null;
+  const resolvedProfileImage = _rawImage
+    ? _rawImage.startsWith("/")
+      ? `${_publicBase}${_rawImage}`
+      : _rawImage
+    : null;
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -82,9 +94,9 @@ const [profileImage, setProfileImage] = useState(null);
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm text-center space-y-4">
        <div className="relative w-28 h-28 mx-auto">
 
-  {profileImage ? (
+  {resolvedProfileImage ? (
     <img
-      src={profileImage}
+      src={resolvedProfileImage}
       alt="Profile"
       className="w-full h-full rounded-2xl object-cover"
     />
