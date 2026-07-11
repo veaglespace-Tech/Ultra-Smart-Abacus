@@ -451,45 +451,60 @@ function RegisterPageContent() {
 
             {/* Password Row */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    type={showPassword ? "text" : "password"} name="password" required
-                    value={formData.password} onChange={handleChange}
-                    placeholder="Min 6 characters"
-                    className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-12 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FF6B2B] transition-colors">
-                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
-                </div>
-              </div>
+             
+          <div>
+  <label
+    className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
+    style={{ fontFamily: "Outfit, sans-serif" }}
+  >
+    Password
+  </label>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    type={showConfirmPassword ? "text" : "password"} name="confirmPassword" required
-                    value={formData.confirmPassword} onChange={handleChange}
-                    placeholder="Repeat password"
-                    className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-12 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  />
-                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FF6B2B] transition-colors">
-                    {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
-                </div>
-              </div>
+  <div className="relative">
+    <Lock
+      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+      size={18}
+    />
+
+    <input
+      type="password"
+      name="password"
+      required
+      value={formData.password}
+      onChange={handleChange}
+      placeholder="Min 6 characters"
+      className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    />
+  </div>
+</div>
+
+         <div>
+  <label
+    className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
+    style={{ fontFamily: "Outfit, sans-serif" }}
+  >
+    Confirm Password
+  </label>
+
+  <div className="relative">
+    <Lock
+      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+      size={18}
+    />
+
+    <input
+      type="password"
+      name="confirmPassword"
+      required
+      value={formData.confirmPassword}
+      onChange={handleChange}
+      placeholder="Repeat password"
+      className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    />
+  </div>
+</div>
             </div>
 
             {/* Gender + City Row */}
