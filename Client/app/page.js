@@ -265,7 +265,7 @@ export default function Home() {
               animate={{ y: [0, -16, 0], rotate: [0, 8, -8, 0] }}
               transition={{ repeat: Infinity, duration: 6.5, ease: "easeInOut", delay: 1 }}
               whileHover={{ scale: 1.15, rotate: 10 }}
-              className="w-15 h-15 rounded-2xl flex items-center justify-center text-2xl font-black text-[#FF6B2B] pointer-events-auto cursor-pointer"
+              className="w-15 h-15 rounded-2xl flex items-center justify-center text-2xl font-black text-[white] pointer-events-auto cursor-pointer"
               style={{
                 background: "linear-gradient(135deg, rgba(255, 107, 43, 0.35), rgba(255, 107, 43, 0.08))",
                 backdropFilter: "blur(8px)",

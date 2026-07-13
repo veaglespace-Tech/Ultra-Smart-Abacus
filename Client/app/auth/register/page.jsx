@@ -110,7 +110,7 @@ function RegisterPageContent() {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const formPayload = new FormData();
-      formPayload.append("name", formData.fullName);
+      formPayload.append("fullName", formData.fullName);
       formPayload.append("email", formData.email);
       formPayload.append("password", formData.password);
       formPayload.append("role", formData.role);
@@ -126,13 +126,34 @@ function RegisterPageContent() {
       if (profilePhoto) {
         formPayload.append("profilePhoto", profilePhoto);
       }
+         console.log("===== FORM DATA =====");
 
+for (const pair of formPayload.entries()) {
+    console.log(pair[0], pair[1]);
+}
+
+console.log("=====================");
       const response = await fetch(`${baseUrl}/auth/register`, {
         method: "POST",
         body: formPayload
       });
+      // const resData = await response.json();
+      // if (!response.ok) throw new Error(resData.message || "Registration failed");
       const resData = await response.json();
-      if (!response.ok) throw new Error(resData.message || "Registration failed");
+
+console.log("Response:", resData);
+
+if (!response.ok) {
+    console.log("Validation Error:", resData);
+
+    if (resData.errors) {
+        alert(resData.errors.map(err => err.message).join("\n"));
+    } else {
+        alert(resData.message);
+    }
+
+    return;
+}
       confetti({
         particleCount: 150,
         spread: 90,
@@ -325,14 +346,30 @@ function RegisterPageContent() {
 
             {/* Full Name */}
             <div className="relative">
-              <input
+              {/* <input
                 type="text"
                 name="fullName"
                 id="fullName"
                 required
                 value={formData.fullName}
                 onChange={handleChange}
-                placeholder=" "
+                placeholder=" " */}
+                <input
+                    type="text"
+                   name="fullName"
+                   value={formData.fullName}
+                  onChange={handleChange}
+
+                        onChange={(e) => {
+                        console.log(e.target.value);
+                        handleChange(e);
+              }
+            }
+
+                      
+
+                  placeholder="Enter your full name"
+
                 className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-5 pb-2 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
                 style={{ fontFamily: "Inter, sans-serif" }}
               />
