@@ -110,7 +110,7 @@ function RegisterPageContent() {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const formPayload = new FormData();
-      formPayload.append("fullName", formData.fullName);
+      formPayload.append("name", formData.fullName);
       formPayload.append("email", formData.email);
       formPayload.append("password", formData.password);
       formPayload.append("role", formData.role);
@@ -122,7 +122,6 @@ function RegisterPageContent() {
         formPayload.append("phone", `${formData.mobileCode} ${formData.mobileNumber}`);
       }
       formPayload.append("gender", formData.gender);
-      formPayload.append("city", formData.city);
       formPayload.append("address", formData.Address);
       if (profilePhoto) {
         formPayload.append("profilePhoto", profilePhoto);
@@ -233,17 +232,17 @@ function RegisterPageContent() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
 
         {/* Back Link */}
-        <div className="w-full max-w-lg mb-4">
+        <div className="w-full max-w-xl mb-5">
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-[#FF6B2B] transition-colors group">
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             Back to Home
           </Link>
         </div>
 
-        <div className="w-full max-w-lg bg-white dark:bg-[#1a1035] rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8">
+        <div className="w-full max-w-xl bg-white dark:bg-[#1a1035] rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-6">
 
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-5">
             <h1 className="text-2xl font-black text-[#2D1B69] dark:text-white mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
               Create Account
             </h1>
@@ -252,11 +251,11 @@ function RegisterPageContent() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3">
 
             {/* Profile Photo Uploader */}
             <div className="flex flex-col items-center gap-3 pb-2">
-              <div className="w-20 h-20 rounded-full border-2 border-dashed border-[#FF6B2B]/40 bg-[#FF6B2B]/5 flex items-center justify-center overflow-hidden relative group">
+              <div className="w-16 h-16 rounded-full border-2 border-dashed border-[#FF6B2B]/40 bg-[#FF6B2B]/5 flex items-center justify-center overflow-hidden relative group">
                 {photoPreview ? (
                   <img src={photoPreview} alt="Profile preview" className="w-full h-full object-cover" />
                 ) : (
@@ -287,7 +286,7 @@ function RegisterPageContent() {
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-3" style={{ fontFamily: "Outfit, sans-serif" }}>
                 I am a... {roleParam && <span className="text-[#FF6B2B] ml-1">(Locked via Invite)</span>}
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {roles.map(({ value, label, icon: Icon, desc, color, bg }) => {
                   const isSelected = formData.role === value;
                   return (
@@ -310,7 +309,7 @@ function RegisterPageContent() {
                           <Check size={9} color="white" />
                         </div>
                       )}
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2"
+                      <div className="w-7 h-7 rounded-xl flex items-center justify-center mb-2"
                         style={{ background: bg }}>
                         <Icon size={16} style={{ color }} />
                       </div>
@@ -334,7 +333,7 @@ function RegisterPageContent() {
                 value={formData.fullName}
                 onChange={handleChange}
                 placeholder=" "
-                className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-6 pb-2.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-5 pb-2 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
                 style={{ fontFamily: "Inter, sans-serif" }}
               />
               <User className="absolute left-4 top-[22px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
@@ -393,7 +392,7 @@ function RegisterPageContent() {
             )}
 
             {/* Email + Mobile Row */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="relative">
                 <input
                   type="email"
@@ -403,10 +402,10 @@ function RegisterPageContent() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder=" "
-                  className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-6 pb-2.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                  className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-5 pb-2 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 />
-                <Mail className="absolute left-4 top-[22px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
+                <Mail className="absolute left-4 top-[20px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
                 <label
                   htmlFor="email"
                   className="absolute left-12 top-4.5 text-slate-400 text-xs font-bold uppercase tracking-wider origin-[0] transform scale-75 -translate-y-2.5 transition-all duration-300 pointer-events-none peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-slate-400 peer-placeholder-shown:text-sm peer-focus:scale-75 peer-focus:-translate-y-2.5 peer-focus:text-[#FF6B2B] peer-focus:text-xs"
@@ -453,107 +452,110 @@ function RegisterPageContent() {
             {/* Password Row */}
             <div className="grid grid-cols-2 gap-4">
              
-          <div>
-  <label
-    className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
-    style={{ fontFamily: "Outfit, sans-serif" }}
-  >
-    Password
-  </label>
+                    <div>
+            <label
+              className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
+              style={{ fontFamily: "Outfit, sans-serif" }}
+            >
+              Password
+            </label>
 
-  <div className="relative">
-    <Lock
-      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-      size={18}
-    />
+            <div className="relative">
+              <Lock
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={18}
+              />
 
-    <input
-      type="password"
-      name="password"
-      required
-      value={formData.password}
-      onChange={handleChange}
-      placeholder="Min 6 characters"
-      className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
-      style={{ fontFamily: "Inter, sans-serif" }}
-    />
-  </div>
-</div>
-
-              <div>
-  <label
-    className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
-    style={{ fontFamily: "Outfit, sans-serif" }}
-  >
-    Repeat Password
-  </label>
-
-  <div className="relative">
-    <Lock
-      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-      size={18}
-    />
-
-    <input
-      type="password"
-      name="confirmPassword"
-      required
-      value={formData.confirmPassword}
-      onChange={handleChange}
-      placeholder="Min 6 characters"
-      className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
-      style={{ fontFamily: "Inter, sans-serif" }}
-    />
-  </div>
-</div>
-</div>
-            {/* Gender + City Row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-650 dark:text-slate-350 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>Gender</label>
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleChange}
-                  className="w-full h-[54px] rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] text-slate-800 dark:text-white text-sm px-4 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all appearance-none font-semibold"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                >
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-
-              <div className="relative">
-                <input
-                  type="text"
-                  name="city"
-                  id="city"
-                  required
-                  value={formData.city}
-                  onChange={handleChange}
-                  placeholder=" "
-                  className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-6 pb-2.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                />
-                <Building className="absolute left-4 top-[22px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
-                <label
-                  htmlFor="city"
-                  className="absolute left-12 top-4.5 text-slate-400 text-xs font-bold uppercase tracking-wider origin-[0] transform scale-75 -translate-y-2.5 transition-all duration-300 pointer-events-none peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-slate-400 peer-placeholder-shown:text-sm peer-focus:scale-75 peer-focus:-translate-y-2.5 peer-focus:text-[#FF6B2B] peer-focus:text-xs"
-                  style={{ fontFamily: "Outfit, sans-serif" }}
-                >
-                  City
-                </label>
-              </div>
+              <input
+                type="password"
+                name="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Min 6 characters"
+                className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              />
             </div>
+          </div>
 
+                        <div>
+            <label
+              className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
+              style={{ fontFamily: "Outfit, sans-serif" }}
+            >
+              Repeat Password
+            </label>
+
+            <div className="relative">
+              <Lock
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={18}
+              />
+
+              <input
+                type="password"
+                name="confirmPassword"
+                required
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Min 6 characters"
+                className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              />
+            </div>
+          </div>
+          </div>
+                      {/* Gender + City Row */}
+           <div className="grid grid-cols-2 gap-3 mt-2">
+              <div className="relative">
+  <label
+    className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
+    style={{ fontFamily: "Outfit, sans-serif" }}
+  >
+    Gender
+  </label>
+
+  <User className="absolute left-4 top-[43px] text-slate-400" size={18} />
+
+  <select
+    name="gender"
+    value={formData.gender}
+    onChange={handleChange}
+    className="w-full h-[54px] rounded-2xl border-2 border-slate-200 bg-white pl-12 pr-4 text-slate-800 text-sm focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 appearance-none"
+  >
+    <option value="MALE">Male</option>
+    <option value="FEMALE">Female</option>
+    <option value="OTHER">Other</option>
+  </select>
+</div>
+              <div className="relative">
+  <label
+    className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
+    style={{ fontFamily: "Outfit, sans-serif" }}
+  >
+    City
+  </label>
+
+  <Building className="absolute left-4 top-[43px] text-slate-400" size={18} />
+
+  <input
+    type="text"
+    name="city"
+    value={formData.city}
+    onChange={handleChange}
+    placeholder="Enter City"
+    className="w-full h-[54px] rounded-2xl border-2 border-slate-200 bg-white pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10"
+  />
+</div>
+</div>
             {/* Address */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-655 dark:text-slate-355 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>Address</label>
               <div className="relative">
                 <MapPin className="absolute left-4 top-4 text-slate-400" size={18} />
                 <textarea
-                  rows={2}
+                  rows={1}
                   name="Address"
                   value={formData.Address}
                   onChange={handleChange}
@@ -568,7 +570,7 @@ function RegisterPageContent() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-shine w-full rounded-2xl py-4 font-bold text-white text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 mt-2"
+              className="btn-shine w-full rounded-2xl py-3 font-bold text-white text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 mt-2"
               style={{
                 background: "linear-gradient(135deg, #FF6B2B, #e55a1f)",
                 boxShadow: "0 6px 20px rgba(255,107,43,0.35)",
