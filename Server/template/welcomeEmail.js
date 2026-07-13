@@ -1,60 +1,3 @@
-// const welcomeEmail = (name) => {
-//   return `
-//     <div style="
-//       max-width:600px;
-//       margin:auto;
-//       font-family:Arial,sans-serif;
-//       border:1px solid #e5e7eb;
-//       border-radius:10px;
-//       overflow:hidden;
-//     ">
-
-//       <div style="
-//         background:#2563eb;
-//         color:white;
-//         padding:20px;
-//         text-align:center;
-//       ">
-//         <h2>Ultra Smart Abacus</h2>
-//       </div>
-
-//       <div style="padding:30px;">
-
-//         <h3>Hello ${name}, 👋</h3>
-
-//         <p>
-//           Welcome to <b>Ultra Smart Abacus Management System</b>.
-//         </p>
-
-//         <p>
-//           Your account has been created successfully.
-//         </p>
-
-//         <p>
-//           You can now log in and start using the system.
-//         </p>
-
-//         <br>
-
-//         <p>
-//           Thank you for joining us.
-//         </p>
-
-//         <hr>
-
-//         <p style="color:gray;font-size:14px;">
-//           Regards,<br>
-//           Ultra Smart Abacus Team
-//         </p>
-
-//       </div>
-
-//     </div>
-//   `;
-// };
-
-// export default welcomeEmail;
-
 
 const welcomeEmail = (name) => {
   return `
@@ -73,9 +16,10 @@ const welcomeEmail = (name) => {
     <!-- Header -->
     <div
       style="
-        background:#2563eb;
-        padding:25px;
-        text-align:center;
+      padding: 24px 20px;
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1.2;
       "
     >
       <h1

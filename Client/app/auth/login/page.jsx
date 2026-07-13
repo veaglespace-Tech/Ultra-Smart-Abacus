@@ -39,6 +39,8 @@ export default function LoginPage() {
     }
   };
 
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -302,4 +304,6 @@ export default function LoginPage() {
       </div>
     </div>
   );
+
+  
 }

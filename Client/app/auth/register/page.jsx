@@ -110,7 +110,7 @@ function RegisterPageContent() {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const formPayload = new FormData();
-      formPayload.append("name", formData.fullName);
+      formPayload.append("fullName", formData.fullName);
       formPayload.append("email", formData.email);
       formPayload.append("password", formData.password);
       formPayload.append("role", formData.role);
@@ -122,6 +122,7 @@ function RegisterPageContent() {
         formPayload.append("phone", `${formData.mobileCode} ${formData.mobileNumber}`);
       }
       formPayload.append("gender", formData.gender);
+      formPayload.append("city", formData.city);
       formPayload.append("address", formData.Address);
       if (profilePhoto) {
         formPayload.append("profilePhoto", profilePhoto);
