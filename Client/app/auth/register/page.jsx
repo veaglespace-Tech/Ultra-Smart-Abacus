@@ -195,7 +195,7 @@ function RegisterPageContent() {
         </div>
 
         {/* Content */}
-        <div className="relative px-10 pb-10">
+        <div className="relative  px-10 pb-10">
           <h2 className="font-black text-white text-4xl leading-tight mb-4" style={{ fontFamily: "Poppins, sans-serif" }}>
             Join the Smart<br />
             <span style={{
@@ -480,12 +480,12 @@ function RegisterPageContent() {
   </div>
 </div>
 
-         <div>
+              <div>
   <label
     className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2"
     style={{ fontFamily: "Outfit, sans-serif" }}
   >
-    Confirm Password
+    Repeat Password
   </label>
 
   <div className="relative">
@@ -500,14 +500,13 @@ function RegisterPageContent() {
       required
       value={formData.confirmPassword}
       onChange={handleChange}
-      placeholder="Repeat password"
+      placeholder="Min 6 characters"
       className="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-12 pr-4 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all"
       style={{ fontFamily: "Inter, sans-serif" }}
     />
   </div>
 </div>
-            </div>
-
+</div>
             {/* Gender + City Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
