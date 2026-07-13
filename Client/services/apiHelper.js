@@ -32,7 +32,17 @@ async function request(endpoint, options = {}) {
       }
       throw new Error("Unauthorized");
     }
-    
+//     if (response.status === 401) {
+//   console.log("401 Response");
+
+//   // storageService.clearAuth();
+//   // window.location.href = "/auth/login";
+
+//   const data = await response.json();
+//   console.log(data);
+
+//   throw new Error(data.message || "Unauthorized");
+// }
     let data;
     try {
       data = await response.json();

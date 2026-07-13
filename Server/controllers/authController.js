@@ -8,313 +8,191 @@ import sendEmail from "../utils/sendEmail.js"
 import asyncHandler from "../utils/asyncHandler.js"
 import CustomError from "../utils/customError.js"
 import welcomeEmail from "../template/welcomeEmail.js";
+import otpEmail from "../template/otpEmail.js";
+export const registerUser = asyncHandler(async (req, res) => {
+    const {
+        fullName,
+        email,
+        password,
+        role,
+        parentGuardianName,
+        phone,
+        gender,
+        city,
+        address,
+        dateOfBirth,
+    } = req.body;
 
-export const registerUser = asyncHandler(
-    async (req, res) => {
+    const existingUser = await prisma.user.findUnique({
+        where: { email },
+    });
 
-        const {
-            fullName,
+    if (existingUser) {
+        throw new CustomError("User already exists", 400);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+        data: {
+            name: fullName,
             email,
-            password,
+            password: hashedPassword,
             role,
-<<<<<<< HEAD
             gender,
             phone,
             city,
-            address
-=======
-            parentGuardianName,
-            phone,
-            gender,
             address,
-            dateOfBirth
->>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
-        } = req.body
+            parentGuardianName,
+        },
+    });
 
-        const profilePhoto = req.file
-            ? `/uploads/students/${req.file.filename}`
-            : req.body.profilePhoto || null
+    // Send Welcome Email
+    await sendEmail(
+        email,
+        "Welcome to Ultra Smart Abacus",
+        welcomeEmail(fullName)
+    );
 
-        const existingUser =
-            await prisma.user.findUnique({
-                where: { email }
-            })
-
-        if (existingUser) {
-
-            throw new CustomError(
-                "User already exists",
-                400
-            )
-        }
-
-        const hashedPassword =
-            await bcrypt.hash(
-                password,
-                10
-            )
-
-        const user =
-            await prisma.user.create({
-
-                data: {
-                    fullName,
-                    email,
-                    password:
-                        hashedPassword,
-                    role,
-<<<<<<< HEAD
-                    gender,
-                    phone,
-                    city,
-                    address
-=======
-                    parentGuardianName
->>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
-                }
-            })
-            console.log("Sending welcome email...");
-
-await sendEmail(
-    email,
-    "Welcome to Ultra Smart Abacus",
-    welcomeEmail(name)
-);
-console.log("Sending welcome email to:", user.email);
-console.log("Welcome email sent successfully!");
-
-        if (role === "STUDENT") {
-            await prisma.student.create({
-                data: {
-                    name,
-                    email,
-                    password: hashedPassword,
-                    phone: phone || null,
-                    gender: gender || null,
-                    address: address || null,
-                    fatherName: parentGuardianName || null,
-                    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-                    profilePhoto,
-                    userId: user.id
-                }
-            })
-        }
-
-        const token =
-            generateToken(user)
-
-        const {
-            password: userPassword,
-            ...safeUser
-        } = user
-
-        const safeUserWithName = {
-            ...safeUser,
-            name: safeUser.fullName
-        }
-
-        res.status(201).json({
-
-            message:
-                "Register successful",
-
-            token,
-
-            user: safeUserWithName
-        })
+    if (role === "STUDENT") {
+        await prisma.student.create({
+            data: {
+                name: fullName,
+                email,
+                password: hashedPassword,
+                phone: phone || null,
+                gender: gender || null,
+                address: address || null,
+                fatherName: parentGuardianName || null,
+                dateOfBirth: dateOfBirth
+                    ? new Date(dateOfBirth)
+                    : null,
+                userId: user.id,
+            },
+        });
     }
-)
 
-export const loginUser =
-    asyncHandler(async (
-        req,
-        res
-    ) => {
+    const token = generateToken(user);
 
-        const {
-            email,
-            password
-        } = req.body
+    const { password: userPassword, ...safeUser } = user;
 
-        const user =
-            await prisma.user.findUnique({
-                where: { email },
-                include: { student: true }
-            })
+    res.status(201).json({
+        message: "Register successful",
+        token,
+        user: safeUser,
+    });
+});
 
-        if (!user) {
+export const loginUser = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
 
-            throw new CustomError(
-                "User not found",
-                404
-            )
-        }
+    const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+            student: true,
+        },
+    });
 
-        const isPasswordMatch =
-            await bcrypt.compare(
-                password,
-                user.password
-            )
+    if (!user) {
+        throw new CustomError("User not found", 404);
+    }
 
-        if (!isPasswordMatch) {
+    const isPasswordMatch = await bcrypt.compare(
+        password,
+        user.password
+    );
 
-            throw new CustomError(
-                "Invalid credentials",
-                401
-            )
-        }
+    if (!isPasswordMatch) {
+        throw new CustomError("Invalid credentials", 401);
+    }
 
-        const token =
-            generateToken(user)
+    const token = generateToken(user);
 
-        const {
-            password: userPassword,
-            ...safeUser
-        } = user
+    const { password: userPassword, ...safeUser } = user;
 
-        const safeUserWithName = {
-            ...safeUser,
-            name: safeUser.fullName
-        }
+    res.status(200).json({
+        message: "Login successful",
+        token,
+        user: safeUser,
+    });
+});
 
-        res.status(200).json({
+export const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
 
-            message:
-                "Login successful",
+    const user = await prisma.user.findUnique({
+        where: { email },
+    });
 
-            token,
+    if (!user) {
+        throw new CustomError("User not found", 404);
+    }
 
-            user: safeUserWithName
-        })
-    })
+    const otp = Math.floor(
+        100000 + Math.random() * 900000
+    ).toString();
 
+    const otpExpiry = new Date(
+        Date.now() + 5 * 60 * 1000
+    );
 
-    export const forgotPassword =
-    asyncHandler(async (
-        req,
-        res
-    ) => {
-
-        const { email } =
-            req.body
-
-        const user =
-            await prisma.user.findUnique({
-                where: { email }
-            })
-
-        if (!user) {
-
-            throw new CustomError(
-                "User not found",
-                404
-            )
-        }
-
-        const otp = Math.floor(
-            100000 +
-            Math.random() *
-            900000
-        ).toString()
-
-        const otpExpiry =
-            new Date(
-                Date.now() +
-                5 * 60 * 1000
-            )
-
-        await prisma.user.update({
-
-            where: { email },
-
-            data: {
-                otp,
-                otpExpiry
-            }
-        })
-
-        await sendEmail(
-            email,
-            "Abacus Password Reset OTP",
-            `Your OTP is ${otp}`
-        )
-
-        res.status(200).json({
-
-            message:
-                "OTP sent successfully"
-        })
-    })
-
-
-    export const resetPassword =
-    asyncHandler(async (
-        req,
-        res
-    ) => {
-
-        const {
-            email,
+    await prisma.user.update({
+        where: { email },
+        data: {
             otp,
-            newPassword
-        } = req.body
+            otpExpiry,
+        },
+    });
 
-        const user =
-            await prisma.user.findUnique({
-                where: { email }
-            })
+    await sendEmail(
+        email,
+        "Abacus Password Reset OTP",
+        `Your OTP is ${otp}`
+    );
 
-        if (!user) {
+    res.status(200).json({
+        message: "OTP sent successfully",
+    });
+});
 
-            throw new CustomError(
-                "User not found",
-                404
-            )
-        }
+export const resetPassword = asyncHandler(async (req, res) => {
+    const {
+        email,
+        otp,
+        newPassword,
+    } = req.body;
 
-        if (user.otp !== otp) {
+    const user = await prisma.user.findUnique({
+        where: { email },
+    });
 
-            throw new CustomError(
-                "Invalid OTP",
-                400
-            )
-        }
+    if (!user) {
+        throw new CustomError("User not found", 404);
+    }
 
-        if (
-            new Date() >
-            user.otpExpiry
-        ) {
+    if (user.otp !== otp) {
+        throw new CustomError("Invalid OTP", 400);
+    }
 
-            throw new CustomError(
-                "OTP expired",
-                400
-            )
-        }
+    if (new Date() > user.otpExpiry) {
+        throw new CustomError("OTP expired", 400);
+    }
 
-        const hashedPassword =
-            await bcrypt.hash(
-                newPassword,
-                10
-            )
+    const hashedPassword = await bcrypt.hash(
+        newPassword,
+        10
+    );
 
-        await prisma.user.update({
+    await prisma.user.update({
+        where: { email },
+        data: {
+            password: hashedPassword,
+            otp: null,
+            otpExpiry: null,
+        },
+    });
 
-            where: { email },
-
-            data: {
-
-                password:
-                    hashedPassword,
-
-                otp: null,
-
-                otpExpiry: null
-            }
-        })
-
-        res.status(200).json({
-
-            message:
-                "Password reset successfull"
-        })
-    })
+    res.status(200).json({
+        message: "Password reset successful",
+    });
+});
