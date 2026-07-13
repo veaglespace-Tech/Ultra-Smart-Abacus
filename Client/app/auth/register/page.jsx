@@ -194,7 +194,7 @@ function RegisterPageContent() {
         </div>
 
         {/* Content */}
-        <div className="relative  px-10 pb-10">
+       <div className="relative flex flex-col justify-start items-start h-full px-10 pt-10">
           <h2 className="font-black text-white text-4xl leading-tight mb-4" style={{ fontFamily: "Poppins, sans-serif" }}>
             Join the Smart<br />
             <span style={{
