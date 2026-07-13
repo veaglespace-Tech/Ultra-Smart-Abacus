@@ -92,23 +92,7 @@ export default function TeacherSettingsPage() {
           </div>
         </div>
 
-        {/* SYSTEM LANGUAGE */}
-        <div className="space-y-3 pb-5 border-b border-slate-100 dark:border-slate-850">
-          <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-            <Globe size={14} />
-            <span>Primary Language</span>
-          </h3>
-          <select 
-            value={lang} 
-            onChange={(e) => setLang(e.target.value)}
-            className="w-full sm:w-60 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 text-xs font-bold rounded-xl p-3 focus:outline-none focus:border-indigo-500 cursor-pointer text-slate-700 dark:text-slate-200"
-          >
-            <option value="en">English (US)</option>
-            <option value="es">Español (Spanish)</option>
-            <option value="fr">Français (French)</option>
-            <option value="hi">हिन्दी (Hindi)</option>
-          </select>
-        </div>
+        
 
         {/* ALERTS PREFERENCES */}
         <div className="space-y-3.5 pb-5">
