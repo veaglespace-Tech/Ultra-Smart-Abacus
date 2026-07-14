@@ -5,17 +5,17 @@ import Footer from "../../../components/shared/Footer";
 import { MapPin, Phone, Mail, CheckCircle2, TrendingUp, Users, Building, ArrowRight, Send } from "lucide-react";
 
 const branchList = [
-  { name: "Pune Corporate Hub", address: "Kothrud, Near MIT College, Pune", contact: "+91 98765 43210", email: "pune@smartabacus.com", active: true },
-  { name: "Mumbai Center", address: "Dadar West, Near Station, Mumbai", contact: "+91 98765 43211", email: "mumbai@smartabacus.com", active: true },
-  { name: "Nashik Academy", address: "College Road, Above HDFC Bank, Nashik", contact: "+91 98765 43212", email: "nashik@smartabacus.com", active: true },
-  { name: "Nagpur Center", address: "Ramdaspeth, Main Market, Nagpur", contact: "+91 98765 43213", email: "nagpur@smartabacus.com", active: true },
+  { name: "Pune Corporate Hub", address: "Kothrud, Near MIT College, Pune", contact: "+91 98765 43210", email: "pune@smartabacus.com", active: true,textSize:"text-2xl", descSize:"text-base" },
+  { name: "Mumbai Center", address: "Dadar West, Near Station, Mumbai", contact: "+91 98765 43211", email: "mumbai@smartabacus.com", active: true,textSize:"text-2xl", descSize:"text-base" },
+  { name: "Nashik Academy", address: "College Road, Above HDFC Bank, Nashik", contact: "+91 98765 43212", email: "nashik@smartabacus.com", active: true,textSize:"text-2xl", descSize:"text-base" },
+  { name: "Nagpur Center", address: "Ramdaspeth, Main Market, Nagpur", contact: "+91 98765 43213", email: "nagpur@smartabacus.com", active: true,textSize:"text-2xl", descSize:"text-base" },
 ];
 
 const benefits = [
-  { icon: TrendingUp, title: "Low Investment, High Returns", desc: "Start your centre with minimal investment and earn profitable returns in the growing education sector.", color: "#2D1B69" },
-  { icon: Users, title: "Full Training & Support", desc: "Comprehensive onboarding, instructor training, and ongoing academic & operational support from HQ.", color: "#FF6B2B" },
-  { icon: Building, title: "Exclusive Territory Rights", desc: "Get exclusive rights to operate Smart Abacus in your chosen city or area — no direct competition.", color: "#FFCA28" },
-  { icon: CheckCircle2, title: "Proven Curriculum", desc: "Use our ISO-certified, proven curriculum that has been refined over 15 years of excellence.", color: "#10B981" },
+  { icon: TrendingUp, title: "Low Investment, High Returns", desc: "Start your centre with minimal investment and earn profitable returns in the growing education sector.", color: "#2D1B69", textSize: "text-2xl",descSize:"text-base" },
+  { icon: Users, title: "Full Training & Support", desc: "Comprehensive onboarding, instructor training, and ongoing academic & operational support from HQ.", color: "#FF6B2B", textSize: "text-2xl",descSize:"text-base" },
+  { icon: Building, title: "Exclusive Territory Rights", desc: "Get exclusive rights to operate Smart Abacus in your chosen city or area — no direct competition.", color: "#FFCA28", textSize: "text-2xl",descSize:"text-base" },
+  { icon: CheckCircle2, title: "Proven Curriculum", desc: "Use our ISO-certified, proven curriculum that has been refined over 15 years of excellence.", color: "#10B981", textSize: "text-2xl",descSize:"text-base" },
 ];
 
 export default function FranchisePage() {
@@ -91,14 +91,14 @@ export default function FranchisePage() {
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {benefits.map(({ icon: Icon, title, desc, color }, i) => (
+            {benefits.map(({ icon: Icon, title, desc, color, textSize, descSize }, i) => (
               <div key={i} className="p-6 rounded-2xl bg-white dark:bg-[#1e1445] card-hover text-center" style={{ border: `1px solid ${color}20` }}>
                 <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
                   style={{ background: `${color}15` }}>
                   <Icon size={24} style={{ color }} />
                 </div>
-                <h3 className="font-bold text-slate-800 dark:text-white text-sm mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h3>
-                <p className="text-slate-500 dark:text-slate-300 text-xs leading-relaxed">{desc}</p>
+                <h3 className={`font-bold text-slate-800 dark:text-white ${textSize} mb-2`} style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h3>
+                <p className={`text-slate-500 dark:text-slate-300 ${descSize} leading-relaxed`}>{desc}</p>
               </div>
             ))}
           </div>

@@ -22,7 +22,11 @@ export const registerUser = asyncHandler(async (req, res) => {
         address,
         dateOfBirth,
     } = req.body;
+      console.log("===== REQUEST BODY =====");
+console.log(req.body);
 
+console.log("===== FILE =====");
+console.log(req.file);
     const existingUser = await prisma.user.findUnique({
         where: { email },
     });
