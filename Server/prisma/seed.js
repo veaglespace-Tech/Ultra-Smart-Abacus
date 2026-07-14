@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { studentSeed } from "./seeds/studentSeed.js";
 import { courseSeed } from "./seeds/courseSeed.js";
 import { batchSeed } from "./seeds/batchSeed.js";
+import { teacherSeed } from "./seeds/teacherSeed.js";
 
 const prisma = new PrismaClient();
 
@@ -11,6 +12,7 @@ async function main() {
     await courseSeed(prisma);
     await batchSeed(prisma);
     await studentSeed(prisma);
+    await teacherSeed(prisma);
 
 }
 

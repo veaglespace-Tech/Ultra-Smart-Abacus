@@ -49,15 +49,15 @@ export default function ReportsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs py-2 border-b border-white/5">
                 <span className="text-slate-400">Total Franchise Royalties (YTD)</span>
-                <span className="font-bold text-white font-mono">$18,450.00</span>
+                <span className="font-bold text-white font-mono">₹18,450.00</span>
               </div>
               <div className="flex items-center justify-between text-xs py-2 border-b border-white/5">
                 <span className="text-slate-400">Workbook Material Sales</span>
-                <span className="font-bold text-white font-mono">$12,890.00</span>
+                <span className="font-bold text-white font-mono">₹12,890.00</span>
               </div>
               <div className="flex items-center justify-between text-xs py-2 border-b border-white/5">
                 <span className="text-slate-400">Pending Center Invoice Dues</span>
-                <span className="font-bold text-amber-400 font-mono">$3,420.00</span>
+                <span className="font-bold text-amber-400 font-mono">₹3,420.00</span>
               </div>
             </div>
           </div>
@@ -65,7 +65,7 @@ export default function ReportsPage() {
           <div className="mt-6 p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
             <div>
               <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold">Estimated Monthly Revenue</span>
-              <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300 font-mono mt-0.5">$31,340.00</span>
+              <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300 font-mono mt-0.5">₹31,340.00</span>
             </div>
             <span className="px-2 py-0.5 rounded text-[9px] font-bold border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
               Audit Approved

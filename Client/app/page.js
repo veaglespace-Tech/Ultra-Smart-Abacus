@@ -167,14 +167,14 @@ export default function Home() {
     <div className="min-h-screen w-full flex flex-col bg-white dark:bg-[#0f0a1e] transition-colors duration-300" style={{ fontFamily: "Inter, sans-serif" }}>
 
       {/* Marquee CSS */}
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes marqueeAnim {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
         .marquee-track { animation: marqueeAnim 25s linear infinite; }
         .marquee-track:hover { animation-play-state: paused; }
-      `}</style>
+      `}} />
 
       <Navbar />
 

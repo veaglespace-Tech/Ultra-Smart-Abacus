@@ -70,6 +70,26 @@ export const registerUser = asyncHandler(async (req, res) => {
                 userId: user.id,
             },
         });
+    } else if (role === "TEACHER") {
+        await prisma.teacher.create({
+            data: {
+                name: fullName,
+                qualification: "Abacus Certified Instructor",
+                experience: 2,
+                phone: phone || null,
+                userId: user.id
+            }
+        });
+    } else if (role === "FRANCHISE") {
+        await prisma.franchise.create({
+            data: {
+                name: fullName,
+                email,
+                phone: phone || null,
+                address: address || null,
+                userId: user.id
+            }
+        });
     }
 
     const token = generateToken(user);
@@ -90,6 +110,8 @@ export const loginUser = asyncHandler(async (req, res) => {
         where: { email },
         include: {
             student: true,
+            teacher: true,
+            franchise: true
         },
     });
 

@@ -63,7 +63,7 @@ getTeachers
 router.put(
 "/:id",
 authMiddleware,
-authorize("ADMIN"),
+authorize("ADMIN", "FRANCHISE"),
 updateTeacher
 )
 
@@ -71,7 +71,7 @@ updateTeacher
 router.delete(
 "/:id",
 authMiddleware,
-authorize("ADMIN"),
+authorize("ADMIN", "FRANCHISE"),
 deleteTeacher
 )
 

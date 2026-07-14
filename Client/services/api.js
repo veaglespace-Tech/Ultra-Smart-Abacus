@@ -72,5 +72,13 @@ export const api = {
     update: (id, data) => apiHelper.put(`/batches/${id}`, data),
     delete: (id) => apiHelper.delete(`/batches/${id}`),
     getByCourse: (courseId) => apiHelper.get(`/batches/course/${courseId}`),
+  },
+  salary: {
+    create: (data) => apiHelper.post('/salary', data),
+    update: (id, data) => apiHelper.put(`/salary/${id}`, data),
+    pay: (id, data) => apiHelper.patch(`/salary/${id}/pay`, data),
+    getHistory: (teacherId) => apiHelper.get(`/salary/history${teacherId ? `?teacherId=${teacherId}` : ''}`),
+    getMyHistory: () => apiHelper.get('/salary/my-history'),
+    getDetails: (id) => apiHelper.get(`/salary/${id}`),
   }
 };

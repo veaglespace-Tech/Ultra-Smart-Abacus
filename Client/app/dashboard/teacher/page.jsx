@@ -34,7 +34,7 @@ export default function TeacherOverviewPage() {
     { title: "Today's Classes", value: "3 Scheduled", subtext: "Across Rooms A & B", icon: Calendar, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-450" },
     { title: "Attendance Percentage", value: "94.2%", subtext: "+1.2% from last week", icon: CheckSquare, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-450" },
     { title: "Upcoming Exams", value: "2 Pending", subtext: "Scheduled this week", icon: GraduationCap, color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-450" },
-    { title: "Monthly Salary", value: "$3,200", subtext: "Payment status: Processed", icon: DollarSign, color: "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-450" },
+    { title: "Monthly Salary", value: "₹3,200", subtext: "Payment status: Processed", icon: DollarSign, color: "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-450" },
   ];
 
   const todaySchedule = [

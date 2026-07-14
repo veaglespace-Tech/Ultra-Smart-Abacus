@@ -1,20 +1,17 @@
 // src/app/dashboard/franchise/teachers/page.jsx
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   UserPlus, Users, ShieldAlert, CheckCircle2, 
   MessageSquare, BookOpen, Pencil, Trash, X, Save, ArrowLeft, 
   Search, Download, Plus, Layers
 } from "lucide-react";
+import { api } from "@/services/api";
 
 export default function FranchiseTeachers() {
-  const [teachers, setTeachers] = useState([
-    { id: "TCH-04", name: "Anjali Shinde", role: "Senior Trainer", status: "Active", experience: "4 Years", batches: ["Sat | 04:00 PM", "Sun | 10:30 AM"], phone: "9823456789", payrollStatus: "Processed" },
-    { id: "TCH-09", name: "Prakash Joshi", role: "Assistant Coach", status: "Active", experience: "2 Years", batches: ["Sat | 05:30 PM"], phone: "9123456780", payrollStatus: "Pending" },
-    { id: "TCH-11", name: "Sarah Jenkins", role: "Vedic Math Expert", status: "Inactive", experience: "5 Years", batches: [], phone: "8888999900", payrollStatus: "On Hold" }
-  ]);
-
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
@@ -24,14 +21,47 @@ export default function FranchiseTeachers() {
   const [filterStatus, setFilterStatus] = useState("All");
 
   const [formData, setFormData] = useState({
-    name: "", role: "Senior Trainer", status: "Active", experience: "", phone: "", payrollStatus: "Pending"
+    name: "",
+    role: "Senior Trainer",
+    status: "Active",
+    experience: "",
+    phone: "",
+    payrollStatus: "Pending"
   });
+
+  const fetchTeachers = async () => {
+    setLoading(true);
+    try {
+      const res = await api.admin.getTeachers();
+      const mapped = (res.teachers || []).map(t => ({
+        id: `TCH-${t.id}`,
+        rawId: t.id,
+        name: t.name,
+        role: t.specialization || "Senior Trainer",
+        status: "Active",
+        experience: `${t.experience} Years`,
+        batches: t.batches || [],
+        phone: t.phone || "",
+        payrollStatus: "Processed",
+        email: t.user?.email || ""
+      }));
+      setTeachers(mapped);
+    } catch (err) {
+      console.error("Failed fetching teachers:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeachers();
+  }, []);
 
   const metrics = useMemo(() => {
     return {
       total: teachers.length,
       active: teachers.filter(t => t.status === "Active").length,
-      totalBatches: teachers.reduce((acc, t) => acc + t.batches.length, 0)
+      totalBatches: teachers.reduce((acc, t) => acc + (t.batches?.length || 0), 0)
     };
   }, [teachers]);
 
@@ -46,7 +76,7 @@ export default function FranchiseTeachers() {
   const exportToCSV = () => {
     const headers = ["Teacher ID", "Name", "Role", "Experience", "Contact", "Assigned Batches Count", "Status"];
     const rows = filteredTeachers.map(t => [
-      t.id, t.name, t.role, t.experience, t.phone, t.batches.length, t.status
+      t.id, t.name, t.role, t.experience, t.phone, t.batches?.length || 0, t.status
     ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(","));
 
     const csvContent = [headers.join(","), ...rows].join("\n");
@@ -59,34 +89,65 @@ export default function FranchiseTeachers() {
     document.body.removeChild(link);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingTeacher) {
-      setTeachers(teachers.map(t => t.id === editingTeacher.id ? { ...t, ...formData } : t));
-      setEditingTeacher(null);
-    } else {
-      const newId = `TCH-${Math.floor(10 + Math.random() * 90)}`;
-      setTeachers([...teachers, { id: newId, ...formData, batches: [] }]);
+    try {
+      if (editingTeacher) {
+        await api.admin.updateTeacher(editingTeacher.rawId, {
+          name: formData.name,
+          qualification: "Abacus Certified Instructor",
+          experience: parseInt(formData.experience) || 2
+        });
+        alert("Teacher profile updated successfully!");
+      } else {
+        const email = `${formData.name.toLowerCase().replace(/\s+/g, '')}@abacus.com`;
+        await api.admin.createTeacher({
+          name: formData.name,
+          email,
+          password: "password123", // default password
+          qualification: "Abacus Certified Instructor",
+          experience: parseInt(formData.experience) || 2,
+          specialization: formData.role,
+          phone: formData.phone
+        });
+        alert("Teacher onboarded successfully!\nDefault Credentials:\nEmail: " + email + "\nPassword: password123");
+      }
+      fetchTeachers();
+      setIsFormOpen(false);
+      resetForm();
+    } catch (err) {
+      alert(err.message || "Failed to onboard instructor.");
     }
-    setIsFormOpen(false);
-    resetForm();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (rawId) => {
     if (confirm("Are you sure you want to offboard this instructor?")) {
-      setTeachers(teachers.filter(t => t.id !== id));
-      setIsViewOpen(false);
+      try {
+        await api.admin.deleteTeacher(rawId);
+        fetchTeachers();
+        setIsViewOpen(false);
+      } catch (err) {
+        alert("Failed to delete instructor: " + err.message);
+      }
     }
   };
 
   const handleEdit = (teacher) => {
     setIsViewOpen(false);
     setEditingTeacher(teacher);
-    setFormData(teacher);
+    setFormData({
+      name: teacher.name,
+      role: teacher.role,
+      status: teacher.status,
+      experience: teacher.experience.replace(/[^0-9]/g, ""),
+      phone: teacher.phone,
+      payrollStatus: teacher.payrollStatus
+    });
     setIsFormOpen(true);
   };
 
   const toggleStatus = (id, currentStatus) => {
+    // Local mockup toggle for UI completeness
     const nextStatus = currentStatus === "Active" ? "Inactive" : "Active";
     setTeachers(teachers.map(t => t.id === id ? { ...t, status: nextStatus } : t));
     if (selectedTeacher && selectedTeacher.id === id) {
@@ -96,6 +157,7 @@ export default function FranchiseTeachers() {
 
   const resetForm = () => {
     setFormData({ name: "", role: "Senior Trainer", status: "Active", experience: "", phone: "", payrollStatus: "Pending" });
+    setEditingTeacher(null);
   };
 
   return (
@@ -149,44 +211,50 @@ export default function FranchiseTeachers() {
       {/* TEACHERS DATA TABLE */}
       <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs min-w-[800px]">
-            <thead>
-              <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6] text-[10px] uppercase font-bold tracking-wider text-[#7a8475]">
-                <th className="py-3 px-4">Faculty ID</th>
-                <th className="py-3 px-6">Instructor</th>
-                <th className="py-3 px-6">Specialization Role</th>
-                <th className="py-3 px-6">Tenure / Exp</th>
-                <th className="py-3 px-6">Assigned Batches</th>
-                <th className="py-3 px-6">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#e2dcd0]/40 text-[#2c3539] font-medium">
-              {filteredTeachers.map((teacher) => (
-                <tr key={teacher.id} onClick={() => { setSelectedTeacher(teacher); setIsViewOpen(true); }} className="hover:bg-[#f5f2eb]/30 cursor-pointer transition-colors group">
-                  <td className="py-3 px-4 font-mono text-[#4a5d4e] font-bold">{teacher.id}</td>
-                  <td className="py-3 px-6 font-bold text-[#1a202c] group-hover:text-[#4a5d4e] transition-colors">{teacher.name}</td>
-                  <td className="py-3 px-6 text-[#5a6455]">{teacher.role}</td>
-                  <td className="py-3 px-6 font-mono text-[#7a8475]">{teacher.experience}</td>
-                  <td className="py-3 px-6">
-                    <span className="flex items-center gap-1 text-[#4a5d4e] font-bold">
-                      <Layers size={13} /> {teacher.batches.length} Active Batches
-                    </span>
-                  </td>
-                  <td className="py-3 px-6" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => toggleStatus(teacher.id, teacher.status)} className={`px-2.5 py-0.5 rounded text-[10px] font-bold border transition-all active:scale-95 cursor-pointer ${teacher.status === "Active" ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>{teacher.status}</button>
-                  </td>
-                  <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => window.open(`https://wa.me/91${teacher.phone}`, "_blank")} className="p-1.5 text-[#8a9485] hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"><MessageSquare size={13} /></button>
-                      <button onClick={() => handleEdit(teacher)} className="p-1.5 text-[#8a9485] hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
-                      <button onClick={() => handleDelete(teacher.id)} className="p-1.5 text-[#8a9485] hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="p-8 text-center text-xs font-semibold text-slate-500">Retrieving instructors list...</div>
+          ) : filteredTeachers.length === 0 ? (
+            <div className="p-8 text-center text-xs font-semibold text-slate-500">No instructors registered yet. Click "Onboard Instructor" to add one!</div>
+          ) : (
+            <table className="w-full text-left border-collapse text-xs min-w-[800px]">
+              <thead>
+                <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6] text-[10px] uppercase font-bold tracking-wider text-[#7a8475]">
+                  <th className="py-3 px-4">Faculty ID</th>
+                  <th className="py-3 px-6">Instructor</th>
+                  <th className="py-3 px-6">Specialization Role</th>
+                  <th className="py-3 px-6">Tenure / Exp</th>
+                  <th className="py-3 px-6">Assigned Batches</th>
+                  <th className="py-3 px-6">Status</th>
+                  <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#e2dcd0]/40 text-[#2c3539] font-medium">
+                {filteredTeachers.map((teacher) => (
+                  <tr key={teacher.id} onClick={() => { setSelectedTeacher(teacher); setIsViewOpen(true); }} className="hover:bg-[#f5f2eb]/30 cursor-pointer transition-colors group">
+                    <td className="py-3 px-4 font-mono text-[#4a5d4e] font-bold">{teacher.id}</td>
+                    <td className="py-3 px-6 font-bold text-[#1a202c] group-hover:text-[#4a5d4e] transition-colors">{teacher.name}</td>
+                    <td className="py-3 px-6 text-[#5a6455]">{teacher.role}</td>
+                    <td className="py-3 px-6 font-mono text-[#7a8475]">{teacher.experience}</td>
+                    <td className="py-3 px-6">
+                      <span className="flex items-center gap-1 text-[#4a5d4e] font-bold">
+                        <Layers size={13} /> {teacher.batches?.length || 0} Active Batches
+                      </span>
+                    </td>
+                    <td className="py-3 px-6" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={() => toggleStatus(teacher.id, teacher.status)} className={`px-2.5 py-0.5 rounded text-[10px] font-bold border transition-all active:scale-95 cursor-pointer ${teacher.status === "Active" ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>{teacher.status}</button>
+                    </td>
+                    <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-1">
+                        <button onClick={() => window.open(`https://wa.me/91${teacher.phone}`, "_blank")} className="p-1.5 text-[#8a9485] hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"><MessageSquare size={13} /></button>
+                        <button onClick={() => handleEdit(teacher)} className="p-1.5 text-[#8a9485] hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
+                        <button onClick={() => handleDelete(teacher.rawId)} className="p-1.5 text-[#8a9485] hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -206,6 +274,7 @@ export default function FranchiseTeachers() {
             
             <div className="bg-[#f4f0e6]/50 border border-[#e2dcd0]/60 rounded-xl p-4 space-y-2.5 font-mono text-xs text-[#5a6455] mb-4">
               <div className="flex justify-between items-center border-b border-[#e2dcd0]/60 pb-2"><span>Experience:</span><span className="text-[#1a202c] font-bold">{selectedTeacher.experience}</span></div>
+              <div className="flex justify-between items-center border-b border-[#e2dcd0]/60 pb-2"><span>Email:</span><span className="text-[#1a202c] font-bold">{selectedTeacher.email}</span></div>
               <div className="flex justify-between items-center border-b border-[#e2dcd0]/60 pb-2"><span>Payroll Status:</span><span className="text-[#4a5d4e] font-bold">{selectedTeacher.payrollStatus}</span></div>
               <div className="flex justify-between items-center"><span>Contact Cell:</span><span className="text-[#1a202c]">{selectedTeacher.phone}</span></div>
             </div>
@@ -213,7 +282,7 @@ export default function FranchiseTeachers() {
             <div className="mb-5">
               <div className="text-[10px] text-[#8a9485] uppercase font-bold flex items-center gap-1 mb-2"><BookOpen size={12} /> Assigned Slots:</div>
               <div className="bg-[#f4f0e6]/40 border border-[#e2dcd0] rounded-xl p-3 max-h-24 overflow-y-auto space-y-1 text-[11px] font-mono text-[#7a8475]">
-                {selectedTeacher.batches.length > 0 ? selectedTeacher.batches.map((batch, i) => <div key={i}>• {batch}</div>) : "No active batches mapped."}
+                {selectedTeacher.batches?.length > 0 ? selectedTeacher.batches.map((batch, i) => <div key={i}>• {batch}</div>) : "No active batches mapped."}
               </div>
             </div>
 
@@ -246,8 +315,8 @@ export default function FranchiseTeachers() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Total Experience</label>
-                  <input type="text" placeholder="e.g. 3 Years" required value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none focus:border-[#4a5d4e]" />
+                  <label className="block text-[#5a6455] mb-1.5 font-bold">Total Experience (Years)</label>
+                  <input type="number" required value={formData.experience} onChange={(e) => setFormData({...formData, experience: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none focus:border-[#4a5d4e]" />
                 </div>
               </div>
               <div>

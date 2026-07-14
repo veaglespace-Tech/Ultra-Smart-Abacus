@@ -14,6 +14,7 @@ import attendanceRoutes from "./routes/attendanceRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import feeRoutes from "./routes/feeRoutes.js";
 import referralRoutes from "./routes/referralRoutes.js";
+import salaryRoutes from "./routes/salaryRoutes.js";
 import path from "path";
 
 
@@ -39,6 +40,7 @@ app.use("/api/notifications", notificationRoutes)
 app.use("/api/fees", feeRoutes)
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/referral", referralRoutes);
+app.use("/api/salary", salaryRoutes);
 app.use(errorMiddleware);
 app.use(
   "/uploads",

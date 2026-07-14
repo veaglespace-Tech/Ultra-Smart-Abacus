@@ -71,6 +71,7 @@ model Teacher {
 
   attendances Attendance[]
   exams       Exam[]
+  salaries    Salary[]
 }
 
 model Franchise {
@@ -87,6 +88,7 @@ model Franchise {
   userId Int @unique
 
   user User @relation(fields: [userId], references: [id])
+  salaries Salary[]
 }
 
 
@@ -360,4 +362,27 @@ model ExamResult {
   updatedAt DateTime @updatedAt
 
   @@unique([examId, studentId])
+}
+
+model Salary {
+  id                Int       @id @default(autoincrement())
+  teacherId         Int
+  teacher           Teacher   @relation(fields: [teacherId], references: [id])
+  franchiseId       Int?
+  franchise         Franchise? @relation(fields: [franchiseId], references: [id])
+  month             Int
+  year              Int
+  basicSalary       Float
+  bonus             Float     @default(0)
+  deductions        Float     @default(0)
+  netSalary         Float
+  paymentStatus     String    @default("PENDING") // PENDING, PAID
+  paymentDate       DateTime?
+  paymentMode       String?   // Bank Transfer, UPI, Cash, Cheque, Other
+  referenceNumber   String?
+  remarks           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([teacherId, month, year])
 }

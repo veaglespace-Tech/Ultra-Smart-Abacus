@@ -18,7 +18,7 @@ export default function StudentFeesPage() {
     const newTxId = `TXN-${Math.floor(100000 + Math.random() * 900000)}`;
     payFee(payingFeeItem.id, newTxId);
 
-    setPaymentSuccess(`Payment of $${payingFeeItem.amount} for "${payingFeeItem.description}" processed successfully!`);
+    setPaymentSuccess(`Payment of ₹${payingFeeItem.amount} for "${payingFeeItem.description}" processed successfully!`);
     setShowPayModal(false);
     setPayingFeeItem(null);
     setTimeout(() => setPaymentSuccess(""), 4000);
@@ -46,7 +46,7 @@ export default function StudentFeesPage() {
         <div className="text-right">
           <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold">Outstanding Balance</span>
           <span className="text-xl font-black text-rose-400 font-mono">
-            ${outstandingBalance}.00
+            ₹{outstandingBalance}.00
           </span>
         </div>
       </div>
@@ -72,7 +72,7 @@ export default function StudentFeesPage() {
                   <tr key={fee.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4 font-bold text-slate-200">{fee.description}</td>
                     <td className="px-6 py-4 font-mono text-slate-400">{fee.txId}</td>
-                    <td className="px-6 py-4 font-mono text-center text-slate-300">${fee.amount}.00</td>
+                    <td className="px-6 py-4 font-mono text-center text-slate-300">₹{fee.amount}.00</td>
                     <td className="px-6 py-4 font-mono text-slate-400">{fee.date}</td>
                     <td className="px-6 py-4">
                       {isPaid ? (
@@ -90,7 +90,7 @@ export default function StudentFeesPage() {
                     <td className="px-6 py-4 text-right">
                       {isPaid ? (
                         <button
-                          onClick={() => alert(`Receipt details for ${fee.txId}:\n-------------------------------\nItem: ${fee.description}\nAmount Paid: $${fee.amount}.00\nDate: ${fee.date}\nStatus: Verified`)}
+                          onClick={() => alert(`Receipt details for ${fee.txId}:\n-------------------------------\nItem: ${fee.description}\nAmount Paid: ₹${fee.amount}.00\nDate: ${fee.date}\nStatus: Verified`)}
                           className="px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-xs text-slate-300 font-semibold transition-all active:scale-95 cursor-pointer"
                         >
                           View Receipt
@@ -143,11 +143,11 @@ export default function StudentFeesPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Tuition Fee:</span>
-                  <span className="font-bold text-slate-200">${payingFeeItem.amount}.00</span>
+                  <span className="font-bold text-slate-200">₹{payingFeeItem.amount}.00</span>
                 </div>
                 <div className="flex justify-between border-t border-white/5 pt-2 mt-2 font-bold text-sm">
                   <span className="text-slate-400">Total Payable:</span>
-                  <span className="text-blue-400">${payingFeeItem.amount}.00</span>
+                  <span className="text-blue-400">₹{payingFeeItem.amount}.00</span>
                 </div>
               </div>
 

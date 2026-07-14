@@ -1,18 +1,19 @@
 export const studentSeed = async (prisma) => {
+  for (let i = 1; i <= 55; i++) {
+    const email = `student${i}@gmail.com`;
+    const existing = await prisma.student.findUnique({
+      where: { email }
+    });
 
-const students = [];
-
-for (let i = 1; i <= 55; i++) {
-  students.push({
-    name: `Student ${i}`,
-    email: `student${i}@gmail.com`,
-    password: `password${i}`,
-    batchId: 1
-  });
-}
-
-await prisma.student.createMany({
-  data: students
-});
-
+    if (!existing) {
+      await prisma.student.create({
+        data: {
+          name: `Student ${i}`,
+          email,
+          password: `password${i}`,
+          batchId: 1
+        }
+      });
+    }
+  }
 };

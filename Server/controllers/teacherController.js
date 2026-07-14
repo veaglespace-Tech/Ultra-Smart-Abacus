@@ -57,48 +57,21 @@ await bcrypt.hash(password,10)
 const teacher =
 await prisma.teacher.create({
 
-
 data:{
-
 name,
-
 qualification,
-
-experience,
-
-
-user:{
-
-
-create:{
-
-
-fullName: name,
-
-email,
-
-password:hashPassword,
-
-role:"TEACHER",
-
-gender: "MALE",
-
+experience: parseInt(experience),
 phone,
-
-city: "",
-
-address: ""
-
-
+specialization,
+user:{
+create:{
+name,
+email,
+password:hashPassword,
+role:"TEACHER"
 }
-
-
 }
-
-
 }
-
-
 })
 
 
