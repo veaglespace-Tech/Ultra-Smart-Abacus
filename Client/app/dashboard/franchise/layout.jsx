@@ -62,19 +62,29 @@ export default function FranchiseLayout({ children }) {
         <div>
           {/* Header Branding */}
           <div className="mb-8 px-2 flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-indigo-600"></span>
-                <h1 className="text-sm font-black tracking-wider text-slate-900 dark:text-white uppercase font-sans">
-                  SMART ABACUS
-                </h1>
-              </div>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-widest mt-0.5 ml-4 uppercase">FRANCHISE CONSOLE</p>
-            </div>
-            <button onClick={() => setIsMobileOpen(false)} className="md:hidden text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white p-1 cursor-pointer">
-              <X size={18} />
-            </button>
-          </div>
+  <Link href="/" className="cursor-pointer">
+    <div>
+      <div className="flex items-center gap-2">
+        <span className="h-2 w-2 rounded-full bg-indigo-600"></span>
+
+        <h1 className="text-sm font-black tracking-wider text-slate-900 dark:text-white uppercase font-sans hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+          SMART ABACUS
+        </h1>
+      </div>
+
+      <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-widest mt-0.5 ml-4 uppercase">
+        FRANCHISE CONSOLE
+      </p>
+    </div>
+  </Link>
+
+  <button
+    onClick={() => setIsMobileOpen(false)}
+    className="md:hidden text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white p-1 cursor-pointer"
+  >
+    <X size={18} />
+  </button>
+</div>
 
           {/* Navigation Links with Active States like Teacher UI */}
           <nav className="space-y-1 text-xs font-bold">
