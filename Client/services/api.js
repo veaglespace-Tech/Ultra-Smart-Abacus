@@ -35,6 +35,8 @@ export const api = {
   student: {
     getNotifications: () => apiHelper.get('/notifications/student/me'),
     getProfile: () => apiHelper.get('/students/profile/me'),
+    getMyFees: () => apiHelper.get('/fees/me'),
+    downloadReceipt: (id) => apiHelper.get(`/fees/${id}/receipt`),
   },
   franchise: {
     getNotifications: () => apiHelper.get('/notifications/franchise'),

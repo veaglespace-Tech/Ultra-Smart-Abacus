@@ -1,10 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useStudentData } from "../StudentContext";
 
 export default function StudentFeesPage() {
-  const { fees, payFee, profile } = useStudentData();
+  const { fees, payFee, profile, fetchFees } = useStudentData();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    console.debug('StudentFeesPage - fees:', fees);
+  }, [fees]);
 
   // Pay Fee Mock modal states
   const [showPayModal, setShowPayModal] = useState(false);
@@ -52,6 +57,21 @@ export default function StudentFeesPage() {
       </div>
 
       {/* Fees table list */}
+          {fees.length === 0 ? (
+        <div className="rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-md p-10 text-center">
+          <h4 className="text-sm font-bold text-slate-200 mb-2">No invoices found</h4>
+          <p className="text-xs text-slate-400 mb-4">We couldn't locate any fees or invoices for your account.</p>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={async () => { setIsRefreshing(true); try { await fetchFees(); } finally { setIsRefreshing(false); } }}
+              className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold"
+            >
+              {isRefreshing ? 'Refreshing…' : 'Refresh'}
+            </button>
+            <a href="/dashboard/student/profile" className="px-4 py-2 rounded-xl border border-white/10 text-sm text-slate-300">View Profile</a>
+          </div>
+        </div>
+      ) : (
       <div className="rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-md overflow-hidden shadow-xl animate-fade-in">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
@@ -89,13 +109,35 @@ export default function StudentFeesPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       {isPaid ? (
-                        <button
-                          onClick={() => alert(`Receipt details for ${fee.txId}:\n-------------------------------\nItem: ${fee.description}\nAmount Paid: ₹${fee.amount}.00\nDate: ${fee.date}\nStatus: Verified`)}
-                          className="px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-xs text-slate-300 font-semibold transition-all active:scale-95 cursor-pointer"
-                        >
-                          View Receipt
-                        </button>
-                      ) : (
+                          <button
+                            onClick={async () => {
+                              try {
+                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/fees/${fee.id}/receipt`, {
+                                  method: 'GET',
+                                  headers: {
+                                    Authorization: `Bearer ${localStorage.getItem('abacus_auth_token')}`
+                                  }
+                                });
+                                if (!res.ok) throw new Error('Failed to download');
+                                const blob = await res.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `FeeReceipt_${fee.id}.html`;
+                                document.body.appendChild(a);
+                                a.click();
+                                a.remove();
+                                window.URL.revokeObjectURL(url);
+                              } catch (err) {
+                                alert('Unable to download receipt');
+                                console.error(err);
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-xs text-slate-300 font-semibold transition-all active:scale-95 cursor-pointer"
+                          >
+                            Download Receipt
+                          </button>
+                        ) : (
                         <button
                           onClick={() => {
                             setPayingFeeItem(fee);
@@ -114,6 +156,7 @@ export default function StudentFeesPage() {
           </table>
         </div>
       </div>
+      )}
 
       {/* MOCK FEES PAYMENT POPUP MODAL */}
       {showPayModal && payingFeeItem && (

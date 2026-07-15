@@ -354,24 +354,17 @@ if (!response.ok) {
                 onChange={handleChange}
                 placeholder=" " */}
                 <input
-                    type="text"
-                   name="fullName"
-                   value={formData.fullName}
-                  onChange={handleChange}
-
-                        onChange={(e) => {
-                        console.log(e.target.value);
-                        handleChange(e);
-              }
-            }
-
-                      
-
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={(e) => {
+                    console.log(e.target.value);
+                    handleChange(e);
+                  }}
                   placeholder="Enter your full name"
-
-                className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-5 pb-2 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              />
+                  className="peer w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] pt-5 pb-2 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-transparent focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                />
               <User className="absolute left-4 top-[22px] text-slate-400 peer-focus:text-[#FF6B2B] transition-colors" size={18} />
               <label
                 htmlFor="fullName"

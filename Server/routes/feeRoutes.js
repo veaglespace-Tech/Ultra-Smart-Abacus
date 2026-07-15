@@ -7,10 +7,11 @@ createFee,
 getFees,
 getFeeById,
 updateFee,
-deleteFee
+deleteFee,
+getMyFees,
+getFeeReceipt
 
-}
-from "../controllers/feeController.js"
+} from "../controllers/feeController.js"
 
 
 
@@ -52,6 +53,15 @@ getFees
 )
 
 
+// STUDENT: get own fees
+router.get(
+	"/me",
+	authMiddleware,
+	authorize("STUDENT"),
+	getMyFees
+)
+
+
 
 // READ ONE
 
@@ -60,6 +70,13 @@ router.get(
 authMiddleware,
 authorize("ADMIN","FRANCHISE"),
 getFeeById
+)
+
+// fee receipt download (student or admin/franchise)
+router.get(
+	"/:id/receipt",
+	authMiddleware,
+	getFeeReceipt
 )
 
 

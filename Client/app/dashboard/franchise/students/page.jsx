@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { api } from "@/services/api";
 import { 
   UserPlus, GraduationCap, Users, ShieldAlert, CheckCircle2, 
   MessageSquare, Clock, Pencil, Trash, X, Save, ArrowLeft, 
@@ -20,6 +21,8 @@ export default function FranchiseStudents() {
   const [filterFee, setFilterFee] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+
+  const [loading, setLoading] = useState(false);
 
  const [formData, setFormData] = useState({
   name: "",
@@ -162,6 +165,34 @@ export default function FranchiseStudents() {
   const resetForm = () => {
     setFormData({ name: "", level: "", teacher: "", status: "Active", feeStatus: "Paid", batch: "", phone: "" });
   };
+
+  const fetchStudents = async () => {
+    setLoading(true);
+    try {
+      const res = await api.admin.getStudents();
+      const list = (res.data || res || []).map(s => ({
+        id: `STU-${s.id}`,
+        rawId: s.id,
+        name: s.name,
+        level: s.batch?.level || 'Unassigned',
+        batch: s.batch?.name || 'Unassigned',
+        teacher: s.batch?.teacherName || 'TBD',
+        phone: s.phone || '',
+        feeStatus: s.feeStatus || 'Paid',
+        status: 'Active',
+        logs: s.logs || []
+      }));
+      setStudents(list);
+    } catch (err) {
+      console.error('Failed to fetch students:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
   return (
     <div className="space-y-6 w-full text-[#2c3539]">
