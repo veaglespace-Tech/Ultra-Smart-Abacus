@@ -219,7 +219,7 @@ export default function Footer() {
           </p>
           <p className="text-slate-500 text-xs" style={{ fontFamily: "Outfit, sans-serif" }}>
             Designed &amp; Developed by{" "}
-            <span className="text-[#FFCA28] font-semibold">Veagle Space Pvt. Ltd.</span>
+            <span className="text-[#FFCA28] font-semibold">Veagle Space technology Pvt. Ltd.</span>
           </p>
         </div>
       </div>

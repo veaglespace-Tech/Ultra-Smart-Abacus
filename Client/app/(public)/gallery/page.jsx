@@ -7,10 +7,12 @@ import { X, ZoomIn } from "lucide-react";
 const galleryItems = [
   {
     id: 1, category: "Classroom",
-    title: "Interactive Abacus Session",
+    title: "Interactive Abacus Session", 
     desc: "Students practicing rapid finger movements and visual arithmetic in our daily batch.",
     imageUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80",
     span: "col-span-1",
+    
+     
   },
   {
     id: 2, category: "Competitions",

@@ -9,8 +9,9 @@ const contactInfo = [
   {
     icon: Phone,
     title: "Call Us Directly",
-    lines: ["+91 8767 876 567", "+91 7867 896 734"],
+    lines: ["+91 9325252246", "+91 7867 896 734"],
     color: "#2D1B69",
+   
     bg: "rgba(45,27,105,0.08)",
   },
   {
@@ -104,9 +105,41 @@ export default function ContactPage() {
                 <Icon size={20} style={{ color }} />
               </div>
               <h3 className="font-bold text-slate-800 dark:text-white text-sm mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h3>
-              {lines.map((line, li) => (
-                 <p key={li} className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">{line}</p>
-               ))}
+              {lines.map((line, li) => {
+  if (title === "Call Us Directly") {
+    return (
+      <a
+        key={li}
+        href={`tel:${line.replace(/\s+/g, "")}`}
+        className="block text-slate-600 dark:text-slate-300 text-xs leading-relaxed hover:text-[#FF6B2B] hover:underline transition-colors"
+      >
+        {line}
+      </a>
+    );
+  }
+
+  if (title === "Email Inquiries") {
+    return (
+      <a
+        key={li}
+        href={`mailto:${line}`}
+        className="block text-slate-600 dark:text-slate-300 text-xs leading-relaxed hover:text-[#FF6B2B] hover:underline transition-colors"
+      >
+        {line}
+      </a>
+    );
+  }
+
+  return (
+    <p
+      key={li}
+      className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed"
+    >
+      {line}
+    </p>
+  );
+})}
+
             </motion.div>
           ))}
         </div>

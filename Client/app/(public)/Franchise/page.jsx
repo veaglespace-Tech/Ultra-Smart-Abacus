@@ -5,10 +5,10 @@ import Footer from "../../../components/shared/Footer";
 import { MapPin, Phone, Mail, CheckCircle2, TrendingUp, Users, Building, ArrowRight, Send } from "lucide-react";
 
 const branchList = [
-  { name: "Pune Corporate Hub", address: "Kothrud, Near MIT College, Pune", contact: "+91 98765 43210", email: "pune@smartabacus.com", active: true,textSize:"text-2xl", descSize:"text-base" },
-  { name: "Mumbai Center", address: "Dadar West, Near Station, Mumbai", contact: "+91 98765 43211", email: "mumbai@smartabacus.com", active: true,textSize:"text-2xl", descSize:"text-base" },
-  { name: "Nashik Academy", address: "College Road, Above HDFC Bank, Nashik", contact: "+91 98765 43212", email: "nashik@smartabacus.com", active: true,textSize:"text-2xl", descSize:"text-base" },
-  { name: "Nagpur Center", address: "Ramdaspeth, Main Market, Nagpur", contact: "+91 98765 43213", email: "nagpur@smartabacus.com", active: true,textSize:"text-2xl", descSize:"text-base" },
+  { name: "Pune Corporate Hub", address: "Kothrud, Near MIT College, Pune", contact: "+91 98765 43210", email: "pune@smartabacus.com", active: true },
+  { name: "Mumbai Center", address: "Dadar West, Near Station, Mumbai", contact: "+91 98765 43211", email: "mumbai@smartabacus.com", active: true },
+  { name: "Nashik Academy", address: "College Road, Above HDFC Bank, Nashik", contact: "+91 98765 43212", email: "nashik@smartabacus.com", active: true },
+  { name: "Nagpur Center", address: "Ramdaspeth, Main Market, Nagpur", contact: "+91 98765 43213", email: "nagpur@smartabacus.com", active: true },
 ];
 
 const benefits = [
