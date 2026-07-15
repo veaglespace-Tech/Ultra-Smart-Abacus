@@ -85,14 +85,17 @@ function AdminLayoutInner({ children }) {
                 <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
               </svg>
             </div>
-            <div>
-              <h1 className="font-extrabold text-sm tracking-wider uppercase text-slate-800 dark:text-white">
-                Smart Abacus
-              </h1>
-              <span className="text-[10px] text-blue-500 dark:text-blue-400 font-semibold uppercase tracking-widest">
-                ERP Admin
-              </span>
-            </div>
+           <Link href="/" className="cursor-pointer">
+  <div>
+    <h1 className="font-extrabold text-sm tracking-wider uppercase text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+      Smart Abacus
+    </h1>
+
+    <span className="text-[10px] text-blue-500 dark:text-blue-400 font-semibold uppercase tracking-widest">
+      ERP Admin
+    </span>
+  </div>
+</Link>
           </div>
 
           {/* Navigation Links */}

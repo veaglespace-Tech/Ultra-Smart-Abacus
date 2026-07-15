@@ -66,13 +66,18 @@ export default function TeacherLayout({ children }) {
       <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-6 justify-between shrink-0 shadow-sm">
         <div>
           {/* Logo */}
-          <div className="mb-8 px-2">
-            <h1 className="text-lg font-black tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-              <span className="w-3 h-3 bg-indigo-600 rounded-full shadow-lg shadow-indigo-600/40 animate-pulse"></span> 
-              ABACUS SYSTEM
-            </h1>
-            <p className="text-[10px] text-slate-400 font-extrabold tracking-widest uppercase mt-0.5">Teacher Workspace</p>
-          </div>
+          <Link href="/" className="block mb-8 px-2">
+  <div className="cursor-pointer">
+    <h1 className="text-lg font-black tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2 hover:text-indigo-500 transition">
+      <span className="w-3 h-3 bg-indigo-600 rounded-full shadow-lg shadow-indigo-600/40 animate-pulse"></span>
+      SMART ABACUS
+    </h1>
+
+    <p className="text-[10px] text-slate-400 font-extrabold tracking-widest uppercase mt-0.5">
+      Teacher Workspace
+    </p>
+  </div>
+</Link>
 
           {/* Nav Links */}
           <nav className="space-y-1">
@@ -151,13 +156,18 @@ export default function TeacherLayout({ children }) {
               >
                 <div>
                   <div className="flex justify-between items-center mb-8">
-                    <div>
-                      <h1 className="text-lg font-black tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-                        <span className="w-3 h-3 bg-indigo-600 rounded-full"></span> 
-                        ABACUS
-                      </h1>
-                      <p className="text-[10px] text-slate-400 font-extrabold tracking-widest uppercase mt-0.5">Workspace</p>
-                    </div>
+                   <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+  <div className="cursor-pointer">
+    <h1 className="text-lg font-black tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2 hover:text-indigo-500 transition">
+      <span className="w-3 h-3 bg-indigo-600 rounded-full"></span>
+      SMART ABACUS
+    </h1>
+
+    <p className="text-[10px] text-slate-400 font-extrabold tracking-widest uppercase mt-0.5">
+      Teacher Workspace
+    </p>
+  </div>
+</Link>
                     <button 
                       onClick={() => setMobileMenuOpen(false)}
                       className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"

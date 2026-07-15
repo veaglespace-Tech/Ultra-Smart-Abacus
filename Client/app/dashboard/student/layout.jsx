@@ -77,17 +77,21 @@ function StudentLayoutInner({ children }) {
         
         {/* Sidebar Header / Logo */}
         <div>
-          <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#4f46e5]" />
-            <div>
-              <h1 className="font-extrabold text-sm tracking-wider uppercase text-slate-900 dark:text-white">
-                Smart Abacus
-              </h1>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block mt-0.5">
-                Student Console
-              </span>
-            </div>
-          </div>
+         <Link href="/" onClick={() => setSidebarOpen(false)}>
+  <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-5 mb-6 cursor-pointer hover:opacity-80 transition-all">
+    <span className="w-2.5 h-2.5 rounded-full bg-[#4f46e5]" />
+
+    <div>
+      <h1 className="font-extrabold text-sm tracking-wider uppercase text-slate-900 dark:text-white">
+        Smart Abacus
+      </h1>
+
+      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block mt-0.5">
+        Student Console
+      </span>
+    </div>
+  </div>
+</Link>
 
           {/* Navigation Links */}
           <nav className="space-y-1">
