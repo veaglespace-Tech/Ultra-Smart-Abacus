@@ -9,6 +9,7 @@ import asyncHandler from "../utils/asyncHandler.js"
 import CustomError from "../utils/customError.js"
 import welcomeEmail from "../template/welcomeEmail.js";
 import otpEmail from "../template/otpEmail.js";
+
 export const registerUser = asyncHandler(async (req, res) => {
     const {
         fullName,
@@ -22,11 +23,11 @@ export const registerUser = asyncHandler(async (req, res) => {
         address,
         dateOfBirth,
     } = req.body;
-      console.log("===== REQUEST BODY =====");
-console.log(req.body);
 
-console.log("===== FILE =====");
-console.log(req.file);
+    const profilePhoto = req.file
+        ? `/uploads/students/${req.file.filename}`
+        : req.body.profilePhoto || null;
+
     const existingUser = await prisma.user.findUnique({
         where: { email },
     });
@@ -51,7 +52,6 @@ console.log(req.file);
         },
     });
 
-    // Send Welcome Email
     await sendEmail(
         email,
         "Welcome to Ultra Smart Abacus",
@@ -71,6 +71,7 @@ console.log(req.file);
                 dateOfBirth: dateOfBirth
                     ? new Date(dateOfBirth)
                     : null,
+                profilePhoto,
                 userId: user.id,
             },
         });
@@ -81,8 +82,8 @@ console.log(req.file);
                 qualification: "Abacus Certified Instructor",
                 experience: 2,
                 phone: phone || null,
-                userId: user.id
-            }
+                userId: user.id,
+            },
         });
     } else if (role === "FRANCHISE") {
         await prisma.franchise.create({
@@ -91,13 +92,12 @@ console.log(req.file);
                 email,
                 phone: phone || null,
                 address: address || null,
-                userId: user.id
-            }
+                userId: user.id,
+            },
         });
     }
 
     const token = generateToken(user);
-
     const { password: userPassword, ...safeUser } = user;
 
     res.status(201).json({
@@ -115,7 +115,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         include: {
             student: true,
             teacher: true,
-            franchise: true
+            franchise: true,
         },
     });
 
@@ -133,7 +133,6 @@ export const loginUser = asyncHandler(async (req, res) => {
     }
 
     const token = generateToken(user);
-
     const { password: userPassword, ...safeUser } = user;
 
     res.status(200).json({
@@ -154,9 +153,62 @@ export const forgotPassword = asyncHandler(async (req, res) => {
         throw new CustomError("User not found", 404);
     }
 
-    const otp = Math.floor(
-        100000 + Math.random() * 900000
-    ).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    await prisma.user.update({
+        where: { email },
+        data: {
+            otp,
+            otpExpiry,
+        },
+    });
+
+    await sendEmail(
+        email,
+        "Abacus Password Reset OTP",
+        `Your OTP is ${otp}`
+    );
+
+    res.status(200).json({
+        message: "OTP sent successfully",
+    });
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    const user = await prisma.user.findUnique({
+        where: { email },
+    });
+
+    if (!user) {
+        throw new CustomError("User not found", 404);
+    }
+
+    if (user.otp !== otp) {
+        throw new CustomError("Invalid OTP", 400);
+    }
+
+    if (new Date() > user.otpExpiry) {
+        throw new CustomError("OTP expired", 400);
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+        where: { email },
+        data: {
+            password: hashedPassword,
+            otp: null,
+            otpExpiry: null,
+        },
+    });
+
+    res.status(200).json({
+        message: "Password reset successful",
+    });
+});
 
     const otpExpiry = new Date(
         Date.now() + 5 * 60 * 1000
