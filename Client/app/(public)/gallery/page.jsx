@@ -156,8 +156,8 @@ export default function GalleryPage() {
 
                   {/* Text */}
                   <div className="p-5">
-                    <h3 className="font-bold text-slate-800 text-base mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>{item.title}</h3>
-                    <p className="text-slate-500 text-xs leading-relaxed">{item.desc}</p>
+                    <h3 className="font-bold text-slate-800 text-lg mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>{item.title}</h3>
+                    <p className="text-slate-500 text-lg leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               );

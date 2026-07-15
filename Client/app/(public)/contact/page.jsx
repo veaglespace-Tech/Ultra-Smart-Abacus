@@ -9,21 +9,26 @@ const contactInfo = [
   {
     icon: Phone,
     title: "Call Us Directly",
+    textSize:"text-lg",
+    lineTextSize: "text-base",
     lines: ["+91 9325252246", "+91 7867 896 734"],
     color: "#2D1B69",
-   
     bg: "rgba(45,27,105,0.08)",
   },
   {
     icon: Mail,
     title: "Email Inquiries",
-    lines: ["info@smartabacus.com", "admissions@smartabacus.com"],
+    textSize:"text-lg",
+    lineTextSize: "text-base",
+    lines: ["gunjalsejal04@gmail.com", "admissions@smartabacus.com"],
     color: "#FF6B2B",
     bg: "rgba(255,107,43,0.08)",
   },
   {
     icon: Clock,
     title: "Working Hours",
+    textSize:"text-lg",
+    lineTextSize: "text-base",
     lines: ["Monday – Saturday", "09:00 AM – 06:00 PM (IST)"],
     color: "#10B981",
     bg: "rgba(16,185,129,0.08)",
@@ -31,6 +36,8 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "Visit Us",
+    textSize:"text-lg",
+    lineTextSize: "text-base",
     lines: ["123 Abacus Street, Pune", "Maharashtra – 411001"],
     color: "#FFCA28",
     bg: "rgba(255,202,40,0.1)",
@@ -89,7 +96,7 @@ export default function ContactPage() {
 
       <section className="py-14 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
         <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-5">
-          {contactInfo.map(({ icon: Icon, title, lines, color, bg }, i) => (
+          {contactInfo.map(({ icon: Icon, title, textSize,lineTextSize, lines, color, bg }, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 15 }}
@@ -104,40 +111,54 @@ export default function ContactPage() {
                 style={{ background: `${color}18`, border: `1px solid ${color}30` }}>
                 <Icon size={20} style={{ color }} />
               </div>
-              <h3 className="font-bold text-slate-800 dark:text-white text-sm mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h3>
+              <h3 className={`font-bold text-slate-800 dark:text-white ${textSize} mb-2`} style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h3>
               {lines.map((line, li) => {
   if (title === "Call Us Directly") {
     return (
       <a
         key={li}
         href={`tel:${line.replace(/\s+/g, "")}`}
-        className="block text-slate-600 dark:text-slate-300 text-xs leading-relaxed hover:text-[#FF6B2B] hover:underline transition-colors"
+        className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline transition-colors`}
       >
         {line}
       </a>
     );
   }
 
-  if (title === "Email Inquiries") {
-    return (
-      <a
-        key={li}
-        href={`mailto:${line}`}
-        className="block text-slate-600 dark:text-slate-300 text-xs leading-relaxed hover:text-[#FF6B2B] hover:underline transition-colors"
-      >
-        {line}
-      </a>
-    );
-  }
-
+if (title === "Email Inquiries") {
   return (
-    <p
+    <a
       key={li}
-      className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed"
+      href={`mailto:${line}?subject=Inquiry`}
+      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline`}
     >
       {line}
-    </p>
+    </a>
   );
+}
+
+ if (title === "Visit Us") {
+  return (
+    <a
+      key={li}
+      href="https://www.google.com/maps/search/?api=1&query=123+Abacus+Street+Pune+Maharashtra+411001"
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline cursor-pointer`}
+    >
+      {line}
+    </a>
+  );
+}
+
+return (
+  <p
+    key={li}
+    className={`text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed`}
+  >
+    {line}
+  </p>
+);
 })}
 
             </motion.div>
@@ -263,13 +284,17 @@ export default function ContactPage() {
             className="space-y-6"
           >
             {/* Map Placeholder */}
-            <div className="h-56 rounded-3xl overflow-hidden relative" style={{ background: "linear-gradient(135deg, #2D1B69, #3d2a88)" }}>
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                <MapPin size={40} className="mb-2 opacity-60" />
-                <p className="text-sm font-bold opacity-60" style={{ fontFamily: "Poppins, sans-serif" }}>Academy Location</p>
-                <p className="text-xs opacity-40 text-center mt-1">123 Abacus Street, Pune<br/>Maharashtra – 411001</p>
-              </div>
-            </div>
+            <div className="h-56 rounded-3xl overflow-hidden shadow-lg">
+          <iframe
+            src="https://www.google.com/maps?q=123+Abacus+Street,+Pune,+Maharashtra+411001&output=embed"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
 
             {/* Quick Facts */}
             <div className="p-6 rounded-3xl bg-gradient-to-br from-[#FFF8F0] to-white dark:from-[#1e1445] dark:to-[#1a1035] border-2 border-[#FF6B2B]/20">
@@ -289,7 +314,7 @@ export default function ContactPage() {
                       style={{ background: "linear-gradient(135deg, #FF6B2B, #FFCA28)" }}>
                       <CheckCircle2 size={11} color="white" />
                     </div>
-                    <span className="text-slate-700 dark:text-slate-200 text-sm font-medium">{item}</span>
+                    <span className="text-slate-700 dark:text-slate-200 text-lg font-medium">{item}</span>
                   </div>
                 ))}
               </div>

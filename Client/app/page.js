@@ -489,7 +489,7 @@ export default function Home() {
               <div className="text-4xl font-black mb-1" style={{ fontFamily: "Poppins, sans-serif", color: "#FFCA28" }}>
                 {value.toLocaleString()}{suffix}
               </div>
-              <div className="text-sm text-white/60 font-medium" style={{ fontFamily: "Inter, sans-serif" }}>
+              <div className="text-2xl text-white/60 font-medium" style={{ fontFamily: "Inter, sans-serif" }}>
                 {label}
               </div>
             </div>
@@ -525,10 +525,10 @@ export default function Home() {
               India&apos;s Most Trusted<br />
               <span style={{ color: "#FF6B2B" }}>Abacus Academy</span>
             </h2>
-            <p className="text-slate-600 text-base leading-relaxed mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
+            <p className="text-slate-600 text-lg leading-relaxed mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
               Smart Abacus is a leading education platform dedicated to unlocking the mathematical potential in every child. With over 15 years of excellence, we have empowered thousands of students to achieve extraordinary computational abilities and academic success.
             </p>
-            <p className="text-slate-600 text-base leading-relaxed mb-8" style={{ fontFamily: "Inter, sans-serif" }}>
+            <p className="text-slate-600 text-lg leading-relaxed mb-8" style={{ fontFamily: "Inter, sans-serif" }}>
               Our comprehensive curriculum combines traditional Abacus methodology with modern educational techniques, ensuring students develop not just calculation skills but also enhanced memory, focus, and problem-solving abilities.
             </p>
 
@@ -546,7 +546,7 @@ export default function Home() {
                     style={{ background: "linear-gradient(135deg, #FF6B2B, #FFCA28)" }}>
                     <CheckCircle2 size={12} color="white" />
                   </div>
-                  <span className="text-slate-700 text-sm font-medium" style={{ fontFamily: "Inter, sans-serif" }}>{item}</span>
+                  <span className="text-slate-700 text-lg font-medium" style={{ fontFamily: "Inter, sans-serif" }}>{item}</span>
                 </li>
               ))}
             </ul>
