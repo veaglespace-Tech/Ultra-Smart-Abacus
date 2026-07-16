@@ -36,7 +36,7 @@ export default function Navbar() {
           : "bg-white/80 dark:bg-[#0f0a1e]/80 backdrop-blur-md shadow-sm"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <div className=" mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -74,8 +74,8 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center gap-8">
-          <ul className="flex items-center gap-1">
+<div className="hidden lg:flex items-center mx-auto gap-8">
+            <ul className="flex items-center gap-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -104,7 +104,7 @@ export default function Navbar() {
           </ul>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-5 pl-9 border-l border-slate-200 dark:border-slate-700">
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
