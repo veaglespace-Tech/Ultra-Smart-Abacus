@@ -338,7 +338,7 @@ export default function Home() {
                 Powers
               </h1>
 
-              <p className="text-slate-300 text-lg leading-relaxed mb-10 max-w-xl" style={{ fontFamily: "Inter, sans-serif" }}>
+              <p className="text-slate-300 text-lg leading-relaxed mb-10 " style={{ fontFamily: "Inter, sans-serif" }}>
                 World-class Abacus & Mental Arithmetic training that builds concentration, memory, and blazing calculation speed in children from age 5 onwards.
               </p>
 
@@ -475,7 +475,7 @@ export default function Home() {
           ANIMATED STATS BAR
           ════════════════════════════════════════ */}
       <section ref={statsRef} className="py-12 px-6" style={{ background: "linear-gradient(135deg, #2D1B69, #1a1035)" }}>
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
+        <div className=" mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
           {[
             { value: students, suffix: "+", label: "Students Trained", icon: Users },
             { value: years, suffix: "+", label: "Years of Excellence", icon: Clock },
@@ -501,7 +501,7 @@ export default function Home() {
           ABOUT SECTION
           ════════════════════════════════════════ */}
       <section className="py-24 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+        <div className=" mx-auto grid md:grid-cols-2 gap-16 items-center">
           {/* Image */}
           <div className="relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[420px]">
@@ -565,7 +565,7 @@ export default function Home() {
           BENEFITS SECTION — ULTRA MODERN CARDS
           ════════════════════════════════════════ */}
       <section className="py-24 px-6 overflow-hidden bg-gradient-to-b from-[#f8f6ff] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] transition-colors duration-300">
-        <div className="max-w-7xl mx-auto">
+        <div className=" mx-auto">
           <div className="text-center mb-16">
             <span className="badge-primary mb-4 inline-flex">Why Abacus?</span>
             <h2 className="section-heading text-[#2D1B69]">
@@ -700,7 +700,7 @@ export default function Home() {
           COURSES SECTION
           ════════════════════════════════════════ */}
       <section className="py-24 px-6 bg-gradient-to-b from-[#FFF8F0] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] transition-colors duration-300">
-        <div className="max-w-7xl mx-auto">
+        <div className=" mx-auto">
           <div className="text-center mb-16">
             <span className="badge-accent mb-4 inline-flex">Our Programs</span>
             <h2 className="section-heading text-[#2D1B69]">
@@ -791,7 +791,7 @@ export default function Home() {
           TESTIMONIALS SECTION
           ════════════════════════════════════════ */}
       <section className="py-24 px-6" style={{ background: "linear-gradient(135deg, #2D1B69 0%, #1a1035 100%)" }}>
-        <div className="max-w-7xl mx-auto">
+        <div className=" mx-auto">
           <div className="text-center mb-16">
             <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4"
               style={{ background: "rgba(255,202,40,0.15)", color: "#FFCA28", border: "1px solid rgba(255,202,40,0.3)" }}>
@@ -842,7 +842,7 @@ export default function Home() {
           FAQ SECTION
           ════════════════════════════════════════ */}
       <section className="py-24 px-6 bg-white">
-        <div className="max-w-4xl mx-auto">
+        <div className=" mx-auto">
           <div className="text-center mb-16">
             <span className="badge-primary mb-4 inline-flex">Have Questions?</span>
             <h2 className="section-heading text-[#2D1B69]">
@@ -882,7 +882,7 @@ export default function Home() {
                       className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
                     />
                   </button>
-                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? "max-h-72 opacity-100" : "max-h-0 opacity-0"}`}>
+                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? " opacity-100" : "max-h-0 opacity-0"}`}>
                     <div className="px-6 py-4 text-slate-600 text-sm leading-relaxed" style={{ fontFamily: "Inter, sans-serif", borderTop: "1px solid #f1f5f9" }}>
                       {faq.answer}
                     </div>
@@ -902,7 +902,7 @@ export default function Home() {
         <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full opacity-20 animate-blob1"
           style={{ background: "radial-gradient(circle, #FF6B2B, transparent 70%)", filter: "blur(60px)" }} />
 
-        <div className="relative max-w-4xl mx-auto text-center text-white">
+        <div className="relative  mx-auto text-center text-white">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-8"
             style={{ background: "rgba(255,202,40,0.15)", color: "#FFCA28", border: "1px solid rgba(255,202,40,0.3)" }}>
             🚀 Start Your Journey Today
@@ -914,7 +914,7 @@ export default function Home() {
             <span style={{ color: "#FFCA28" }}>Child&apos;s Future?</span>
           </h2>
 
-          <p className="text-slate-300 text-lg mb-10 max-w-2xl mx-auto" style={{ fontFamily: "Inter, sans-serif" }}>
+          <p className="text-slate-300 text-lg mb-10  mx-auto" style={{ fontFamily: "Inter, sans-serif" }}>
             Join 10,000+ successful students and families who have already unlocked the power of abacus and mental arithmetic.
           </p>
 
