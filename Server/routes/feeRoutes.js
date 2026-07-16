@@ -61,6 +61,25 @@ router.get(
 	getMyFees
 )
 
+// TEMP: create a demo paid fee for the logged-in student
+router.post(
+	"/me/demo",
+	authMiddleware,
+	authorize("STUDENT"),
+	// no validation for demo endpoint
+	// controller will create a PAID fee for testing
+	(req, res, next) => next(),
+	// lazy import handler from controller
+	async (req, res, next) => {
+		try {
+			const { createDemoFee } = await import("../controllers/feeController.js");
+			return createDemoFee(req, res, next);
+		} catch (err) {
+			return next(err);
+		}
+	}
+)
+
 
 
 // READ ONE

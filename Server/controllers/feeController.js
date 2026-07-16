@@ -358,3 +358,41 @@ export const getFeeReceipt = async (req, res) => {
 		return res.status(500).json({ error: error.message });
 	}
 };
+
+// TEMP: Create a demo PAID fee for the logged-in student (useful for testing receipts)
+export const createDemoFee = async (req, res) => {
+	try {
+		// find student by logged in user
+		let student = await prisma.student.findUnique({ where: { userId: req.user.id } });
+
+		// fallback to matching by email
+		if (!student && req.user && req.user.email) {
+			student = await prisma.student.findFirst({ where: { email: req.user.email } });
+		}
+
+		if (!student) {
+			return res.status(404).json({ message: 'Student record not found for current user' });
+		}
+
+		// create a paid demo fee
+		const totalAmount = Number(req.body.totalAmount) || 500; // default 500
+		const paidAmount = totalAmount;
+		const pendingAmount = 0;
+
+		const demo = await prisma.fee.create({
+			data: {
+				studentId: student.id,
+				totalAmount,
+				paidAmount,
+				pendingAmount,
+				status: 'PAID',
+				txId: `DEMO-${Date.now()}`,
+				remarks: req.body.remarks || 'Demo paid fee for receipt testing'
+			}
+		});
+
+		return res.status(201).json({ success: true, data: demo });
+	} catch (error) {
+		return res.status(500).json({ error: error.message });
+	}
+};
