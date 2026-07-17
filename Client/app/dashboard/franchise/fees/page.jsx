@@ -110,26 +110,26 @@ export default function FranchiseFees() {
   };
 
   return (
-    <div className="space-y-6 p-4 md:p-6 bg-[#fcfbfa] text-[#2c3539] max-w-[1600px] mx-auto font-sans min-h-screen relative">
+    <div className="space-y-6 p-4 md:p-6 bg-white text-slate-800 max-w-[1600px] mx-auto font-sans min-h-screen relative">
       
       {/* Header Block */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#e2dcd0] pb-5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <h2 className="text-xl md:text-2xl font-black text-[#1a202c] tracking-tight flex items-center gap-2">
-            Fee & <span className="text-[#4a5d4e]">Collection Ledger</span>
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            Fee & <span className="text-indigo-600">Collection Ledger</span>
           </h2>
-          <p className="text-xs text-[#7a8475] mt-1">Click on any student row to manage status, receipts, edits, or deeper view options.</p>
+          <p className="text-xs text-slate-500 mt-1">Click on any student row to manage status, receipts, edits, or deeper view options.</p>
         </div>
         <div className="flex items-center gap-2 self-start lg:self-center">
           <button 
             onClick={downloadLedgerExcel}
-            className="px-4 py-2.5 bg-[#f4f0e6] hover:bg-[#e2dcd0]/70 text-[#4a5d4e] font-bold rounded-xl border border-[#e2dcd0] transition-all flex items-center gap-2 cursor-pointer text-xs"
+            className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl border border-slate-200 transition-all flex items-center gap-2 cursor-pointer text-xs"
           >
             <Download size={14} /> Download Ledger Excel
           </button>
           <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#4a5d4e] hover:bg-[#3d4d40] text-[#fcfbfa] font-bold px-5 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer text-xs"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer text-xs"
           >
             <Plus size={16} /> Record Fee Payment
           </button>
@@ -138,30 +138,30 @@ export default function FranchiseFees() {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] p-4 rounded-2xl shadow-sm">
-          <p className="text-[#7a8475] font-medium text-xs">Total Collected</p>
-          <p className="text-2xl font-bold text-[#1a202c] font-mono mt-1">₹{totalCollected.toLocaleString('en-IN')}</p>
+        <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm">
+          <p className="text-slate-500 font-medium text-xs">Total Collected</p>
+          <p className="text-2xl font-bold text-slate-900 font-mono mt-1">₹{totalCollected.toLocaleString('en-IN')}</p>
         </div>
         <div className="bg-rose-50 border border-rose-200 p-4 rounded-2xl shadow-sm">
           <p className="text-rose-800 font-medium text-xs">Outstanding Dues</p>
           <p className="text-2xl font-bold text-rose-700 font-mono mt-1">₹{totalPending.toLocaleString('en-IN')}</p>
         </div>
-        <div className="bg-[#f4f0e6]/60 border border-[#e2dcd0] p-4 rounded-2xl shadow-sm">
-          <p className="text-[#4a5d4e] font-medium text-xs">Collection Efficiency</p>
-          <p className="text-2xl font-bold text-[#4a5d4e] font-mono mt-1">{Math.round((totalCollected / totalTarget) * 100)}%</p>
+        <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl shadow-sm">
+          <p className="text-indigo-600 font-medium text-xs">Collection Efficiency</p>
+          <p className="text-2xl font-bold text-indigo-600 font-mono mt-1">{Math.round((totalCollected / totalTarget) * 100)}%</p>
         </div>
       </div>
 
       {/* Filters Block */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f4f0e6]/40 border border-[#e2dcd0] p-3 rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200 p-3 rounded-xl">
         <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#7a8475]" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-455" />
           <input 
             type="text" 
             placeholder="Search student or transaction ID..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl pl-9 pr-4 py-2 text-[#2c3539] focus:outline-none focus:border-[#4a5d4e] text-xs font-medium"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-slate-800 focus:outline-none focus:border-indigo-500 text-xs font-medium"
           />
         </div>
 
@@ -171,7 +171,7 @@ export default function FranchiseFees() {
               key={status}
               onClick={() => setStatusFilter(status)}
               className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer text-[11px] font-mono ${
-                statusFilter === status ? 'bg-[#4a5d4e] text-white shadow-sm' : 'bg-[#fcfbfa] text-[#7a8475] border border-[#e2dcd0] hover:bg-[#f4f0e6]'
+                statusFilter === status ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-655 border border-slate-200 hover:bg-slate-50'
               }`}
             >
               {status}
@@ -181,11 +181,11 @@ export default function FranchiseFees() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6] text-[10px] uppercase font-bold tracking-wider text-[#4a5d4e] font-mono">
+              <tr className="border-b border-slate-200 bg-slate-50 text-[10px] uppercase font-bold tracking-wider text-slate-500 font-mono">
                 <th className="py-4 px-6">Invoice ID</th>
                 <th className="py-4 px-6">Student</th>
                 <th className="py-4 px-6">Abacus Level</th>
@@ -194,24 +194,24 @@ export default function FranchiseFees() {
                 <th className="py-4 px-6 text-center">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2dcd0]/60 text-[#2c3539] font-medium">
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
               {filteredData.length > 0 ? (
                 filteredData.map((row) => (
                   <tr 
                     key={row.id} 
                     onClick={() => handleRowClick(row)}
-                    className="hover:bg-[#f4f0e6]/30 transition-all cursor-pointer group"
+                    className="hover:bg-slate-50/50 transition-all cursor-pointer group"
                   >
-                    <td className="py-4 px-6 font-mono text-[#4a5d4e] font-bold">{row.id}</td>
-                    <td className="py-4 px-6 font-bold text-[#1a202c] text-sm">{row.student}</td>
+                    <td className="py-4 px-6 font-mono text-indigo-600 font-bold">{row.id}</td>
+                    <td className="py-4 px-6 font-bold text-slate-900 text-sm">{row.student}</td>
                     <td className="py-4 px-6">
-                      <span className="text-[#4a5d4e] font-semibold inline-flex items-center gap-1 bg-[#f4f0e6] border border-[#e2dcd0] px-2 py-0.5 rounded-lg">
+                      <span className="text-indigo-600 font-semibold inline-flex items-center gap-1 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg">
                         <GraduationCap size={12} /> {row.level}
                       </span>
                     </td>
-                    <td className="py-4 px-6 font-bold text-[#1a202c] font-mono">₹{row.amount.toLocaleString('en-IN')}</td>
-                    <td className="py-4 px-6 text-[#7a8475] font-mono inline-flex items-center gap-1.5 mt-2">
-                      <Calendar size={12} className="text-[#7a8475]" /> {row.dueDate}
+                    <td className="py-4 px-6 font-bold text-slate-900 font-mono">₹{row.amount.toLocaleString('en-IN')}</td>
+                    <td className="py-4 px-6 text-slate-500 font-mono inline-flex items-center gap-1.5 mt-2">
+                      <Calendar size={12} className="text-slate-450" /> {row.dueDate}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-wide inline-block min-w-[75px] font-mono ${
@@ -223,7 +223,7 @@ export default function FranchiseFees() {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="6" className="py-10 text-center text-[#7a8475] font-medium">No records found.</td></tr>
+                <tr><td colSpan="6" className="py-10 text-center text-slate-500 font-medium">No records found.</td></tr>
               )}
             </tbody>
           </table>

@@ -94,69 +94,69 @@ export default function AttendanceProgress() {
   };
 
   return (
-    <div className="space-y-6 p-4 md:p-6 bg-[#fcfbfa] text-[#2c3539] max-w-[1600px] mx-auto font-sans min-h-screen">
+    <div className="space-y-6 p-4 md:p-6 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 max-w-[1600px] mx-auto font-sans min-h-screen">
       
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e2dcd0] pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-[#1a202c]">
-            Attendance & <span className="text-[#4a5d4e]">Progress Tracker</span>
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            Attendance & <span className="text-indigo-600 dark:text-indigo-400">Progress Tracker</span>
           </h2>
-          <p className="text-xs text-[#7a8475] mt-1">Mark daily rosters, evaluate calculation velocity, and audit curriculum performance.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Mark daily rosters, evaluate calculation velocity, and audit curriculum performance.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-center">
-          <button onClick={downloadAttendanceExcel} className="flex items-center gap-2 px-4 py-2.5 bg-[#f4f0e6] hover:bg-[#e2dcd0]/70 text-xs font-bold rounded-xl border border-[#e2dcd0] text-[#4a5d4e] transition-all cursor-pointer">
+          <button onClick={downloadAttendanceExcel} className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 transition-all cursor-pointer">
             <Download size={14} /><span>Download Batch Excel</span>
           </button>
-          <button onClick={handleSaveLogs} className="flex items-center gap-2 px-5 py-2.5 bg-[#4a5d4e] text-xs font-bold rounded-xl text-[#fcfbfa] hover:bg-[#3d4d40] shadow-sm transition-all cursor-pointer">
+          <button onClick={handleSaveLogs} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-xs font-bold rounded-xl text-white shadow-sm transition-all cursor-pointer">
             <Save size={14} /><span>Save Session Logs</span>
           </button>
         </div>
       </div>
 
       {/* Control Filters Block */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#f4f0e6]/40 border border-[#e2dcd0] p-4 rounded-xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl">
         <div>
-          <label className="block text-[10px] uppercase font-mono font-bold text-[#7a8475] mb-1.5">Select Class Batch</label>
-          <select value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)} className="w-full bg-[#fcfbfa] px-3 py-2.5 rounded-xl border border-[#e2dcd0] text-xs text-[#2c3539] font-medium focus:outline-none focus:border-[#4a5d4e]">
+          <label className="block text-[10px] uppercase font-mono font-bold text-slate-500 dark:text-slate-400 mb-1.5">Select Class Batch</label>
+          <select value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)} className="w-full bg-white dark:bg-slate-950 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 font-medium focus:outline-none focus:border-indigo-500">
             {batches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-[10px] uppercase font-mono font-bold text-[#7a8475] mb-1.5">Session Log Date</label>
-          <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="w-full bg-[#fcfbfa] px-3 py-2.5 rounded-xl border border-[#e2dcd0] text-xs text-[#2c3539] font-mono focus:outline-none focus:border-[#4a5d4e]" />
+          <label className="block text-[10px] uppercase font-mono font-bold text-slate-500 dark:text-slate-400 mb-1.5">Session Log Date</label>
+          <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="w-full bg-white dark:bg-slate-950 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 font-mono focus:outline-none focus:border-indigo-500" />
         </div>
         <div>
-          <label className="block text-[10px] uppercase font-mono font-bold text-[#7a8475] mb-1.5">Search Student</label>
+          <label className="block text-[10px] uppercase font-mono font-bold text-slate-500 dark:text-slate-400 mb-1.5">Search Student</label>
           <div className="relative">
-            <Search className="absolute left-3 top-3 text-[#7a8475]" size={14} />
-            <input type="text" placeholder="Search by name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#fcfbfa] text-xs text-[#2c3539] rounded-xl pl-9 pr-4 py-2.5 border border-[#e2dcd0] focus:outline-none focus:border-[#4a5d4e]" />
+            <Search className="absolute left-3 top-3 text-slate-400 dark:text-slate-550" size={14} />
+            <input type="text" placeholder="Search by name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-white dark:bg-slate-950 text-xs text-slate-800 dark:text-slate-100 rounded-xl pl-9 pr-4 py-2.5 border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-indigo-500" />
           </div>
         </div>
       </div>
 
       {/* Live Roster Micro Metrics */}
       <div className="grid grid-cols-3 gap-4 max-w-md">
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-3 text-center shadow-sm">
-          <div className="text-[10px] font-mono text-[#7a8475] uppercase font-bold">Enrolled</div>
-          <div className="text-lg font-black text-[#1a202c] mt-0.5">{metrics.total}</div>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-center shadow-sm">
+          <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase font-bold">Enrolled</div>
+          <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">{metrics.total}</div>
         </div>
-        <div className="bg-emerald-50/50 border border-emerald-200 rounded-xl p-3 text-center shadow-sm">
-          <div className="text-[10px] font-mono text-emerald-800 uppercase font-bold">Present</div>
-          <div className="text-lg font-black text-emerald-700 mt-0.5">{metrics.present}</div>
+        <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-205 dark:border-emerald-900 rounded-xl p-3 text-center shadow-sm">
+          <div className="text-[10px] font-mono text-emerald-800 dark:text-emerald-400 uppercase font-bold">Present</div>
+          <div className="text-lg font-black text-emerald-700 dark:text-emerald-450 mt-0.5">{metrics.present}</div>
         </div>
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-center shadow-sm">
-          <div className="text-[10px] font-mono text-rose-800 uppercase font-bold">Absent</div>
-          <div className="text-lg font-black text-rose-700 mt-0.5">{metrics.absent}</div>
+        <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-205 dark:border-rose-900 rounded-xl p-3 text-center shadow-sm">
+          <div className="text-[10px] font-mono text-rose-800 dark:text-rose-400 uppercase font-bold">Absent</div>
+          <div className="text-lg font-black text-rose-700 dark:text-rose-455 mt-0.5">{metrics.absent}</div>
         </div>
       </div>
 
       {/* Main Interactive Grid / Table */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs min-w-[950px]">
             <thead>
-              <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6] text-[10px] uppercase font-bold tracking-wider text-[#4a5d4e] font-mono">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 font-mono">
                 <th className="py-4 px-6">UID</th>
                 <th className="py-4 px-6">Student Name</th>
                 <th className="py-4 px-6 text-center">Attendance Action</th>
@@ -165,20 +165,20 @@ export default function AttendanceProgress() {
                 <th className="py-4 px-6 text-center">Homework Checked</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2dcd0]/60 text-[#2c3539] font-medium">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300 font-medium">
               {filteredStudents.map((stu) => (
-                <tr key={stu.id} className="hover:bg-[#f4f0e6]/30 transition-colors group">
-                  <td className="py-4 px-6 font-mono text-[#4a5d4e] font-bold">{stu.id}</td>
-                  <td className="py-4 px-6 font-bold text-[#1a202c]">{stu.name}</td>
+                <tr key={stu.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group">
+                  <td className="py-4 px-6 font-mono text-indigo-600 dark:text-indigo-400 font-bold">{stu.id}</td>
+                  <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">{stu.name}</td>
                   
                   {/* Attendance Selector Buttons */}
                   <td className="py-4 px-6 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       <button type="button" onClick={() => toggleAttendance(stu.id, "Present")} className={`px-2.5 py-1 rounded-lg font-bold text-[10px] uppercase font-mono tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
-                        stu.status === "Present" ? "bg-emerald-600 text-white shadow-sm" : "bg-[#f4f0e6] text-[#7a8475] hover:bg-[#e2dcd0]"
+                        stu.status === "Present" ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                       }`}><Check size={12} /> Present</button>
                       <button type="button" onClick={() => toggleAttendance(stu.id, "Absent")} className={`px-2.5 py-1 rounded-lg font-bold text-[10px] uppercase font-mono tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
-                        stu.status === "Absent" ? "bg-rose-600 text-white shadow-sm" : "bg-[#f4f0e6] text-[#7a8475] hover:bg-[#e2dcd0]"
+                        stu.status === "Absent" ? "bg-rose-600 text-white shadow-sm" : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                       }`}><X size={12} /> Absent</button>
                     </div>
                   </td>
@@ -188,7 +188,7 @@ export default function AttendanceProgress() {
                     <div className="flex items-center justify-center gap-0.5">
                       {[1, 2, 3, 4, 5].map((val) => (
                         <button key={val} type="button" onClick={() => handleRatingChange(stu.id, "speed", val)} className="cursor-pointer transition-transform hover:scale-110">
-                          <Star size={14} className={val <= stu.speed ? "fill-amber-500 text-amber-500" : "text-[#e2dcd0]"} />
+                          <Star size={14} className={val <= stu.speed ? "fill-amber-500 text-amber-500" : "text-slate-200 dark:text-slate-700"} />
                         </button>
                       ))}
                     </div>
@@ -199,7 +199,7 @@ export default function AttendanceProgress() {
                     <div className="flex items-center justify-center gap-0.5">
                       {[1, 2, 3, 4, 5].map((val) => (
                         <button key={val} type="button" onClick={() => handleRatingChange(stu.id, "accuracy", val)} className="cursor-pointer transition-transform hover:scale-110">
-                          <Star size={14} className={val <= stu.accuracy ? "fill-amber-500 text-amber-500" : "text-[#e2dcd0]"} />
+                          <Star size={14} className={val <= stu.accuracy ? "fill-amber-500 text-amber-500" : "text-slate-200 dark:text-slate-700"} />
                         </button>
                       ))}
                     </div>
@@ -208,7 +208,7 @@ export default function AttendanceProgress() {
                   {/* Homework Toggle Checkbox */}
                   <td className="py-4 px-6 text-center">
                     <button type="button" onClick={() => toggleHomework(stu.id)} className={`px-3 py-1 rounded-lg font-bold text-[10px] uppercase tracking-wider font-mono transition-all cursor-pointer border ${
-                      stu.homework ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-orange-50 text-orange-700 border-orange-200"
+                      stu.homework ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900" : "bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900"
                     }`}>
                       {stu.homework ? "Completed" : "Incomplete"}
                     </button>
