@@ -9,76 +9,19 @@ export default function StudentFeesPage() {
   // Pay Fee Mock modal states
   const [showPayModal, setShowPayModal] = useState(false);
   const [payingFeeItem, setPayingFeeItem] = useState(null);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [viewFeeItem, setViewFeeItem] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState("");
 
-  const fetchFees = async () => {
-    try {
-      setLoading(true);
-      const res = await api.student.getFees();
-      setFees((res?.data || []).map((fee) => {
-        const totalAmount = Number(fee.totalAmount || 0);
-        const paidAmount = Number(fee.paidAmount || 0);
-        const fineAmount = Number(fee.fineAmount || 0);
-        const discountAmount = Number(fee.discountAmount || 0);
-        const netAmount = totalAmount + fineAmount - discountAmount;
-        const pendingAmount = Math.max(netAmount - paidAmount, 0);
-
-        return {
-          id: fee.id,
-          // default UI helper fields
-          amount: pendingAmount > 0 ? pendingAmount : 0,
-          paymentMode: fee.paymentMethod || "Cash",
-          discount: discountAmount || 0,
-          remark: fee.notes || "",
-          studentName: fee.student?.name || "—",
-          rollNo: fee.student?.rollNo || "—",
-          course: fee.student?.batch?.course?.name || "—",
-          batch: fee.student?.batch?.name || "—",
-          totalAmount,
-          paidAmount,
-          pendingAmount,
-          amount: pendingAmount > 0 ? pendingAmount : 0,
-          date: fee.dueDate ? new Date(fee.dueDate).toISOString().split("T")[0] : "—",
-          status: fee.status,
-          txId: fee.receiptNumber || `RCPT-${fee.id}`,
-          paymentMethod: fee.paymentMethod || "—",
-          notes: fee.notes || "",
-        };
-      }));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFees();
-  }, []);
-
-  const handleProcessPayment = async (e) => {
+  const handleProcessPayment = (e) => {
     e.preventDefault();
     if (!payingFeeItem) return;
 
-    try {
-      const payload = {
-        amount: Number(payingFeeItem.amount),
-        paymentMethod: payingFeeItem.paymentMode || "Cash",
-        notes: payingFeeItem.remark || payingFeeItem.notes || "",
-        discount: Number(payingFeeItem.discount || 0),
-      };
+    const newTxId = `TXN-${Math.floor(100000 + Math.random() * 900000)}`;
+    payFee(payingFeeItem.id, newTxId);
 
-      await api.student.recordPayment(payingFeeItem.id, payload);
-      setPaymentSuccess(`Payment of ₹${formatCurrency(payingFeeItem.amount)} recorded successfully.`);
-      setShowPayModal(false);
-      setPayingFeeItem(null);
-      await fetchFees();
-      setTimeout(() => setPaymentSuccess(""), 4000);
-    } catch (error) {
-      alert(error.message || "Payment failed");
-    }
+    setPaymentSuccess(`Payment of ₹${payingFeeItem.amount} for "${payingFeeItem.description}" processed successfully!`);
+    setShowPayModal(false);
+    setPayingFeeItem(null);
+    setTimeout(() => setPaymentSuccess(""), 4000);
   };
 
   const outstandingBalance = fees
@@ -87,8 +30,9 @@ export default function StudentFeesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Payment notification banner */}
       {paymentSuccess && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-600 dark:text-emerald-300 shadow-inner flex items-center gap-2 animate-fade-in">
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-300 shadow-inner flex items-center gap-2 animate-fade-in">
           <span className="text-lg">✔</span>
           <span>{paymentSuccess}</span>
         </div>
@@ -164,14 +108,14 @@ export default function StudentFeesPage() {
                       )}
                     </td>
                   </tr>
-                )
+                );
               })}
             </tbody>
           </table>
         </div>
       </div>
-    
 
+      {/* MOCK FEES PAYMENT POPUP MODAL */}
       {showPayModal && payingFeeItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md px-6">
           <div className="w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl p-6 shadow-2xl relative animate-scale-in">
@@ -190,6 +134,7 @@ export default function StudentFeesPage() {
                 </svg>
               </button>
             </div>
+
             <form onSubmit={handleProcessPayment} className="space-y-4">
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-xs text-slate-300 space-y-2">
                 <div className="flex justify-between">
@@ -260,44 +205,7 @@ export default function StudentFeesPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
 
-      {showViewModal && viewFeeItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-lg bg-white rounded-2xl p-6 text-slate-900 shadow-xl">
-            <button onClick={() => { setShowViewModal(false); setViewFeeItem(null); }} className="absolute top-4 right-6 text-slate-600">✕</button>
-            <h3 className="text-lg font-bold mb-4">Receipt Details</h3>
-            <div className="space-y-2 text-sm">
-              <div><strong>Receipt No :</strong> {viewFeeItem.txId}</div>
-              <div><strong>Student Name :</strong> {viewFeeItem.studentName}</div>
-              <div><strong>Roll No :</strong> {viewFeeItem.rollNo}</div>
-              <div><strong>Course :</strong> {viewFeeItem.course}</div>
-              <div><strong>Batch :</strong> {viewFeeItem.batch}</div>
-              <div><strong>Payment Date :</strong> {viewFeeItem.date}</div>
-
-              <div className="pt-3 border-t mt-3">
-                <div className="flex justify-between"><span>Total Fee</span><span>₹{formatCurrency(viewFeeItem.totalAmount)}</span></div>
-                <div className="flex justify-between"><span>Paid Amount</span><span>₹{formatCurrency(viewFeeItem.paidAmount)}</span></div>
-                <div className="flex justify-between"><span>Pending</span><span>₹{formatCurrency(viewFeeItem.pendingAmount)}</span></div>
-                <div className="flex justify-between"><span>Discount</span><span>₹{formatCurrency(viewFeeItem.discount)}</span></div>
-                <div className="flex justify-between"><span>GST</span><span>₹0</span></div>
-                <div className="pt-2 border-t mt-2 flex justify-between font-bold"><span>Net Amount</span><span>₹{formatCurrency(viewFeeItem.totalAmount - (viewFeeItem.discount || 0))}</span></div>
-              </div>
-
-              <div className="pt-4 flex gap-2">
-                <button onClick={() => downloadReceipt(viewFeeItem)} className="px-4 py-2 bg-blue-600 text-white rounded">⬇ Download PDF</button>
-                <button onClick={() => {
-                  const printContent = `\nSMART ABACUS\n\nPayment Receipt\n\nReceipt No: ${viewFeeItem.txId}\nPayment Date: ${viewFeeItem.date}\n\nStudent: ${viewFeeItem.studentName}\nRoll No: ${viewFeeItem.rollNo}\nCourse: ${viewFeeItem.course}\nBatch: ${viewFeeItem.batch}\n\nTotal Fee: ₹${formatCurrency(viewFeeItem.totalAmount)}\nPaid: ₹${formatCurrency(viewFeeItem.paidAmount)}\nPending: ₹${formatCurrency(viewFeeItem.pendingAmount)}\nDiscount: ₹${formatCurrency(viewFeeItem.discount)}\n\n`;
-                  const w = window.open('', '_blank');
-                  w.document.write(`<pre>${printContent}</pre>`);
-                  w.document.close();
-                  w.focus();
-                  w.print();
-                }} className="px-4 py-2 bg-gray-200 rounded">🖨 Print Receipt</button>
-              </div>
-            </div>
           </div>
         </div>
       )}
