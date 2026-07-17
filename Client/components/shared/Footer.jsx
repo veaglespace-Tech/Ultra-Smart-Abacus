@@ -38,7 +38,7 @@ export default function Footer() {
       <div className="absolute top-0 left-0 w-72 h-72 rounded-full opacity-10 animate-blob1" style={{ background: "radial-gradient(circle, #FF6B2B, transparent 70%)", filter: "blur(40px)" }} />
       <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full opacity-10 animate-blob2" style={{ background: "radial-gradient(circle, #7C3AED, transparent 70%)", filter: "blur(50px)" }} />
 
-      <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-6">
+      <div className="relative  mx-auto px-6 pt-16 pb-6">
 
         {/* Main Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">

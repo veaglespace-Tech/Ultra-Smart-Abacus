@@ -38,6 +38,32 @@ export function StudentDataProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [assignments, setAssignments] = useState(INITIAL_ASSIGNMENTS);
 
+  // fetch fees function moved to component scope so it can be called by UI
+  const fetchFees = async () => {
+    try {
+      const res = await api.student.getMyFees();
+      console.debug('GET /fees/me response:', res);
+      if (res && res.success) {
+        const mapped = (res.data || []).map(f => ({
+          id: f.id,
+          description: f.description || `Tuition Fee #${f.id}`,
+          txId: f.txId || '',
+          amount: f.paidAmount && f.paidAmount > 0 ? f.paidAmount : (f.totalAmount || 0),
+          date: f.paymentDate ? new Date(f.paymentDate).toLocaleDateString() : (f.createdAt ? new Date(f.createdAt).toLocaleDateString() : ''),
+          status: f.status ? (f.status === 'PAID' ? 'Paid' : f.status === 'PARTIAL' ? 'Partial' : 'Pending') : 'Pending',
+          remarks: f.remarks || ''
+        }));
+        console.debug('Mapped student fees:', mapped);
+        setFees(mapped);
+        return mapped;
+      }
+      return [];
+    } catch (err) {
+      console.error('Failed to fetch student fees:', err);
+      return [];
+    }
+  };
+
   useEffect(() => {
     if (user) {
       const fetchStudentProfile = async () => {
@@ -47,6 +73,7 @@ export function StudentDataProvider({ children }) {
             const s = res.data;
             setProfile((prev) => ({
               ...prev,
+              id: s.id,
               name: s.name || user.name || prev.name,
               email: s.email || user.email || prev.email,
               rollNo: s.rollNo || prev.rollNo,
@@ -57,6 +84,7 @@ export function StudentDataProvider({ children }) {
               address: s.address || prev.address,
               batch: s.batch ? (s.batch.name || `Batch - ${s.batch.code}`) : 'Unassigned',
               level: s.batch ? (s.batch.level || prev.level) : prev.level,
+              profilePhoto: s.profilePhoto || prev.profilePhoto,
             }));
           }
         } catch (err) {
@@ -89,6 +117,8 @@ export function StudentDataProvider({ children }) {
       };
       
       fetchNotifications();
+      // fetch fees
+      fetchFees();
     }
   }, [user]);
 
@@ -127,6 +157,7 @@ export function StudentDataProvider({ children }) {
         setExams,
         fees,
         setFees,
+        fetchFees,
         notifications,
         setNotifications,
         assignments,

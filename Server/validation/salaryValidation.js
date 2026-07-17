@@ -19,12 +19,6 @@ const salaryValidation = [
         .isInt({ min: 2000, max: 2100 })
         .withMessage("Year must be a valid 4-digit year"),
 
-    body("basicSalary")
-        .notEmpty()
-        .withMessage("Basic salary is required")
-        .isFloat({ min: 0 })
-        .withMessage("Basic salary must be a positive number"),
-
     body("bonus")
         .optional()
         .isFloat({ min: 0 })

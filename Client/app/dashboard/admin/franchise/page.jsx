@@ -76,10 +76,10 @@ function FranchiseListContent() {
     <div className="space-y-6">
       
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-2xl backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
         <div>
-          <h3 className="text-sm font-bold text-white">Registered Academy Franchises</h3>
-          <p className="text-[10px] text-slate-400 font-light mt-0.5">Manage regional training branch details and approvals.</p>
+          <h3 className="text-sm font-bold text-slate-950 dark:text-white">Registered Academy Franchises</h3>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-light mt-0.5">Manage regional training branch details and approvals.</p>
         </div>
         <button
           onClick={() => setShowAddFranchiseModal(true)}
@@ -92,43 +92,43 @@ function FranchiseListContent() {
       {/* Grid cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {franchises.map((franchise) => (
-          <div key={franchise.id} className="rounded-2xl border border-white/5 bg-slate-900/40 p-5 shadow-lg backdrop-blur-md hover:bg-white/[0.03] transition-all flex flex-col justify-between">
+          <div key={franchise.id} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all flex flex-col justify-between">
             <div>
               <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500/20 to-orange-500/20 text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold text-sm">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500/20 to-orange-500/20 text-amber-550 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 flex items-center justify-center font-bold text-sm">
                   F{franchise.id}
                 </div>
                 <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${
                   franchise.status === "Active"
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                    : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20"
+                    : "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"
                 }`}>
                   {franchise.status}
                 </span>
               </div>
 
-              <h4 className="text-sm font-bold text-white mt-4">{franchise.name}</h4>
-              <p className="text-xs text-slate-400 mt-1 font-light flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-4">{franchise.name}</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-light flex items-center gap-1">
+                <svg className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                 </svg>
                 {franchise.location}
               </p>
 
-              <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 gap-2 text-xs">
+              <div className="mt-4 pt-4 border-t border-slate-150 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold">Owner</span>
-                  <p className="text-slate-200 mt-0.5 font-bold truncate">{franchise.owner}</p>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Owner</span>
+                  <p className="text-slate-800 dark:text-slate-200 mt-0.5 font-bold truncate">{franchise.owner}</p>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold">Students</span>
-                  <p className="text-slate-200 mt-0.5 font-bold font-mono">{franchise.students} active</p>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Students</span>
+                  <p className="text-slate-800 dark:text-slate-200 mt-0.5 font-bold font-mono">{franchise.students} active</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3 border-t border-white/5 flex gap-2">
+            <div className="mt-5 pt-3 border-t border-slate-150 dark:border-slate-800 flex gap-2">
               <button
                 onClick={() => {
                   const amt = parseInt(prompt(`Add students to ${franchise.name}:`, "10"));
@@ -136,7 +136,7 @@ function FranchiseListContent() {
                     setFranchises(franchises.map(f => f.id === franchise.id ? { ...f, students: f.students + amt } : f));
                   }
                 }}
-                className="flex-1 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-xs text-slate-300 font-semibold transition-all active:scale-95"
+                className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-white/5 text-xs text-slate-700 dark:text-slate-300 font-semibold transition-all active:scale-95 cursor-pointer"
               >
                 Add Students
               </button>

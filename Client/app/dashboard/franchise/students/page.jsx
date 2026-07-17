@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { api } from "@/services/api";
 import { 
   UserPlus, GraduationCap, Users, ShieldAlert, CheckCircle2, 
   MessageSquare, Clock, Pencil, Trash, X, Save, ArrowLeft, 
@@ -20,6 +21,8 @@ export default function FranchiseStudents() {
   const [filterFee, setFilterFee] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+
+  const [loading, setLoading] = useState(false);
 
  const [formData, setFormData] = useState({
   name: "",
@@ -163,20 +166,48 @@ export default function FranchiseStudents() {
     setFormData({ name: "", level: "", teacher: "", status: "Active", feeStatus: "Paid", batch: "", phone: "" });
   };
 
+  const fetchStudents = async () => {
+    setLoading(true);
+    try {
+      const res = await api.admin.getStudents();
+      const list = (res.data || res || []).map(s => ({
+        id: `STU-${s.id}`,
+        rawId: s.id,
+        name: s.name,
+        level: s.batch?.level || 'Unassigned',
+        batch: s.batch?.name || 'Unassigned',
+        teacher: s.batch?.teacherName || 'TBD',
+        phone: s.phone || '',
+        feeStatus: s.feeStatus || 'Paid',
+        status: 'Active',
+        logs: s.logs || []
+      }));
+      setStudents(list);
+    } catch (err) {
+      console.error('Failed to fetch students:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
   return (
-    <div className="space-y-6 w-full text-[#2c3539]">
+    <div className="space-y-6 w-full text-slate-800">
       
       {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e2dcd0] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
-          <h2 className="text-base font-black tracking-tight text-[#1a202c] uppercase">Student Roster Hub</h2>
-          <p className="text-[11px] text-[#8a9485] mt-0.5 font-medium">Enterprise-grade center analytics, automated triggers, and bulk control.</p>
+          <h2 className="text-base font-black tracking-tight text-slate-900 uppercase">Student Roster Hub</h2>
+          <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Enterprise-grade center analytics, automated triggers, and bulk control.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-center">
-          <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f4f0e6] border border-[#e2dcd0] text-[11px] font-bold rounded-lg text-[#5a6455] hover:bg-[#e2dcd0]/50 transition-all cursor-pointer">
+          <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 text-[11px] font-bold rounded-lg text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
             <Download size={13} /><span>Export CSV</span>
           </button>
-          <button onClick={() => { setEditingStudent(null); resetForm(); setIsFormOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4a5d4e] text-[11px] font-bold rounded-lg text-[#fcfbfa] hover:bg-[#3d4d40] transition-all cursor-pointer shadow-sm">
+          <button onClick={() => { setEditingStudent(null); resetForm(); setIsFormOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] text-[11px] font-bold rounded-lg text-white hover:bg-[#4338ca] transition-all cursor-pointer shadow-sm">
             <UserPlus size={13} /><span>New Admission</span>
           </button>
         </div>
@@ -184,34 +215,34 @@ export default function FranchiseStudents() {
 
       {/* METRICS BLOCKS */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
-          <div className="text-[10px] uppercase font-bold tracking-wider text-[#8a9485]">Total Enrolled</div>
-          <div className="text-xl font-black text-[#1a202c] mt-1">{metrics.total}</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Total Enrolled</div>
+          <div className="text-xl font-black text-slate-900 mt-1">{metrics.total}</div>
         </div>
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
-          <div className="text-[10px] uppercase font-bold tracking-wider text-[#4a5d4e]">Active Students</div>
-          <div className="text-xl font-black text-[#4a5d4e] mt-1">{metrics.active}</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] uppercase font-bold tracking-wider text-indigo-650">Active Students</div>
+          <div className="text-xl font-black text-indigo-600 mt-1">{metrics.active}</div>
         </div>
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold tracking-wider text-amber-800">Dues Pending</div>
           <div className="text-xl font-black text-amber-800 mt-1">{metrics.pendingFees}</div>
         </div>
       </div>
 
       {/* SEARCH AND CONTROL BAR */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] p-3 rounded-xl flex flex-col lg:flex-row gap-3 items-center shadow-sm">
+      <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col lg:flex-row gap-3 items-center shadow-sm">
         <div className="relative w-full lg:max-w-xs">
-          <Search className="absolute left-3 top-2.5 text-[#8a9485]" size={14} />
-          <input type="text" placeholder="Search by Name or ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#f4f0e6]/40 text-xs text-[#1a202c] rounded-lg pl-9 pr-4 py-1.5 border border-[#e2dcd0] focus:outline-none focus:border-[#4a5d4e]" />
+          <Search className="absolute left-3 top-2.5 text-slate-450" size={14} />
+          <input type="text" placeholder="Search by Name or ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-50 text-xs text-slate-900 rounded-lg pl-9 pr-4 py-1.5 border border-slate-200 focus:outline-none focus:border-indigo-500" />
         </div>
         <div className="grid grid-cols-3 gap-2 w-full lg:w-auto text-[11px]">
-          <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="bg-[#fcfbfa] px-2 py-1.5 rounded-lg border border-[#e2dcd0] text-[#5a6455] font-medium focus:outline-none">
+          <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="bg-white px-2 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-medium focus:outline-none">
             <option value="All">All Levels</option><option value="Level 1">Level 1</option><option value="Level 2">Level 2</option><option value="Level 4">Level 4</option>
           </select>
-          <select value={filterFee} onChange={(e) => setFilterFee(e.target.value)} className="bg-[#fcfbfa] px-2 py-1.5 rounded-lg border border-[#e2dcd0] text-[#5a6455] font-medium focus:outline-none">
+          <select value={filterFee} onChange={(e) => setFilterFee(e.target.value)} className="bg-white px-2 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-medium focus:outline-none">
             <option value="All">All Fees</option><option value="Paid">Paid</option><option value="Pending">Pending</option><option value="Overdue">Overdue</option>
           </select>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-[#fcfbfa] px-2 py-1.5 rounded-lg border border-[#e2dcd0] text-[#5a6455] font-medium focus:outline-none">
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-white px-2 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-medium focus:outline-none">
             <option value="All">All Status</option><option value="Active">Active</option><option value="Suspended">Suspended</option>
           </select>
         </div>
@@ -224,20 +255,20 @@ export default function FranchiseStudents() {
           <div className="flex items-center gap-2">
             <button onClick={() => handleBulkFeeMark("Paid")} className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px] rounded-md cursor-pointer hover:bg-emerald-100 transition-colors">Mark Paid</button>
             <button onClick={() => handleBulkFeeMark("Overdue")} className="px-3 py-1 bg-rose-50 border border-rose-200 text-rose-700 font-bold text-[10px] rounded-md cursor-pointer hover:bg-rose-100 transition-colors">Mark Overdue</button>
-            <button onClick={() => setSelectedStudentIds([])} className="text-xs text-[#8a9485] hover:text-[#1a202c] px-2 cursor-pointer font-medium">Clear</button>
+            <button onClick={() => setSelectedStudentIds([])} className="text-xs text-slate-500 hover:text-slate-800 px-2 cursor-pointer font-medium">Clear</button>
           </div>
         </div>
       )}
 
       {/* COMPACT DATA ROSTER BOARD */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs min-w-[900px]">
             <thead>
-              <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6] text-[10px] uppercase font-bold tracking-wider text-[#7a8475]">
+              <tr className="border-b border-slate-200 bg-slate-50 text-[10px] uppercase font-bold tracking-wider text-slate-500">
                 <th className="py-3 px-4 w-12 text-center">
-                  <button onClick={handleSelectAll} className="text-[#8a9485] hover:text-[#1a202c] transition-colors cursor-pointer flex items-center justify-center w-full">
-                    {selectedStudentIds.length === filteredStudents.length ? <CheckSquare size={14} className="text-[#4a5d4e]" /> : <Square size={14} />}
+                  <button onClick={handleSelectAll} className="text-slate-400 hover:text-slate-800 transition-colors cursor-pointer flex items-center justify-center w-full">
+                    {selectedStudentIds.length === filteredStudents.length ? <CheckSquare size={14} className="text-indigo-600" /> : <Square size={14} />}
                   </button>
                 </th>
                 <th className="py-3 px-4">ID</th>
@@ -250,32 +281,32 @@ export default function FranchiseStudents() {
                 <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2dcd0]/40 text-[#2c3539] font-medium">
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
               {filteredStudents.map((student) => (
-                <tr key={student.id} onClick={(e) => handleRowClick(student, e)} className={`hover:bg-[#f5f2eb]/30 cursor-pointer transition-colors group ${selectedStudentIds.includes(student.id) ? 'bg-[#4a5d4e]/5' : ''}`}>
+                <tr key={student.id} onClick={(e) => handleRowClick(student, e)} className={`hover:bg-slate-50/50 cursor-pointer transition-colors group ${selectedStudentIds.includes(student.id) ? 'bg-indigo-50/40' : ''}`}>
                   <td className="py-3 px-4 text-center">
-                    <button onClick={(e) => handleSelectStudent(student.id, e)} className="text-[#8a9485] hover:text-[#1a202c] transition-colors cursor-pointer flex items-center justify-center w-full">
-                      {selectedStudentIds.includes(student.id) ? <CheckSquare size={14} className="text-[#4a5d4e]" /> : <Square size={14} />}
+                    <button onClick={(e) => handleSelectStudent(student.id, e)} className="text-slate-400 hover:text-slate-800 transition-colors cursor-pointer flex items-center justify-center w-full">
+                      {selectedStudentIds.includes(student.id) ? <CheckSquare size={14} className="text-indigo-600" /> : <Square size={14} />}
                     </button>
                   </td>
-                  <td className="py-3 px-4 font-mono text-[#4a5d4e] font-bold">{student.id}</td>
-                  <td className="py-3 px-6 font-bold text-[#1a202c] group-hover:text-[#4a5d4e] transition-colors">{student.name}</td>
-                  <td className="py-3 px-6"><span className="flex items-center gap-1.5 text-[#4a5d4e] font-bold"><GraduationCap size={14} /> {student.level}</span></td>
-                  <td className="py-3 px-6"><span className="flex items-center gap-1.5 text-[#5a6455] font-mono"><Clock size={13} className="text-[#8a9485]" /> {student.batch}</span></td>
-                  <td className="py-3 px-6 text-[#2c3539] font-semibold"><span className="flex items-center gap-1.5"><Users size={13} className="text-[#8a9485]" /> {student.teacher}</span></td>
+                  <td className="py-3 px-4 font-mono text-indigo-600 font-bold">{student.id}</td>
+                  <td className="py-3 px-6 font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{student.name}</td>
+                  <td className="py-3 px-6"><span className="flex items-center gap-1.5 text-indigo-600 font-bold"><GraduationCap size={14} /> {student.level}</span></td>
+                  <td className="py-3 px-6"><span className="flex items-center gap-1.5 text-slate-600 font-mono"><Clock size={13} className="text-slate-450" /> {student.batch}</span></td>
+                  <td className="py-3 px-6 text-slate-800 font-semibold"><span className="flex items-center gap-1.5"><Users size={13} className="text-slate-450" /> {student.teacher}</span></td>
                   <td className="py-3 px-6">
-                    <button onClick={() => toggleFeeStatus(student.id, student.feeStatus)} className={`px-2.5 py-0.5 rounded text-[10px] font-bold border transition-all active:scale-95 cursor-pointer ${student.feeStatus === "Paid" ? "text-emerald-700 bg-emerald-50 border-emerald-200" : student.feeStatus === "Pending" ? "text-amber-700 bg-amber-50 border-amber-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>{student.feeStatus}</button>
+                    <button onClick={() => toggleFeeStatus(student.id, student.feeStatus)} className={`px-2.5 py-0.5 rounded text-[10px] font-bold border transition-all active:scale-[0.96] cursor-pointer ${student.feeStatus === "Paid" ? "text-emerald-700 bg-emerald-50 border-emerald-200" : student.feeStatus === "Pending" ? "text-amber-700 bg-amber-50 border-amber-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>{student.feeStatus}</button>
                   </td>
                   <td className="py-3 px-6">
-                    <button onClick={() => toggleAccountStatus(student.id, student.status)} className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold inline-flex items-center gap-1 border transition-all active:scale-95 cursor-pointer ${student.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"}`}>
+                    <button onClick={() => toggleAccountStatus(student.id, student.status)} className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold inline-flex items-center gap-1 border transition-all active:scale-[0.96] cursor-pointer ${student.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"}`}>
                       {student.status === "Active" ? <CheckCircle2 size={10} /> : <ShieldAlert size={10} />}{student.status}
                     </button>
                   </td>
                   <td className="py-3 px-4 text-center">
                     <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => window.open(`https://wa.me/91${student.phone}`, "_blank")} className="p-1.5 text-[#8a9485] hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"><MessageSquare size={13} /></button>
-                      <button onClick={() => handleEdit(student)} className="p-1.5 text-[#8a9485] hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
-                      <button onClick={() => handleDelete(student.id)} className="p-1.5 text-[#8a9485] hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
+                      <button onClick={() => window.open(`https://wa.me/91${student.phone}`, "_blank")} className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"><MessageSquare size={13} /></button>
+                      <button onClick={() => handleEdit(student)} className="p-1.5 text-slate-400 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
+                      <button onClick={() => handleDelete(student.id)} className="p-1.5 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
                     </div>
                   </td>
                 </tr>

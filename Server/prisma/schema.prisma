@@ -373,6 +373,8 @@ model Salary {
   month             Int
   year              Int
   basicSalary       Float
+  presentDays       Int       @default(0)
+  dailyRate         Float     @default(500)
   bonus             Float     @default(0)
   deductions        Float     @default(0)
   netSalary         Float

@@ -90,11 +90,10 @@ export default function StudentProfilePage() {
           <span>{profileSuccess}</span>
         </div>
       )}
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
         
         {/* Visual profile detail summary card */}
-        <div className="lg:col-span-4 rounded-2xl border border-white/5 bg-slate-900/40 p-6 backdrop-blur-md flex flex-col items-center text-center shadow-lg">
+        <div className="lg:col-span-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 flex flex-col items-center text-center shadow-sm">
           <div className="relative w-24 h-24 mb-4">
 
   {resolvedProfilePhoto ? (
@@ -105,7 +104,7 @@ export default function StudentProfilePage() {
     />
   ) : (
     <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-1">
-      <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-black text-2xl text-blue-300">
+      <div className="w-full h-full rounded-full bg-slate-955 flex items-center justify-center font-black text-2xl text-blue-300">
         {initials}
       </div>
     </div>
@@ -128,40 +127,40 @@ export default function StudentProfilePage() {
   <button
     type="button"
     onClick={() => fileInputRef.current.click()}
-    className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg"
+    className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg cursor-pointer"
   >
     <Camera size={14} />
   </button>
 
 </div>
           
-          <h3 className="text-base font-bold text-white">{profile.name}</h3>
+          <h3 className="text-base font-bold text-slate-950 dark:text-white">{profile.name}</h3>
           <span className="text-xs text-slate-500 font-mono mt-0.5">{profile.rollNo}</span>
           
-          <div className="w-full border-t border-white/5 mt-6 pt-6 space-y-3.5 text-xs text-left">
+          <div className="w-full border-t border-slate-100 dark:border-slate-800 mt-6 pt-6 space-y-3.5 text-xs text-left">
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Course Level</span>
-              <span className="text-slate-200 font-bold">Level {profile.level}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold">Level {profile.level}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Assigned Batch</span>
-              <span className="text-slate-200 font-bold">{profile.batch}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold">{profile.batch}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Registered Center</span>
-              <span className="text-slate-200 font-bold text-right truncate max-w-[170px]">{profile.center}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold text-right truncate max-w-[170px]">{profile.center}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Admission Date</span>
-              <span className="text-slate-200 font-bold font-mono">{profile.admissionDate}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold font-mono">{profile.admissionDate}</span>
             </div>
           </div>
         </div>
 
         {/* Profile detail values sheet / edit form */}
-        <div className="lg:col-span-8 rounded-2xl border border-white/5 bg-slate-900/40 p-6 backdrop-blur-md shadow-lg">
-          <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-5">
-            <h3 className="text-sm font-bold text-white tracking-wide uppercase">
+        <div className="lg:col-span-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-150 dark:border-slate-800 pb-4 mb-5">
+            <h3 className="text-sm font-bold text-slate-950 dark:text-white tracking-wide uppercase">
               {isEditingProfile ? "Modify Profile Information" : "Personal Records Profile Information"}
             </h3>
             {!isEditingProfile && (
@@ -173,7 +172,7 @@ export default function StudentProfilePage() {
                   setEditParentName(profile.parentName);
                   setIsEditingProfile(true);
                 }}
-                className="px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-xs text-slate-300 font-bold transition-all active:scale-95 cursor-pointer"
+                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-white/5 text-xs text-slate-700 dark:text-slate-300 font-bold transition-all active:scale-95 cursor-pointer"
               >
                 Modify Profile
               </button>
@@ -184,7 +183,7 @@ export default function StudentProfilePage() {
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-450 mb-1.5">
                     Full Name
                   </label>
                   <input
@@ -192,11 +191,11 @@ export default function StudentProfilePage() {
                     required
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500 transition-all"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-450 mb-1.5">
                     Registered Email
                   </label>
                   <input
@@ -204,14 +203,14 @@ export default function StudentProfilePage() {
                     required
                     value={editEmail}
                     onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500 transition-all"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-450 mb-1.5">
                     Contact Phone
                   </label>
                   <input
@@ -219,11 +218,11 @@ export default function StudentProfilePage() {
                     required
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500 transition-all"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-450 mb-1.5">
                     Parent Name / Representative
                   </label>
                   <input
@@ -231,7 +230,7 @@ export default function StudentProfilePage() {
                     required
                     value={editParentName}
                     onChange={(e) => setEditParentName(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs text-white outline-none focus:border-blue-500 transition-all"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
                   />
                 </div>
               </div>
@@ -240,7 +239,7 @@ export default function StudentProfilePage() {
                 <button
                   type="button"
                   onClick={() => setIsEditingProfile(false)}
-                  className="px-4 py-2.5 text-xs font-semibold rounded-xl border border-white/10 text-slate-400 hover:bg-white/5 active:scale-95 transition-all"
+                  className="px-4 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 text-slate-550 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-95 transition-all"
                 >
                   Cancel Change
                 </button>
@@ -256,27 +255,27 @@ export default function StudentProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs mt-3">
               <div>
                 <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Full Name</span>
-                <p className="text-slate-200 mt-1 font-bold">{profile.name}</p>
+                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold">{profile.name}</p>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Registered Email</span>
-                <p className="text-slate-200 mt-1 font-bold font-mono">{profile.email}</p>
+                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold font-mono">{profile.email}</p>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Parent/Guardian Name</span>
-                <p className="text-slate-200 mt-1 font-bold">{profile.parentName}</p>
+                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold">{profile.parentName}</p>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Contact Number</span>
-                <p className="text-slate-200 mt-1 font-bold font-mono">{profile.phone}</p>
+                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold font-mono">{profile.phone}</p>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Assigned Center Location</span>
-                <p className="text-slate-200 mt-1 font-bold">{profile.center}</p>
+                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold">{profile.center}</p>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Admission Date</span>
-                <p className="text-slate-200 mt-1 font-bold font-mono">{profile.admissionDate}</p>
+                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold font-mono">{profile.admissionDate}</p>
               </div>
             </div>
           )}

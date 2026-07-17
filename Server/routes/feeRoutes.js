@@ -7,10 +7,11 @@ createFee,
 getFees,
 getFeeById,
 updateFee,
-deleteFee
+deleteFee,
+getMyFees,
+getFeeReceipt
 
-}
-from "../controllers/feeController.js"
+} from "../controllers/feeController.js"
 
 
 
@@ -52,6 +53,34 @@ getFees
 )
 
 
+// STUDENT: get own fees
+router.get(
+	"/me",
+	authMiddleware,
+	authorize("STUDENT"),
+	getMyFees
+)
+
+// TEMP: create a demo paid fee for the logged-in student
+router.post(
+	"/me/demo",
+	authMiddleware,
+	authorize("STUDENT"),
+	// no validation for demo endpoint
+	// controller will create a PAID fee for testing
+	(req, res, next) => next(),
+	// lazy import handler from controller
+	async (req, res, next) => {
+		try {
+			const { createDemoFee } = await import("../controllers/feeController.js");
+			return createDemoFee(req, res, next);
+		} catch (err) {
+			return next(err);
+		}
+	}
+)
+
+
 
 // READ ONE
 
@@ -60,6 +89,13 @@ router.get(
 authMiddleware,
 authorize("ADMIN","FRANCHISE"),
 getFeeById
+)
+
+// fee receipt download (student or admin/franchise)
+router.get(
+	"/:id/receipt",
+	authMiddleware,
+	getFeeReceipt
 )
 
 

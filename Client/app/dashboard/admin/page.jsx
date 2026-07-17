@@ -184,8 +184,8 @@ export default function AdminOverview() {
         </div>
 
         {/* Audit trail / Recent updates log */}
-        <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/40 p-6 backdrop-blur-md shadow-sm dark:shadow-none">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-wide uppercase border-b border-slate-100 dark:border-white/5 pb-3 mb-4 flex items-center justify-between">
+        <div className="lg:col-span-7 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-wide uppercase border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between">
             <span>Administrative Logs</span>
             <span className="text-[10px] text-slate-400 dark:text-slate-500 tracking-normal font-mono">Real-time Feed</span>
           </h3>

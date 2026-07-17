@@ -259,3 +259,140 @@ error:error.message
 
 
 }
+
+// GET MY FEES (Student view) - optional status filter
+export const getMyFees = async (req, res) => {
+	try {
+		// find student by logged in user
+		let student = await prisma.student.findUnique({ where: { userId: req.user.id } });
+
+		// Fallback: if student record isn't linked by userId, try matching by email
+		if (!student && req.user && req.user.email) {
+			student = await prisma.student.findFirst({ where: { email: req.user.email } });
+		}
+
+		if (!student) {
+			console.debug(`getMyFees: no student record found for user id=${req.user?.id} email=${req.user?.email}`);
+			return res.status(200).json({ success: true, data: [] });
+		}
+
+		const { status } = req.query;
+
+		const where = { studentId: student.id };
+		if (status) where.status = status;
+
+		const fees = await prisma.fee.findMany({
+			where,
+			orderBy: [{ createdAt: 'desc' }]
+		});
+
+		console.debug(`getMyFees: returning ${fees.length} fees for studentId=${student.id}`);
+
+		return res.status(200).json({ success: true, data: fees });
+	} catch (error) {
+		return res.status(500).json({ error: error.message });
+	}
+};
+
+// GET FEE RECEIPT (downloadable HTML)
+export const getFeeReceipt = async (req, res) => {
+	try {
+		const { id } = req.params;
+
+		const fee = await prisma.fee.findUnique({
+			where: { id: Number(id) },
+			include: {
+				student: true
+			}
+		});
+
+		if (!fee) return res.status(404).json({ message: 'Fee not found' });
+
+		// Access control: if student, ensure they own the fee
+		if (req.user.role === 'STUDENT') {
+			let student = await prisma.student.findUnique({ where: { userId: req.user.id } });
+			if (!student && req.user && req.user.email) {
+				student = await prisma.student.findFirst({ where: { email: req.user.email } });
+			}
+			if (!student || student.id !== fee.studentId) {
+				return res.status(403).json({ message: 'Access denied' });
+			}
+		}
+
+		// Build simple HTML receipt
+		const html = `<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Fee Receipt - ${fee.id}</title>
+	<style>body{font-family:Arial,Helvetica,sans-serif;padding:20px;color:#111} .header{display:flex;justify-content:space-between;align-items:center} .box{border:1px solid #eee;padding:18px;border-radius:8px;margin-top:20px}</style>
+</head>
+<body>
+	<div class="header">
+		<div>
+			<h2>Ultra Smart Abacus</h2>
+			<div>Fee Receipt</div>
+		</div>
+		<div>
+			<strong>Receipt #</strong> <div>FEE-${fee.id}</div>
+			<div>${new Date(fee.createdAt).toLocaleString()}</div>
+		</div>
+	</div>
+	<div class="box">
+		<p><strong>Student:</strong> ${fee.student?.name || 'N/A'}</p>
+		<p><strong>Student Email:</strong> ${fee.student?.email || 'N/A'}</p>
+		<p><strong>Amount Paid:</strong> ₹${fee.paidAmount.toLocaleString()}</p>
+		<p><strong>Payment Status:</strong> ${fee.status}</p>
+		<p><strong>Transaction ID:</strong> ${fee.txId || 'N/A'}</p>
+		<p><strong>Notes:</strong> ${fee.remarks || '—'}</p>
+	</div>
+	<div style="margin-top:24px;font-size:12px;color:#666">This is a system generated receipt.</div>
+</body>
+</html>`;
+
+		res.setHeader('Content-Disposition', `attachment; filename=FeeReceipt_${fee.id}.html`);
+		res.setHeader('Content-Type', 'text/html');
+		return res.send(html);
+
+	} catch (error) {
+		return res.status(500).json({ error: error.message });
+	}
+};
+
+// TEMP: Create a demo PAID fee for the logged-in student (useful for testing receipts)
+export const createDemoFee = async (req, res) => {
+	try {
+		// find student by logged in user
+		let student = await prisma.student.findUnique({ where: { userId: req.user.id } });
+
+		// fallback to matching by email
+		if (!student && req.user && req.user.email) {
+			student = await prisma.student.findFirst({ where: { email: req.user.email } });
+		}
+
+		if (!student) {
+			return res.status(404).json({ message: 'Student record not found for current user' });
+		}
+
+		// create a paid demo fee
+		const totalAmount = Number(req.body.totalAmount) || 500; // default 500
+		const paidAmount = totalAmount;
+		const pendingAmount = 0;
+
+		const demo = await prisma.fee.create({
+			data: {
+				studentId: student.id,
+				totalAmount,
+				paidAmount,
+				pendingAmount,
+				status: 'PAID',
+				txId: `DEMO-${Date.now()}`,
+				remarks: req.body.remarks || 'Demo paid fee for receipt testing'
+			}
+		});
+
+		return res.status(201).json({ success: true, data: demo });
+	} catch (error) {
+		return res.status(500).json({ error: error.message });
+	}
+};

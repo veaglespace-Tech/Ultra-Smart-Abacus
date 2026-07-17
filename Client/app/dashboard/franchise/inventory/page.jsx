@@ -92,32 +92,32 @@ export default function InventoryManagement() {
   };
 
   return (
-    <div className="space-y-6 p-4 md:p-6 text-[#2c3539] max-w-[1600px] mx-auto bg-[#fcfbfa] font-sans min-h-screen">
+    <div className="space-y-6 p-4 md:p-6 text-slate-800 max-w-[1600px] mx-auto bg-white font-sans min-h-screen">
       
       {/* Top Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e2dcd0] pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-[#1a202c]">Inventory & <span className="text-[#4a5d4e]">Material Ledger</span></h2>
-          <p className="text-xs text-[#7a8475] mt-1">Track abacus learning tools, textbook dispatches, and certificate allocations.</p>
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900">Inventory & <span className="text-indigo-650">Material Ledger</span></h2>
+          <p className="text-xs text-slate-500 mt-1">Track abacus learning tools, textbook dispatches, and certificate allocations.</p>
         </div>
         
         {/* Chrome-friendly Download Action */}
         <button 
           onClick={downloadInventoryCSV}
-          className="px-4 py-2.5 bg-[#fcfbfa] hover:bg-[#f4f0e6] text-[#2c3539] font-bold rounded-xl border border-[#e2dcd0] text-xs transition-all flex items-center gap-2 cursor-pointer self-start sm:self-center shadow-sm"
+          className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-xl border border-slate-200 text-xs transition-all flex items-center gap-2 cursor-pointer self-start sm:self-center shadow-sm"
         >
-          <Download size={14} className="text-[#7a8475]" /> Download Inventory CSV
+          <Download size={14} className="text-slate-500" /> Download Inventory CSV
         </button>
       </div>
 
       {/* Stock Summary Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
           <div>
-            <div className="text-[10px] uppercase font-mono tracking-wider text-[#7a8475] font-bold">Total Units Logged</div>
-            <div className="text-xl font-black text-[#1a202c] mt-1">{metrics.totalItems} Units</div>
+            <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500 font-bold">Total Units Logged</div>
+            <div className="text-xl font-black text-slate-900 mt-1">{metrics.totalItems} Units</div>
           </div>
-          <div className="p-2.5 bg-[#f4f0e6] text-[#4a5d4e] rounded-xl"><Package size={18} /></div>
+          <div className="p-2.5 bg-slate-50 text-indigo-600 rounded-xl"><Package size={18} /></div>
         </div>
         
         <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 flex items-center justify-between shadow-sm">
@@ -128,7 +128,7 @@ export default function InventoryManagement() {
           <div className="p-2.5 bg-rose-100/60 border border-rose-200 text-rose-700 rounded-xl"><AlertTriangle size={18} /></div>
         </div>
         
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
           <div>
             <div className="text-[10px] uppercase font-mono tracking-wider text-blue-700 font-bold">Unique Profiles</div>
             <div className="text-xl font-black text-blue-900 mt-1">{metrics.categoriesCount} Material Classes</div>
@@ -138,12 +138,12 @@ export default function InventoryManagement() {
       </div>
 
       {/* Roster Search Filters */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] p-4 rounded-xl flex flex-col sm:flex-row gap-3 items-center shadow-sm">
+      <div className="bg-white border border-slate-200 p-4 rounded-xl flex flex-col sm:flex-row gap-3 items-center shadow-sm">
         <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-3 text-[#7a8475]" size={14} />
-          <input type="text" placeholder="Search Material Name, SKU..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#fcfbfa] text-xs text-[#1a202c] rounded-xl pl-9 pr-4 py-2.5 border border-[#e2dcd0] focus:outline-none focus:border-[#4a5d4e] placeholder-[#7a8475]/60" />
+          <Search className="absolute left-3 top-3 text-slate-450" size={14} />
+          <input type="text" placeholder="Search Material Name, SKU..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-50 text-xs text-slate-900 rounded-xl pl-9 pr-4 py-2.5 border border-slate-200 focus:outline-none focus:border-indigo-500 placeholder-slate-450" />
         </div>
-        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="bg-[#fcfbfa] px-3 py-2.5 rounded-xl border border-[#e2dcd0] text-xs text-[#2c3539] font-medium focus:outline-none w-full sm:w-43 sm:ml-auto focus:border-[#4a5d4e]">
+        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="bg-white px-3 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 font-medium focus:outline-none w-full sm:w-43 sm:ml-auto focus:border-indigo-500 cursor-pointer">
           <option value="All">All Categories</option>
           <option value="Kits">Abacus Tool Kits</option>
           <option value="Books">Textbooks & Workbooks</option>
@@ -152,11 +152,11 @@ export default function InventoryManagement() {
       </div>
 
       {/* Main Core Ledger Table */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs min-w-[850px]">
             <thead>
-              <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6]/60 text-[10px] uppercase font-bold tracking-wider text-[#4a5d4e] font-mono">
+              <tr className="border-b border-slate-200 bg-slate-50 text-[10px] uppercase font-bold tracking-wider text-slate-500 font-mono">
                 <th className="py-4 px-6">SKU Code</th>
                 <th className="py-4 px-6">Material Description</th>
                 <th className="py-4 px-6">Category</th>
@@ -166,16 +166,16 @@ export default function InventoryManagement() {
                 <th className="py-4 px-6 text-center">Stock Adjustment Quick Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2dcd0]/60 text-[#2c3539] font-medium">
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
               {filteredInventory.map((item) => {
                 const isLow = item.stock < item.minRequired;
                 return (
-                  <tr key={item.id} className="hover:bg-[#f4f0e6]/30 transition-colors group">
-                    <td className="py-4 px-6 font-mono text-[#4a5d4e] font-bold">{item.id}</td>
-                    <td className="py-4 px-6 font-black text-[#1a202c]">{item.name}</td>
-                    <td className="py-4 px-6"><span className="px-2 py-0.5 bg-[#f4f0e6] text-[#4a5d4e] rounded font-mono text-[10px] border border-[#e2dcd0]">{item.category}</span></td>
-                    <td className={`py-4 px-6 font-mono text-center font-black text-sm ${isLow ? "text-rose-700" : "text-[#1a202c]"}`}>{item.stock}</td>
-                    <td className="py-4 px-6 font-mono text-center text-[#7a8475]">{item.minRequired}</td>
+                  <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="py-4 px-6 font-mono text-indigo-650 font-bold">{item.id}</td>
+                    <td className="py-4 px-6 font-black text-slate-900">{item.name}</td>
+                    <td className="py-4 px-6"><span className="px-2 py-0.5 bg-slate-50 text-indigo-700 rounded font-mono text-[10px] border border-slate-200">{item.category}</span></td>
+                    <td className={`py-4 px-6 font-mono text-center font-black text-sm ${isLow ? "text-rose-700" : "text-slate-900"}`}>{item.stock}</td>
+                    <td className="py-4 px-6 font-mono text-center text-slate-500">{item.minRequired}</td>
                     <td className="py-4 px-6 text-center">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
                         isLow ? "bg-rose-50 text-rose-700 border border-rose-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
@@ -186,7 +186,7 @@ export default function InventoryManagement() {
                         <button onClick={() => openAdjustmentModal(item, "Restock")} className="px-2 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-lg font-bold text-[10px] font-mono transition-all cursor-pointer flex items-center gap-1">
                           <Plus size={11} /> Restock
                         </button>
-                        <button onClick={() => openAdjustmentModal(item, "Distribute")} className="px-2 py-1 bg-[#fcfbfa] hover:bg-rose-50 border border-[#e2dcd0] hover:border-rose-200 text-[#7a8475] hover:text-rose-700 rounded-lg font-bold text-[10px] font-mono transition-all cursor-pointer flex items-center gap-1">
+                        <button onClick={() => openAdjustmentModal(item, "Distribute")} className="px-2 py-1 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-500 hover:text-rose-700 rounded-lg font-bold text-[10px] font-mono transition-all cursor-pointer flex items-center gap-1">
                           <Minus size={11} /> Issue/Use
                         </button>
                       </div>

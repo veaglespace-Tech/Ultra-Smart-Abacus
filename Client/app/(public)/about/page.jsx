@@ -87,10 +87,10 @@ export default function About() {
               Leading the Future of<br />
               <span style={{ color: "#FF6B2B" }}>Math Education</span>
             </h2>
-            <p className="text-slate-600 text-base leading-relaxed mb-4">
+            <p className="text-slate-600 text-lg leading-relaxed mb-4">
               Smart Abacus is a leading education platform dedicated to unlocking the mathematical potential in every child. With over 15 years of excellence, we have empowered thousands of students to achieve extraordinary computational abilities and academic success.
             </p>
-            <p className="text-slate-600 text-base leading-relaxed mb-8">
+            <p className="text-slate-600 text-lg leading-relaxed mb-8">
               Our comprehensive curriculum combines traditional Abacus methodology with modern educational techniques, ensuring students develop not just calculation skills but also enhanced memory, focus, and problem-solving abilities.
             </p>
 
@@ -104,7 +104,7 @@ export default function About() {
                 <div key={i} className="text-center p-4 rounded-2xl bg-[#2D1B69]/5 dark:bg-[#2D1B69]/20 border border-[#2D1B69]/10 dark:border-[#2D1B69]/40">
                   <Icon size={20} className="mx-auto mb-2" style={{ color: "#FF6B2B" }} />
                   <div className="text-2xl font-black text-[#2D1B69]" style={{ fontFamily: "Poppins, sans-serif" }}>{value}</div>
-                  <div className="text-xs text-slate-500 font-medium">{label}</div>
+                  <div className="text-xl text-slate-500 font-medium">{label}</div>
                 </div>
               ))}
             </div>
@@ -123,7 +123,7 @@ export default function About() {
       <section className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div>
-            <span className="badge-primary mb-4 inline-flex">Our Commitment</span>
+            <span className="badge-primary inline-flex items-center px-8 py-3 text-xl font-bold rounded-full">Our Commitment</span>
             <h2 className="section-heading text-[#2D1B69] mb-6">
               Our Promise to<br />
               <span style={{ color: "#FF6B2B" }}>Every Family</span>
@@ -135,7 +135,7 @@ export default function About() {
                     style={{ background: "linear-gradient(135deg, #FF6B2B, #FFCA28)" }}>
                     <CheckCircle2 size={13} color="white" />
                   </div>
-                  <span className="text-slate-700 text-sm font-medium">{item}</span>
+                  <span className="text-slate-700 text-lg font-medium">{item}</span>
                 </li>
               ))}
             </ul>
