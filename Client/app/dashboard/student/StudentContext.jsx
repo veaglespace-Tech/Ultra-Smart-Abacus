@@ -48,6 +48,10 @@ export function StudentDataProvider({ children }) {
           id: f.id,
           description: f.description || `Tuition Fee #${f.id}`,
           txId: f.txId || '',
+          // pick the last payment record if available
+          lastPaymentId: f.payments && f.payments.length ? f.payments[f.payments.length - 1].id : null,
+          lastPaymentTxId: f.payments && f.payments.length ? f.payments[f.payments.length - 1].txId : (f.txId || null),
+          lastPaymentAmount: f.payments && f.payments.length ? f.payments[f.payments.length - 1].amount : (f.paidAmount && f.paidAmount > 0 ? f.paidAmount : 0),
           amount: f.paidAmount && f.paidAmount > 0 ? f.paidAmount : (f.totalAmount || 0),
           date: f.paymentDate ? new Date(f.paymentDate).toLocaleDateString() : (f.createdAt ? new Date(f.createdAt).toLocaleDateString() : ''),
           status: f.status ? (f.status === 'PAID' ? 'Paid' : f.status === 'PARTIAL' ? 'Partial' : 'Pending') : 'Pending',

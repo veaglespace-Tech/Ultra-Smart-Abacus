@@ -261,6 +261,7 @@ model Fee {
   updatedAt    DateTime     @updatedAt
 }
 
+<<<<<<< HEAD
 model FeePayment {
   id              Int        @id @default(autoincrement())
   feeId           Int
@@ -273,6 +274,27 @@ model FeePayment {
   receivedBy      Int        // Franchise User ID / Franchise ID
   receiptNumber   String     @unique
   createdAt       DateTime   @default(now())
+=======
+  studentId Int
+
+  totalAmount Float
+
+  paidAmount Float @default(0)
+
+  pendingAmount Float
+
+  status FeeStatus @default(PENDING)
+
+  paymentDate DateTime?
+
+  txId String?
+
+  remarks String?
+
+  payments FeePayment[]
+
+  createdAt DateTime @default(now())
+>>>>>>> b45c6b08f2c3412a020dae9668c3190529c2c059
 }
 
 enum FeeStatus {
@@ -403,4 +425,15 @@ model Salary {
   updatedAt         DateTime  @updatedAt
 
   @@unique([teacherId, month, year])
+}
+
+model FeePayment {
+  id        Int      @id @default(autoincrement())
+  feeId     Int
+  amount    Float
+  txId      String?
+  createdBy Int?    // user who recorded the payment (franchise/admin)
+  createdAt DateTime @default(now())
+
+  fee Fee @relation(fields: [feeId], references: [id])
 }

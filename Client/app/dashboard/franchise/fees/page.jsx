@@ -230,7 +230,7 @@ export default function FranchiseFees() {
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Professional ERP-style fee tracking for installment payments, reminders, and receipts.</p>
         </div>
         <div className="flex items-center gap-2 self-start lg:self-center">
-          <button onClick={downloadLedgerCSV} className="px-4 py-2.5 bg-slate-55 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-2 cursor-pointer text-xs">
+          <button onClick={downloadLedgerCSV} className="px-4 py-2.5 bg-slate-55 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-2 cursor-pointer text-xs">
             <Download size={14} /> Export Ledger
           </button>
           <button onClick={() => setIsAddModalOpen(true)} className="bg-emerald-600 dark:bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer text-xs">
@@ -252,7 +252,7 @@ export default function FranchiseFees() {
           <p className="text-emerald-800 dark:text-emerald-450 font-medium text-xs">Collection Efficiency</p>
           <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 font-mono mt-1">{Math.round((totalCollected / totalTarget) * 100)}%</p>
         </div>
-        <div className="bg-amber-50 dark:bg-amber-955/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-2xl shadow-sm">
+        <div className="bg-amber-55 dark:bg-amber-955/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-2xl shadow-sm">
           <p className="text-amber-800 dark:text-amber-400 font-medium text-xs">Overdue Records</p>
           <p className="text-2xl font-bold text-amber-700 dark:text-amber-300 font-mono mt-1">{analytics.overdue}</p>
         </div>
@@ -291,7 +291,7 @@ export default function FranchiseFees() {
                   <td className="py-4 px-6 font-bold text-slate-900 dark:text-white text-sm">{row.student}</td>
                   <td className="py-4 px-6 font-bold text-slate-900 dark:text-white font-mono">₹{row.totalAmount.toLocaleString("en-IN")}</td>
                   <td className="py-4 px-6 text-slate-500 dark:text-slate-400 font-mono inline-flex items-center gap-1.5 mt-2"><Calendar size={12} className="text-slate-400 dark:text-slate-400" /> {row.dueDate}</td>
-                  <td className="py-4 px-6 text-center"><span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-wide inline-block min-w-[75px] font-mono ${row.status === "PAID" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/40" : row.status === "PARTIAL" ? "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-250 dark:border-amber-900/40" : "bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455 border border-rose-250 dark:border-rose-900/40"}`}>● {row.status}</span></td>
+                  <td className="py-4 px-6 text-center"><span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-wide inline-block min-w-[75px] font-mono ${row.status === "PAID" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/40" : row.status === "PARTIAL" ? "bg-amber-50 dark:bg-amber-955/20 text-amber-700 dark:text-amber-400 border border-amber-250 dark:border-amber-900/40" : "bg-rose-50 dark:bg-rose-955/20 text-rose-700 dark:text-rose-455 border border-rose-250 dark:border-rose-900/40"}`}>● {row.status}</span></td>
                 </tr>
               )) : <tr><td colSpan="5" className="py-10 text-center text-slate-400 dark:text-slate-400 font-medium">No records found.</td></tr>}
             </tbody>
@@ -314,7 +314,7 @@ export default function FranchiseFees() {
             <div className="bg-slate-50/50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 space-y-2.5 font-mono mb-4 text-slate-700 dark:text-slate-300">
               <div className="flex justify-between"><span>Total:</span><span className="text-slate-900 dark:text-white font-bold">₹{selectedRow.totalAmount.toLocaleString("en-IN")}</span></div>
               <div className="flex justify-between"><span>Paid:</span><span className="text-slate-700 dark:text-slate-300">₹{selectedRow.paidAmount.toLocaleString("en-IN")}</span></div>
-              <div className="flex justify-between"><span>Pending:</span><span className="text-rose-600 dark:text-rose-400 font-bold">₹{selectedRow.pendingAmount.toLocaleString("en-IN")}</span></div>
+              <div className="flex justify-between"><span>Pending:</span><span className="text-rose-600 dark:text-rose-455 font-bold">₹{selectedRow.pendingAmount.toLocaleString("en-IN")}</span></div>
               <div className="flex justify-between"><span>Due Date:</span><span className="text-slate-700 dark:text-slate-300">{selectedRow.dueDate}</span></div>
             </div>
             <div className="space-y-2">
@@ -324,7 +324,7 @@ export default function FranchiseFees() {
               </div>
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <button type="button" onClick={handleEditTrigger} className="w-full bg-slate-50 dark:bg-slate-850 hover:bg-amber-50 dark:hover:bg-slate-800 text-amber-700 dark:text-amber-400 rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Edit2 size={12} /> Edit</button>
-                <button type="button" onClick={handleDeleteTrigger} className="w-full bg-slate-50 dark:bg-slate-850 hover:bg-rose-50 dark:hover:bg-slate-800 text-rose-700 dark:text-rose-400 rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Trash2 size={12} /> Delete</button>
+                <button type="button" onClick={handleDeleteTrigger} className="w-full bg-slate-50 dark:bg-slate-850 hover:bg-rose-50 dark:hover:bg-slate-850 text-rose-700 dark:text-rose-455 rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Trash2 size={12} /> Delete</button>
               </div>
             </div>
           </div>
