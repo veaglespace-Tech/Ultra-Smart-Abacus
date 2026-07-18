@@ -47,7 +47,7 @@ export default function StudentProfilePage() {
         formPayload.append("profilePhoto", file);
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/students/${profile.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/${profile.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

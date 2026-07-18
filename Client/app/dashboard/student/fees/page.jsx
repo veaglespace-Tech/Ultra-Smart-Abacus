@@ -111,7 +111,7 @@ export default function StudentFeesPage() {
                           <button
                             onClick={async () => {
                               try {
-                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/fees/${fee.id}/receipt`, {
+                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000'}/api/fees/${fee.id}/receipt`, {
                                   method: 'GET',
                                   headers: {
                                     Authorization: `Bearer ${localStorage.getItem('abacus_auth_token')}`

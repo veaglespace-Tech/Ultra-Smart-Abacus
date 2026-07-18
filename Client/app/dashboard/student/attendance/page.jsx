@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useStudentData } from "../StudentContext";
+import { api } from "@/services/api";
 
 const ATTENDANCE_RECORDS = [
   { id: 1, classNum: 1, date: "2026-06-13", time: "10:00 AM", topic: "Abacus Basics: Introduction to 17-Rod Tool", status: "Present", checkIn: "09:55 AM", teacherNotes: "Excellent bead movement speed and high focus." },
@@ -36,17 +37,60 @@ export default function StudentAttendancePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    const loadAttendance = async () => {
+      try {
+        setLoading(true);
+        const res = await api.attendance.getByStudent(profile.id);
+        if (res && res.success && res.attendance) {
+          const mapped = res.attendance.map((att, index) => ({
+            id: att.id,
+            classNum: index + 1,
+            date: att.attendanceDate ? new Date(att.attendanceDate).toISOString().split('T')[0] : "",
+            time: att.attendanceDate ? new Date(att.attendanceDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "10:00 AM",
+            topic: att.remarks || `Regular Batch Class - ${att.batch?.name || ''}`,
+            status: att.status === 'PRESENT' ? 'Present' : att.status === 'ABSENT' ? 'Absent' : 'Leave',
+            checkIn: att.status === 'PRESENT' && att.attendanceDate ? new Date(att.attendanceDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-",
+            teacherNotes: att.remarks || "No comments from teacher."
+          }));
+          
+          const totalScheduledToKeep = Math.max(0, 18 - mapped.length);
+          const upcoming = ATTENDANCE_RECORDS.filter(r => r.status === "Scheduled").slice(0, totalScheduledToKeep).map((sc, i) => ({
+            ...sc,
+            classNum: mapped.length + i + 1
+          }));
+          
+          setRecords([...mapped, ...upcoming]);
+        } else {
+          setRecords(ATTENDANCE_RECORDS);
+        }
+      } catch (err) {
+        if (err.message !== "Attendance not found") {
+          console.error("Failed to load student attendance:", err);
+        }
+        setRecords(ATTENDANCE_RECORDS);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAttendance();
+  }, [profile?.id]);
+
   // Calculate statistics from the records
-  const totalRecords = ATTENDANCE_RECORDS.length;
-  const presentCount = ATTENDANCE_RECORDS.filter(r => r.status === "Present").length;
-  const absentCount = ATTENDANCE_RECORDS.filter(r => r.status === "Absent").length;
-  const scheduledCount = ATTENDANCE_RECORDS.filter(r => r.status === "Scheduled").length;
+  const totalRecords = records.length;
+  const presentCount = records.filter(r => r.status === "Present").length;
+  const absentCount = records.filter(r => r.status === "Absent").length;
+  const scheduledCount = records.filter(r => r.status === "Scheduled").length;
   const attendanceRate = totalRecords - scheduledCount > 0 
     ? Math.round((presentCount / (totalRecords - scheduledCount)) * 100) 
     : 100;
 
   // Filter records
-  const filteredRecords = ATTENDANCE_RECORDS.filter(record => {
+  const filteredRecords = records.filter(record => {
     const matchesStatus = filter === "All" || record.status === filter;
     const matchesSearch = record.topic.toLowerCase().includes(search.toLowerCase()) || 
                           record.classNum.toString().includes(search);
@@ -72,7 +116,7 @@ export default function StudentAttendancePage() {
   };
 
   // Get upcoming class list for leave dropdown
-  const upcomingClasses = ATTENDANCE_RECORDS.filter(r => r.status === "Scheduled");
+  const upcomingClasses = records.filter(r => r.status === "Scheduled");
 
   return (
     <div className="space-y-6 animate-fade-in font-sans antialiased text-slate-800 dark:text-slate-100">

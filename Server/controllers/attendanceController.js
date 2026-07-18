@@ -71,12 +71,9 @@ export const markAttendance = asyncHandler(async (req, res) => {
     // Duplicate Attendance Check
 
     const today = new Date();
-
-    today.setHours(0, 0, 0, 0);
-
+    today.setUTCHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
-
-    tomorrow.setDate(today.getDate() + 1);
+    tomorrow.setUTCDate(today.getUTCDate() + 1);
 
     const alreadyMarked =
         await prisma.attendance.findFirst({
@@ -198,34 +195,40 @@ asyncHandler(async (req, res) => {
 
 export const getAllAttendance =
 asyncHandler(async (req, res) => {
+    const { batchId, date } = req.query;
+
+    const where = {};
+    if (batchId) {
+        where.batchId = Number(batchId);
+    }
+    if (date) {
+        const startDate = new Date(`${date}T00:00:00.000Z`);
+        const endDate = new Date(startDate);
+        endDate.setUTCDate(startDate.getUTCDate() + 1);
+        where.attendanceDate = {
+            gte: startDate,
+            lt: endDate
+        };
+    }
 
     const attendance =
         await prisma.attendance.findMany({
-
+            where,
             include: {
-
                 student: true,
-
                 teacher: true,
-
                 batch: true
             },
-
             orderBy: {
-
                 attendanceDate: "desc"
             }
         });
 
     res.status(200).json({
-
         success: true,
-
         message: "Attendance list fetched successfully",
-
         attendance
     });
-
 });
 
 

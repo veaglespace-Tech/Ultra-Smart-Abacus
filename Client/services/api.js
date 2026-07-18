@@ -82,5 +82,12 @@ export const api = {
     getHistory: (teacherId) => apiHelper.get(`/salary/history${teacherId ? `?teacherId=${teacherId}` : ''}`),
     getMyHistory: () => apiHelper.get('/salary/my-history'),
     getDetails: (id) => apiHelper.get(`/salary/${id}`),
+  },
+  attendance: {
+    mark: (data) => apiHelper.post('/attendance/mark', data),
+    update: (id, data) => apiHelper.put(`/attendance/${id}`, data),
+    getByStudent: (studentId) => apiHelper.get(`/attendance/student/${studentId}`),
+    getByBatchAndDate: (batchId, date) => apiHelper.get(`/attendance?batchId=${batchId}&date=${date}`),
+    delete: (id) => apiHelper.delete(`/attendance/${id}`),
   }
 };
