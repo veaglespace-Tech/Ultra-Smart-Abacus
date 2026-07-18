@@ -283,7 +283,8 @@ export const getMyFees = async (req, res) => {
 
 		const fees = await prisma.fee.findMany({
 			where,
-			orderBy: [{ createdAt: 'desc' }]
+			orderBy: [{ createdAt: 'desc' }],
+			include: { payments: true }
 		});
 
 		console.debug(`getMyFees: returning ${fees.length} fees for studentId=${student.id}`);
@@ -302,7 +303,8 @@ export const getFeeReceipt = async (req, res) => {
 		const fee = await prisma.fee.findUnique({
 			where: { id: Number(id) },
 			include: {
-				student: true
+				student: true,
+				payments: true
 			}
 		});
 
@@ -319,7 +321,16 @@ export const getFeeReceipt = async (req, res) => {
 			}
 		}
 
-		// Build simple HTML receipt
+	 	// if paymentId or txId provided, prefer rendering receipt for that payment
+	 	const { paymentId, txId: qTxId } = req.query || {};
+
+		let payment = null;
+		if (paymentId) {
+			payment = await prisma.feePayment.findUnique({ where: { id: Number(paymentId) } });
+		} else if (qTxId) {
+			payment = await prisma.feePayment.findFirst({ where: { txId: qTxId } });
+		}
+
 		const html = `<!doctype html>
 <html>
 <head>
@@ -341,9 +352,9 @@ export const getFeeReceipt = async (req, res) => {
 	<div class="box">
 		<p><strong>Student:</strong> ${fee.student?.name || 'N/A'}</p>
 		<p><strong>Student Email:</strong> ${fee.student?.email || 'N/A'}</p>
-		<p><strong>Amount Paid:</strong> ₹${fee.paidAmount.toLocaleString()}</p>
+		<p><strong>Amount Paid:</strong> ₹${(payment ? payment.amount : fee.paidAmount).toLocaleString()}</p>
 		<p><strong>Payment Status:</strong> ${fee.status}</p>
-		<p><strong>Transaction ID:</strong> ${fee.txId || 'N/A'}</p>
+		<p><strong>Transaction ID:</strong> ${(payment ? payment.txId : fee.txId) || 'N/A'}</p>
 		<p><strong>Notes:</strong> ${fee.remarks || '—'}</p>
 	</div>
 	<div style="margin-top:24px;font-size:12px;color:#666">This is a system generated receipt.</div>
@@ -391,7 +402,79 @@ export const createDemoFee = async (req, res) => {
 			}
 		});
 
+		// create a payment record for the demo
+		await prisma.feePayment.create({
+			data: {
+				feeId: demo.id,
+				amount: paidAmount,
+				txId: demo.txId,
+				createdBy: req.user.id
+			}
+		});
+
 		return res.status(201).json({ success: true, data: demo });
+	} catch (error) {
+		return res.status(500).json({ error: error.message });
+	}
+};
+
+// FRANCHISE / ADMIN: Mark a payment against a fee (records amount paid, updates status)
+export const markFeePayment = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const { amount, txId, remarks } = req.body;
+
+		if (!amount || Number(amount) <= 0) {
+			return res.status(400).json({ message: 'Invalid payment amount' });
+		}
+
+		const fee = await prisma.fee.findUnique({ where: { id: Number(id) }, include: { student: true } });
+		if (!fee) return res.status(404).json({ message: 'Fee not found' });
+
+		// compute new totals
+		const newPaid = Number(fee.paidAmount || 0) + Number(amount);
+		const newPending = Math.max(0, Number(fee.totalAmount || 0) - newPaid);
+		const newStatus = newPending === 0 ? 'PAID' : (newPaid > 0 ? 'PARTIAL' : 'PENDING');
+
+		// append remarks with timestamp
+		const appendedRemarks = `${fee.remarks || ''}` + (remarks ? `\n[${new Date().toLocaleString()}] ${remarks}` : `\n[${new Date().toLocaleString()}] Marked payment ₹${amount}`);
+
+		const updated = await prisma.fee.update({
+			where: { id: Number(id) },
+			data: {
+				paidAmount: newPaid,
+				pendingAmount: newPending,
+				status: newStatus,
+				txId: txId || fee.txId,
+				paymentDate: new Date(),
+				remarks: appendedRemarks,
+			},
+			include: { student: true }
+		});
+
+		// record the individual payment
+		const paymentRecord = await prisma.feePayment.create({
+			data: {
+				feeId: updated.id,
+				amount: Number(amount),
+				txId: txId || `FR-${Date.now()}`,
+				createdBy: req.user.id
+			}
+		});
+
+		// Build a small receipt payload for immediate download/use
+		const receipt = {
+			feeId: updated.id,
+			student: updated.student,
+			amount: Number(amount),
+			totalPaid: updated.paidAmount,
+			pendingAmount: updated.pendingAmount,
+			txId: paymentRecord.txId || updated.txId,
+			paymentDate: updated.paymentDate,
+			remarks: appendedRemarks,
+		};
+
+		return res.status(200).json({ success: true, data: updated, receipt });
 	} catch (error) {
 		return res.status(500).json({ error: error.message });
 	}

@@ -98,6 +98,21 @@ router.get(
 	getFeeReceipt
 )
 
+// FRANCHISE / ADMIN: mark a payment against a fee
+router.post(
+	"/:id/mark-payment",
+	authMiddleware,
+	authorize("ADMIN","FRANCHISE"),
+	async (req, res, next) => {
+		try {
+			const { markFeePayment } = await import("../controllers/feeController.js");
+			return markFeePayment(req, res, next);
+		} catch (err) {
+			return next(err);
+		}
+	}
+)
+
 
 
 // UPDATE

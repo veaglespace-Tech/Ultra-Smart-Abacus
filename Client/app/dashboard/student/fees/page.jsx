@@ -67,7 +67,9 @@ export default function StudentFeesPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
               {fees.map((fee) => {
-                const isPaid = fee.status === "Paid";
+                // treat any fee with a positive `amount` as having a payment (Paid or Partial)
+                const hasPayment = fee.lastPaymentId || Number(fee.amount) > 0;
+                const isFullyPaid = fee.status === "Paid";
                 return (
                   <tr key={fee.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-200">{fee.description}</td>
@@ -79,6 +81,11 @@ export default function StudentFeesPage() {
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-emerald-200 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                           Paid Successfully
+                        </span>
+                      ) : hasPayment ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-amber-500/25 bg-amber-500/10 text-amber-300">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                          Partial Payment
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-rose-200 dark:border-rose-500/25 bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 animate-pulse">
