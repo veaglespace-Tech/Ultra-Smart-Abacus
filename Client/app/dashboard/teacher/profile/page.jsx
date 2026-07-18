@@ -83,7 +83,9 @@ export default function TeacherProfilePage() {
       {/* HEADER SECTION */}
       <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">FACULTY PROFILE</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">FACULTY PROFILE</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Manage credentials, contact information, qualifications, and passwords.</p>
         </div>
       </div>
@@ -101,7 +103,7 @@ export default function TeacherProfilePage() {
       className="w-full h-full rounded-2xl object-cover"
     />
   ) : (
-    <div className="w-full h-full rounded-2xl bg-gradient-to-tr from-indigo-500 to-blue-600 flex items-center justify-center text-white text-3xl font-black shadow-md">
+    <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-3xl font-black shadow-md shadow-primary/20">
       {profile.name
         ? profile.name
             .split(" ")
@@ -154,7 +156,7 @@ export default function TeacherProfilePage() {
         {/* PROFILE DETAILS FORM */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm lg:col-span-2 space-y-5">
           <h3 className="text-sm font-black text-slate-900 dark:text-slate-50 uppercase tracking-wide flex items-center gap-2">
-            <User size={16} className="text-indigo-500" />
+            <User size={16} className="text-accent" />
             <span>Personal Information</span>
           </h3>
 
@@ -237,7 +239,7 @@ export default function TeacherProfilePage() {
               <button 
                 type="submit"
                 disabled={isSavingProfile}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10"
+                className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine"
               >
                 {isSavingProfile ? 'Saving Details...' : 'Update Faculty Profile'}
               </button>
@@ -248,7 +250,7 @@ export default function TeacherProfilePage() {
         {/* PASSWORD RESET CARD */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm lg:col-span-3 space-y-5">
           <h3 className="text-sm font-black text-slate-900 dark:text-slate-50 uppercase tracking-wide flex items-center gap-2">
-            <Lock size={16} className="text-indigo-500" />
+            <Lock size={16} className="text-accent" />
             <span>Change Security Password</span>
           </h3>
 
@@ -304,7 +306,7 @@ export default function TeacherProfilePage() {
               <button 
                 type="submit"
                 disabled={isSavingPassword}
-                className="bg-indigo-650 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10"
+                className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine"
               >
                 {isSavingPassword ? 'Updating Password...' : 'Save New Password'}
               </button>

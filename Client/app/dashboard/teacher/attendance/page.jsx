@@ -206,7 +206,9 @@ export default function AttendancePage() {
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">ATTENDANCE MODULE</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">ATTENDANCE MODULE</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Select a batch, track attendees, and log curriculum pages completed.</p>
         </div>
         <button
@@ -222,7 +224,7 @@ export default function AttendancePage() {
         /* HISTORY MODULE */
         <div className="space-y-4">
           <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider pl-1">Historical Session Logs</h4>
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 rounded-3xl overflow-hidden shadow-[0_2px_20px_rgba(45,27,105,0.06)]">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -243,12 +245,12 @@ export default function AttendancePage() {
                       <td className="py-4 px-6 text-emerald-600 font-bold font-mono">{h.present}</td>
                       <td className="py-4 px-6 text-rose-500 font-bold font-mono">{h.absent}</td>
                       <td className="py-4 px-6">
-                        <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 px-2.5 py-0.5 rounded-lg font-mono font-bold">
+                        <span className="bg-primary/5 text-primary dark:bg-primary-light/20 dark:text-cream px-2.5 py-0.5 rounded-lg font-mono font-bold">
                           {h.rate}
                         </span>
                       </td>
                       <td className="py-4 px-6 text-right">
-                        <button className="text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer">
+                        <button className="text-xs text-accent dark:text-accent font-bold hover:underline cursor-pointer">
                           View Details
                         </button>
                       </td>
@@ -263,14 +265,14 @@ export default function AttendancePage() {
         /* ATTENDANCE TRACKER */
         <div className="space-y-6">
           {/* FILTER CRITERIA */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row gap-5 items-center justify-between shadow-sm">
+          <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl flex flex-col md:flex-row gap-5 items-center justify-between shadow-[0_2px_20px_rgba(45,27,105,0.06)]">
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
               <div className="flex flex-col gap-1.5">
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-0.5">Select Class Cohort</span>
                 <select
                   value={selectedBatch}
                   onChange={(e) => setSelectedBatch(e.target.value)}
-                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500 cursor-pointer text-slate-700 dark:text-slate-200 w-full sm:w-60"
+                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-accent cursor-pointer text-slate-700 dark:text-slate-200 w-full sm:w-60"
                 >
                   <option value="">-- Select Class --</option>
                   {batches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -283,7 +285,7 @@ export default function AttendancePage() {
                   type="date" 
                   value={attendanceDate} 
                   onChange={(e) => setAttendanceDate(e.target.value)} 
-                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-200 w-full sm:w-48"
+                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-accent text-slate-700 dark:text-slate-200 w-full sm:w-48"
                 />
               </div>
             </div>
@@ -300,7 +302,7 @@ export default function AttendancePage() {
                 <button 
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10 flex items-center gap-1.5 disabled:opacity-70"
+                  className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine flex items-center gap-1.5 disabled:opacity-70"
                 >
                   {isSubmitting ? (
                     <>
@@ -322,11 +324,11 @@ export default function AttendancePage() {
           {selectedBatch ? (
             loading ? (
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-16 text-center text-xs text-slate-400 dark:text-slate-550 font-bold flex flex-col items-center justify-center gap-2">
-                <Loader2 className="animate-spin text-indigo-500" size={24} />
+                <Loader2 className="animate-spin text-accent" size={24} />
                 <span>Loading batch roster & logs...</span>
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+              <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 rounded-3xl overflow-hidden shadow-[0_2px_20px_rgba(45,27,105,0.06)]">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -369,7 +371,7 @@ export default function AttendancePage() {
                                 disabled={!student.isPresent}
                                 value={student.isPresent ? student.pages : 0} 
                                 onChange={(e) => handlePageChange(student.id, e.target.value)}
-                                className="w-16 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center rounded-xl p-1.5 text-xs font-bold focus:outline-none focus:border-indigo-500 disabled:opacity-50 text-slate-800 dark:text-slate-100"
+                                className="w-16 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center rounded-xl p-1.5 text-xs font-bold focus:outline-none focus:border-accent disabled:opacity-50 text-slate-800 dark:text-slate-100"
                               />
                               <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">pages</span>
                             </div>
@@ -383,7 +385,7 @@ export default function AttendancePage() {
                               value={student.isPresent ? student.notes : 'Absent'}
                               onChange={(e) => handleNotesChange(student.id, e.target.value)}
                               placeholder="Add student performance remarks..."
-                              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-indigo-500 disabled:opacity-50 text-slate-700 dark:text-slate-300 placeholder-slate-400"
+                              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-accent disabled:opacity-50 text-slate-700 dark:text-slate-300 placeholder-slate-400"
                             />
                           </td>
 

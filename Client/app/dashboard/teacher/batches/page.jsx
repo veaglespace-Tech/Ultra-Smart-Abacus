@@ -65,7 +65,9 @@ export default function TeacherBatchesPage() {
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">MY BATCH ALLOCATIONS</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">MY BATCH ALLOCATIONS</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Manage, track, and record attendance for your assigned learning cohorts.</p>
         </div>
       </div>
@@ -83,7 +85,7 @@ export default function TeacherBatchesPage() {
           />
         </div>
         <div className="flex gap-2 w-full sm:w-auto justify-end">
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-indigo-600/10">
+          <button className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine">
             <Plus size={14} />
             <span>Request Batch</span>
           </button>
@@ -115,7 +117,7 @@ export default function TeacherBatchesPage() {
                   
                   {/* Level */}
                   <td className="py-4 px-6">
-                    <span className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-indigo-100/50 dark:border-indigo-900/30">
+                    <span className="inline-flex items-center gap-1 bg-primary/5 text-primary dark:bg-primary-light/20 dark:text-cream px-2.5 py-1 rounded-lg text-[10px] font-bold border border-primary/10 dark:border-primary-light/35">
                       <BookOpen size={10} />
                       {batch.level}
                     </span>
@@ -158,7 +160,7 @@ export default function TeacherBatchesPage() {
                       </Link>
                       <Link
                         href={`/dashboard/teacher/attendance?batch=${encodeURIComponent(batch.name)}`}
-                        className="inline-flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/40 border border-indigo-100/50 dark:border-indigo-900/30 text-indigo-700 dark:text-indigo-400 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1 bg-primary/5 hover:bg-primary/10 dark:bg-primary-light/20 dark:hover:bg-primary-light/30 border border-primary/20 dark:border-primary-light/35 text-primary dark:text-cream px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer"
                       >
                         <CalendarDays size={12} />
                         <span>Attendance</span>

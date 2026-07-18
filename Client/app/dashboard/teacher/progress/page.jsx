@@ -140,7 +140,9 @@ export default function TeacherProgressPage() {
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">PROGRESS TRACKER</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">PROGRESS TRACKER</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Observe bead speed, formulas accuracy, and workbook coverage metrics.</p>
         </div>
       </div>
@@ -207,7 +209,7 @@ export default function TeacherProgressPage() {
                       <span className="font-mono font-bold text-slate-900 dark:text-slate-50">{student.accuracy}%</span>
                       <div className="w-20 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-200/40 dark:border-slate-800/40">
                         <div 
-                          className="bg-indigo-600 dark:bg-indigo-400 h-full rounded-full transition-all" 
+                          className="bg-gradient-to-r from-primary to-accent h-full rounded-full transition-all" 
                           style={{ width: `${student.accuracy}%` }}
                         />
                       </div>
@@ -231,7 +233,7 @@ export default function TeacherProgressPage() {
                   <td className="py-4 px-6 text-right">
                     <button 
                       onClick={() => handleOpenAssessment(student.id)}
-                      className="bg-indigo-50 hover:bg-indigo-150 border border-indigo-100 text-indigo-750 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/40 dark:border-indigo-900/50 dark:text-indigo-400 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1"
+                      className="bg-primary/5 hover:bg-primary/10 border border-primary/20 text-primary dark:bg-primary-light/20 dark:hover:bg-primary-light/30 dark:border-primary-light/35 dark:text-cream px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1"
                     >
                       <Plus size={12} />
                       <span>Assess</span>
@@ -274,7 +276,7 @@ export default function TeacherProgressPage() {
                   placeholder="e.g. 95"
                   value={marks}
                   onChange={(e) => setMarks(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-indigo-500 text-xs font-bold text-slate-800 dark:text-slate-100"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-accent text-xs font-bold text-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -284,7 +286,7 @@ export default function TeacherProgressPage() {
                 <select
                   value={perfLevel}
                   onChange={(e) => setPerfLevel(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-bold rounded-xl p-3 focus:outline-none focus:border-indigo-500 cursor-pointer text-slate-700 dark:text-slate-200"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-bold rounded-xl p-3 focus:outline-none focus:border-accent cursor-pointer text-slate-700 dark:text-slate-200"
                 >
                   <option value="Excellent">Excellent (Mastery / Fast Pace)</option>
                   <option value="Satisfactory">Satisfactory (Stable Pace)</option>
@@ -301,7 +303,7 @@ export default function TeacherProgressPage() {
                   placeholder="Record student strengths or visual math speed metrics..."
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-indigo-500 text-xs font-medium text-slate-700 dark:text-slate-350 placeholder-slate-400"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-accent text-xs font-medium text-slate-700 dark:text-slate-350 placeholder-slate-400"
                 />
               </div>
 
@@ -316,7 +318,7 @@ export default function TeacherProgressPage() {
                 </button>
                 <button 
                   type="submit"
-                  className="bg-indigo-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-755 cursor-pointer shadow-md shadow-indigo-600/10"
+                  className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-5 py-2.5 rounded-xl cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine transition-all duration-300"
                 >
                   Save Progress
                 </button>

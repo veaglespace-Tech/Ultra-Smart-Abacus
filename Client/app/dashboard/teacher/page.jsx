@@ -2,25 +2,41 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { 
   Users, Layers, Calendar, CheckSquare, 
-  GraduationCap, DollarSign, Play, CheckCircle, Loader2
+  GraduationCap, DollarSign, Play, CheckCircle, Loader2,
+  Sparkles, Activity, TrendingUp, ArrowUpRight, Clock
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/services/api';
 
-function MetricCard({ title, value, subtext, icon: Icon, color }) {
+function MetricCard({ title, value, subtext, icon: Icon, color, trend, trendType }) {
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex justify-between items-start">
-      <div className="space-y-2">
-        <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest">{title}</p>
-        <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">{value}</h3>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{subtext}</p>
+    <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] card-hover hover:translate-y-[-6px] hover:shadow-[0_20px_40px_rgba(45,27,105,0.12)] hover:border-orange-500/35 transition-all duration-300 flex justify-between items-start relative overflow-hidden group">
+      <div className="space-y-2 relative z-10">
+        <p className="text-[10px] text-slate-500 dark:text-slate-450 uppercase font-black tracking-widest">{title}</p>
+        <div className="flex items-baseline gap-2">
+          <h3 className="text-2xl font-black text-[#2D1B69] dark:text-white tracking-tight">{value}</h3>
+          {trend && (
+            <span className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+              trendType === 'up' 
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' 
+                : trendType === 'down'
+                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'
+                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+            }`}>
+              {trend}
+            </span>
+          )}
+        </div>
+        <p className="text-[11px] text-slate-550 dark:text-slate-400 font-semibold">{subtext}</p>
       </div>
-      <div className={`p-3 rounded-xl ${color}`}>
+      <div className={`p-3 rounded-xl ${color} relative z-10 transition-transform duration-300 group-hover:scale-110`}>
         <Icon size={18} />
       </div>
+      <div className="absolute -right-6 -bottom-6 w-16 h-16 bg-gradient-to-br from-orange-500/5 to-transparent rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
     </div>
   );
 }
@@ -73,6 +89,13 @@ export default function TeacherOverviewPage() {
     loadDashboardData();
   }, []);
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
   // 1. Calculate stats metrics
   const calculatedMetrics = useMemo(() => {
     // Total Batches
@@ -101,7 +124,7 @@ export default function TeacherOverviewPage() {
     // Latest Salary
     const latestSalary = salaries[0];
     const salaryString = latestSalary ? `₹${latestSalary.amount.toLocaleString()}` : "₹3,200";
-    const salarySubtext = latestSalary ? `Payment status: ${latestSalary.status}` : "Payment status: Processed";
+    const salarySubtext = latestSalary ? `Status: ${latestSalary.status}` : "Status: Processed";
 
     return {
       totalBatches,
@@ -113,12 +136,12 @@ export default function TeacherOverviewPage() {
   }, [batches, salaries, attendanceLogs]);
 
   const stats = [
-    { title: "Total Assigned Batches", value: calculatedMetrics.totalBatches.toString(), subtext: "Active abacus levels", icon: Layers, color: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400" },
-    { title: "Total Students", value: calculatedMetrics.totalStudents.toString(), subtext: "Active roster strength", icon: Users, color: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-450" },
-    { title: "Today's Classes", value: `${Math.min(3, calculatedMetrics.totalBatches)} Scheduled`, subtext: "Across Rooms A & B", icon: Calendar, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-450" },
-    { title: "Attendance Percentage", value: `${calculatedMetrics.attendancePercent}%`, subtext: "Overall cohort rate", icon: CheckSquare, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-450" },
-    { title: "Upcoming Exams", value: "2 Pending", subtext: "Scheduled this week", icon: GraduationCap, color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-450" },
-    { title: "Monthly Salary", value: calculatedMetrics.salaryString, subtext: calculatedMetrics.salarySubtext, icon: DollarSign, color: "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-450" },
+    { title: "Total Assigned Batches", value: calculatedMetrics.totalBatches.toString(), subtext: "Active abacus levels", icon: Layers, color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream", trend: "+1 new", trendType: "up" },
+    { title: "Total Students", value: calculatedMetrics.totalStudents.toString(), subtext: "Active roster strength", icon: Users, color: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400", trend: "+4% m-o-m", trendType: "up" },
+    { title: "Today's Classes", value: `${Math.min(3, calculatedMetrics.totalBatches)} Scheduled`, subtext: "Across Rooms A & B", icon: Calendar, color: "bg-orange-50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400", trend: "Normal", trendType: "neutral" },
+    { title: "Attendance Percentage", value: `${calculatedMetrics.attendancePercent}%`, subtext: "Overall cohort rate", icon: CheckSquare, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400", trend: "+1.2%", trendType: "up" },
+    { title: "Upcoming Exams", value: "2 Pending", subtext: "Scheduled this week", icon: GraduationCap, color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400", trend: "Urgent", trendType: "down" },
+    { title: "Monthly Salary", value: calculatedMetrics.salaryString, subtext: calculatedMetrics.salarySubtext, icon: DollarSign, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", trend: "Verified", trendType: "up" },
   ];
 
   // 2. Today's Schedule (Mapped from actual batches)
@@ -157,9 +180,6 @@ export default function TeacherOverviewPage() {
       return defaultPercents[index];
     });
 
-    // Map percents to SVG coordinates (viewBox 0 0 100 45)
-    // x values: Mon=5, Tue=20, Wed=40, Thu=60, Fri=80, Sat=95
-    // y values: 100% maps to 8, 0% maps to 40
     const xCoords = [5, 20, 40, 60, 80, 95];
     const points = percents.map((p, idx) => ({
       x: xCoords[idx],
@@ -195,7 +215,6 @@ export default function TeacherOverviewPage() {
     ];
 
     const maxVal = Math.max(...finalCounts) || 1;
-    // Map to heights (max height = 30)
     const heights = finalCounts.map(c => (c / maxVal) * 30);
 
     return heights.map((h, i) => ({
@@ -210,20 +229,19 @@ export default function TeacherOverviewPage() {
     const sorted = [...batches].sort((a, b) => (b.students?.length || 0) - (a.students?.length || 0));
     const top4 = sorted.slice(0, 4);
     
-    // Fill up to 4 items with defaults if needed
     const defaultBatches = [
-      { name: "Alpha", count: 14, color: "bg-indigo-600", stroke: "#4f46e5" },
-      { name: "Beta", count: 12, color: "bg-blue-500", stroke: "#3b82f6" },
+      { name: "Alpha", count: 14, color: "bg-primary", stroke: "#2D1B69" },
+      { name: "Beta", count: 12, color: "bg-accent", stroke: "#FF6B2B" },
       { name: "Gamma", count: 10, color: "bg-purple-500", stroke: "#8b5cf6" },
-      { name: "Delta", count: 6, color: "bg-amber-500", stroke: "#f59e0b" }
+      { name: "Delta", count: 6, color: "bg-gold", stroke: "#FFCA28" }
     ];
 
     const finalBatches = daysOfWeekFiller();
 
     function daysOfWeekFiller() {
       const items = [];
-      const colors = ["bg-indigo-600", "bg-blue-500", "bg-purple-500", "bg-amber-500"];
-      const strokes = ["#4f46e5", "#3b82f6", "#8b5cf6", "#f59e0b"];
+      const colors = ["bg-primary", "bg-accent", "bg-purple-500", "bg-gold"];
+      const strokes = ["#2D1B69", "#FF6B2B", "#8b5cf6", "#FFCA28"];
       
       for (let i = 0; i < 4; i++) {
         if (top4[i]) {
@@ -246,7 +264,6 @@ export default function TeacherOverviewPage() {
       percent: Math.round((b.count / totalStudents) * 100)
     }));
 
-    // Calculate stroke offset details for SVG
     let offset = 0;
     const svgSegments = itemsWithPercents.map(item => {
       const segment = {
@@ -280,8 +297,8 @@ export default function TeacherOverviewPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="animate-spin text-indigo-600 dark:text-indigo-400" size={32} />
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Syncing dashboard telemetry...</p>
+        <Loader2 className="animate-spin text-accent" size={32} />
+        <p className="text-xs text-slate-500 dark:text-slate-4-0 font-bold uppercase tracking-wider">Syncing dashboard telemetry...</p>
       </div>
     );
   }
@@ -292,12 +309,12 @@ export default function TeacherOverviewPage() {
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-55 tracking-tight">
-            Welcome Back, {user?.name || "Instructor"}
+          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">
+            {getGreeting()}, <span className="gradient-text">{user?.name || "Instructor"}</span>
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Observe current metrics, batch statistics, and schedule queues below.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-455 mt-0.5">Observe current metrics, batch statistics, and schedule queues below.</p>
         </div>
-        <div className="text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-3 py-1.5 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+        <div className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 px-3 py-1.5 rounded-xl border border-orange-250 dark:border-orange-900/40">
           📅 Academic Session: Active
         </div>
       </div>
@@ -309,14 +326,102 @@ export default function TeacherOverviewPage() {
         ))}
       </div>
 
+      {/* Interactive Quick Actions and Live Activity Stream */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        
+        {/* Quick Action Center */}
+        <div className="lg:col-span-1 bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
+          <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+            <h4 className="text-xs font-black uppercase text-slate-550 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
+              <Sparkles size={14} className="text-orange-500" />
+              <span>Quick Action Center</span>
+            </h4>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <Link 
+              href="/dashboard/teacher/attendance"
+              className="p-4 bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 border border-orange-200 dark:border-orange-900/50 rounded-2xl flex flex-col items-center justify-center text-center gap-2 font-bold text-orange-700 dark:text-orange-400 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+            >
+              <CheckSquare size={20} />
+              <span>Mark Attendance</span>
+            </Link>
+            <Link 
+              href="/dashboard/teacher/progress"
+              className="p-4 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 border border-purple-200 dark:border-purple-900/50 rounded-2xl flex flex-col items-center justify-center text-center gap-2 font-bold text-purple-700 dark:text-purple-400 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+            >
+              <TrendingUp size={20} />
+              <span>Log Progress</span>
+            </Link>
+            <Link 
+              href="/dashboard/teacher/batches"
+              className="p-4 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-900/50 rounded-2xl flex flex-col items-center justify-center text-center gap-2 font-bold text-blue-700 dark:text-blue-400 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+            >
+              <Users size={20} />
+              <span>My Batches</span>
+            </Link>
+            <Link 
+              href="/dashboard/teacher/exams"
+              className="p-4 bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 border border-emerald-250 dark:border-emerald-900/50 rounded-2xl flex flex-col items-center justify-center text-center gap-2 font-bold text-emerald-700 dark:text-emerald-400 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+            >
+              <GraduationCap size={20} />
+              <span>Create Exam</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Live Activity Stream */}
+        <div className="lg:col-span-2 bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
+          <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+            <h4 className="text-xs font-black uppercase text-slate-550 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
+              <Activity size={14} className="text-orange-500 animate-pulse" />
+              <span>Live Activity Stream</span>
+            </h4>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Real-time sync</span>
+          </div>
+          <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-355">
+            <div className="py-2.5 flex items-center justify-between gap-4 hover:bg-slate-50/30 dark:hover:bg-slate-900/10 px-2 rounded-xl transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-slate-550">Attendance logs synchronized</p>
+                  <p className="text-[10px] text-slate-450 font-normal">Batch Alpha session attendance recorded in cloud backend.</p>
+                </div>
+              </div>
+              <span className="text-[10px] text-slate-400 font-mono shrink-0">10m ago</span>
+            </div>
+            <div className="py-2.5 flex items-center justify-between gap-4 hover:bg-slate-50/30 dark:hover:bg-slate-900/10 px-2 rounded-xl transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span>
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-slate-555">Results published</p>
+                  <p className="text-[10px] text-slate-450 font-normal">Level 3 Advanced Assessment grades released to student portals.</p>
+                </div>
+              </div>
+              <span className="text-[10px] text-slate-400 font-mono shrink-0">2h ago</span>
+            </div>
+            <div className="py-2.5 flex items-center justify-between gap-4 hover:bg-slate-50/30 dark:hover:bg-slate-900/10 px-2 rounded-xl transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0"></span>
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-slate-555">Faculty profile updated</p>
+                  <p className="text-[10px] text-slate-450 font-normal">Highest qualification credentials updated successfully.</p>
+                </div>
+              </div>
+              <span className="text-[10px] text-slate-400 font-mono shrink-0">1d ago</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         
         {/* Weekly Attendance Trend (Line Chart SVG) */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] card-hover hover:translate-y-[-6px] hover:shadow-[0_20px_40px_rgba(45,27,105,0.12)] hover:border-orange-500/35 transition-all duration-300 space-y-4">
           <div className="flex justify-between items-center">
-            <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-550 tracking-wider">Weekly Attendance Trend</h4>
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-450 font-bold bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-md">
+            <h4 className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">Weekly Attendance Trend</h4>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-450 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md">
               {weeklyAttendanceChart.average}% Avg
             </span>
           </div>
@@ -324,9 +429,12 @@ export default function TeacherOverviewPage() {
             <svg viewBox="0 0 100 45" className="w-full h-full overflow-visible">
               <defs>
                 <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.2"/>
-                  <stop offset="100%" stopColor="#4f46e5" stopOpacity="0"/>
+                  <stop offset="0%" stopColor="#FF6B2B" stopOpacity="0.25"/>
+                  <stop offset="100%" stopColor="#FF6B2B" stopOpacity="0"/>
                 </linearGradient>
+                <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+                  <feDropShadow dx="0" dy="1.5" stdDeviation="0.8" floodColor="#FF6B2B" floodOpacity="0.3" />
+                </filter>
               </defs>
               {/* Grid lines */}
               <line x1="0" y1="5" x2="100" y2="5" stroke="#e2e8f0" strokeWidth="0.1" className="dark:stroke-slate-800" />
@@ -341,15 +449,16 @@ export default function TeacherOverviewPage() {
               <path 
                 d={weeklyAttendanceChart.pathD} 
                 fill="none" 
-                stroke="#4f46e5" 
+                stroke="#FF6B2B" 
                 strokeWidth="1.5" 
                 strokeLinecap="round" 
                 strokeLinejoin="round"
+                filter="url(#shadow)"
               />
               
               {/* Dots */}
               {weeklyAttendanceChart.points.map((p, idx) => (
-                <circle key={idx} cx={p.x} cy={p.y} r="1.5" fill="#4f46e5" />
+                <circle key={idx} cx={p.x} cy={p.y} r="1.5" fill="#FFCA28" stroke="#FF6B2B" strokeWidth="0.5" />
               ))}
               
               {/* Labels */}
@@ -364,13 +473,31 @@ export default function TeacherOverviewPage() {
         </div>
 
         {/* Student Performance (Bar Chart SVG) */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] card-hover hover:translate-y-[-6px] hover:shadow-[0_20px_40px_rgba(45,27,105,0.12)] hover:border-orange-500/35 transition-all duration-300 space-y-4">
           <div className="flex justify-between items-center">
-            <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-550 tracking-wider">Performance Overview</h4>
-            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded-md">By Level</span>
+            <h4 className="text-xs font-black uppercase text-slate-500 dark:text-slate-450 tracking-wider">Performance Overview</h4>
+            <span className="text-[10px] text-accent font-bold bg-accent/10 px-2 py-0.5 rounded-md">By Level</span>
           </div>
           <div className="h-48 flex items-center justify-center relative">
             <svg viewBox="0 0 100 45" className="w-full h-full overflow-visible">
+              <defs>
+                <linearGradient id="barGrad0" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2D1B69" />
+                  <stop offset="100%" stopColor="#3d2a88" />
+                </linearGradient>
+                <linearGradient id="barGrad1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#FF6B2B" />
+                  <stop offset="100%" stopColor="#FF8A50" />
+                </linearGradient>
+                <linearGradient id="barGrad2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#8b5cf6" />
+                  <stop offset="100%" stopColor="#a78bfa" />
+                </linearGradient>
+                <linearGradient id="barGrad3" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#FFCA28" />
+                  <stop offset="100%" stopColor="#FFD654" />
+                </linearGradient>
+              </defs>
               {/* Grid Lines */}
               <line x1="0" y1="5" x2="100" y2="5" stroke="#e2e8f0" strokeWidth="0.1" className="dark:stroke-slate-800" />
               <line x1="0" y1="18" x2="100" y2="18" stroke="#e2e8f0" strokeWidth="0.1" className="dark:stroke-slate-800" />
@@ -379,9 +506,18 @@ export default function TeacherOverviewPage() {
 
               {/* Bars */}
               {performanceChart.map((bar, idx) => {
-                const colors = ["#4f46e5", "#3b82f6", "#8b5cf6", "#f59e0b"];
+                const grads = ["url(#barGrad0)", "url(#barGrad1)", "url(#barGrad2)", "url(#barGrad3)"];
                 return (
-                  <rect key={idx} x={12 + idx * 22} y={bar.y} width="10" height={bar.height} rx="1.5" fill={colors[idx % colors.length]} />
+                  <rect 
+                    key={idx} 
+                    x={12 + idx * 22} 
+                    y={bar.y} 
+                    width="10" 
+                    height={bar.height} 
+                    rx="2" 
+                    fill={grads[idx % grads.length]}
+                    className="hover:brightness-110 transition-all duration-200 cursor-pointer"
+                  />
                 );
               })}
 
@@ -395,10 +531,10 @@ export default function TeacherOverviewPage() {
         </div>
 
         {/* Batch Distribution (Donut Chart SVG) */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] card-hover hover:translate-y-[-6px] hover:shadow-[0_20px_40px_rgba(45,27,105,0.12)] hover:border-orange-500/35 transition-all duration-300 space-y-4">
           <div className="flex justify-between items-center">
-            <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-550 tracking-wider">Batch Distribution</h4>
-            <span className="text-[10px] text-slate-500 dark:text-slate-450 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+            <h4 className="text-xs font-black uppercase text-slate-500 dark:text-slate-450 tracking-wider">Batch Distribution</h4>
+            <span className="text-[10px] text-slate-600 dark:text-slate-300 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
               {batchDistributionChart.totalBatchesCount} Batches
             </span>
           </div>
@@ -416,15 +552,16 @@ export default function TeacherOverviewPage() {
                     r="15.915" 
                     fill="none" 
                     stroke={seg.stroke} 
-                    strokeWidth="3.2" 
+                    strokeWidth="3.4" 
                     strokeDasharray={seg.dashArray} 
                     strokeDashoffset={seg.dashOffset} 
+                    className="hover:stroke-[4px] transition-all duration-200 cursor-pointer"
                   />
                 ))}
               </svg>
             </div>
             {/* Legend */}
-            <div className="w-1/2 space-y-2 text-[10px] font-bold text-slate-600 dark:text-slate-400 pl-4">
+            <div className="w-1/2 space-y-2 text-[10px] font-bold text-slate-655 dark:text-slate-400 pl-4">
               {batchDistributionChart.segments.map((seg, idx) => (
                 <div key={idx} className="flex items-center gap-1.5">
                   <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: seg.stroke }}></span>
@@ -439,32 +576,38 @@ export default function TeacherOverviewPage() {
 
       {/* Today's Schedule Section */}
       <div className="space-y-4">
-        <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider pl-1">Today's Class Queue</h4>
+        <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-550 tracking-wider pl-1">Today's Class Queue</h4>
         {todaySchedule.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {todaySchedule.map((cls) => {
               const status = classStatus[cls.id];
               return (
-                <div key={cls.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between space-y-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                <div key={cls.id} className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] card-hover hover:translate-y-[-6px] hover:shadow-[0_20px_40px_rgba(45,27,105,0.12)] hover:border-orange-500/35 flex flex-col justify-between space-y-4 transition-all duration-300">
                   <div>
                     <div className="flex justify-between items-start">
-                      <h5 className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate max-w-[120px]">{cls.batch}</h5>
-                      <span className="text-[10px] font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 px-2 py-0.5 rounded-lg border border-indigo-100/50 dark:border-indigo-900/50">
+                      <h5 className="font-bold text-[#2D1B69] dark:text-white text-sm truncate max-w-[120px]">{cls.batch}</h5>
+                      <span className="text-[10px] font-bold bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400 px-2 py-0.5 rounded-lg border border-orange-200 dark:border-orange-900/30">
                         {cls.room}
                       </span>
                     </div>
-                    <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2">🕒 {cls.time}</p>
+                    <p className="text-[11px] font-mono text-slate-550 dark:text-slate-400 mt-2 flex items-center gap-1">
+                      <Clock size={12} className="text-slate-400" />
+                      <span>{cls.time}</span>
+                    </p>
                   </div>
                   <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800/80 pt-3">
-                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{cls.students} Students</span>
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                      <Users size={12} className="text-slate-450" />
+                      <span>{cls.students} Students</span>
+                    </span>
                     <button
                       onClick={() => handleStartClass(cls.id, cls.batch)}
-                      className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                      className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer btn-shine ${
                         status === 'active'
-                          ? 'bg-amber-500 text-white shadow-md shadow-amber-500/10'
+                          ? 'bg-[#e55a1f] text-white shadow-md shadow-orange-500/20 animate-pulse'
                           : status === 'completed'
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30'
-                          : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/10'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30'
+                          : 'bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white shadow-md shadow-orange-500/25'
                       }`}
                     >
                       {status === 'active' ? (
@@ -490,7 +633,7 @@ export default function TeacherOverviewPage() {
             })}
           </div>
         ) : (
-          <div className="border border-dashed border-slate-200 dark:border-slate-800 text-center py-12 text-xs text-slate-400 dark:text-slate-550 rounded-2xl bg-white dark:bg-slate-900 font-semibold">
+          <div className="border border-dashed border-slate-200 dark:border-slate-850 text-center py-12 text-xs text-slate-400 dark:text-slate-550 rounded-2xl bg-white dark:bg-slate-900 font-semibold">
             No active batches scheduled for today.
           </div>
         )}
