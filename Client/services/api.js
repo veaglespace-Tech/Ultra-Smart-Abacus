@@ -40,6 +40,14 @@ export const api = {
   },
   franchise: {
     getNotifications: () => apiHelper.get('/notifications/franchise'),
+    getFees: () => apiHelper.get('/fees'),
+    getFeeById: (id) => apiHelper.get(`/fees/${id}`),
+    createFee: (data) => apiHelper.post('/fees', data),
+    updateFee: (id, data) => apiHelper.put(`/fees/${id}`, data),
+    deleteFee: (id) => apiHelper.delete(`/fees/${id}`),
+    getFeeAnalytics: () => Promise.resolve({ success: true, data: { totalCollected: 0, totalPending: 0, overdue: 0, totalRecords: 0 } }),
+    recordPayment: (id, data) => apiHelper.put(`/fees/${id}`, { paidAmount: data.amount, notes: data.notes }),
+    sendReminder: (id) => Promise.resolve({ success: true, message: "Reminder simulated successfully" }),
   },
   admin: {
     getTeachers: () => apiHelper.get('/teachers'),
