@@ -254,6 +254,12 @@ model Fee {
 
   paymentDate DateTime?
 
+  txId String?
+
+  remarks String?
+
+  payments FeePayment[]
+
   createdAt DateTime @default(now())
 }
 
@@ -387,4 +393,15 @@ model Salary {
   updatedAt         DateTime  @updatedAt
 
   @@unique([teacherId, month, year])
+}
+
+model FeePayment {
+  id        Int      @id @default(autoincrement())
+  feeId     Int
+  amount    Float
+  txId      String?
+  createdBy Int?    // user who recorded the payment (franchise/admin)
+  createdAt DateTime @default(now())
+
+  fee Fee @relation(fields: [feeId], references: [id])
 }
