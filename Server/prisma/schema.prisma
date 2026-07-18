@@ -89,6 +89,7 @@ model Franchise {
 
   user User @relation(fields: [userId], references: [id])
   salaries Salary[]
+  fees     Fee[]
 }
 
 
@@ -146,6 +147,8 @@ model Student {
 
   user User? @relation(fields: [userId], references: [id])
 
+  fees      Fee[]
+
   createdAt DateTime @default(now())
 }
 
@@ -194,6 +197,7 @@ model Batch {
 
   attendances Attendance[]
   exams       Exam[]
+  fees        Fee[]
 
   createdAt DateTime @default(now())
 
@@ -240,28 +244,40 @@ model Notification {
 }
 
 model Fee {
-  id Int @id @default(autoincrement())
+  id           Int          @id @default(autoincrement())
+  studentId    Int
+  student      Student      @relation(fields: [studentId], references: [id])
+  franchiseId  Int
+  franchise    Franchise    @relation(fields: [franchiseId], references: [id])
+  batchId      Int
+  batch        Batch        @relation(fields: [batchId], references: [id])
+  totalFee     Float
+  paidAmount   Float        @default(0)
+  dueAmount    Float
+  status       FeeStatus    @default(PENDING)
+  isActive     Boolean      @default(true)
+  payments     FeePayment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
 
-  studentId Int
-
-  totalAmount Float
-
-  paidAmount Float @default(0)
-
-  pendingAmount Float
-
-  status FeeStatus @default(PENDING)
-
-  paymentDate DateTime?
-
-  createdAt DateTime @default(now())
+model FeePayment {
+  id              Int        @id @default(autoincrement())
+  feeId           Int
+  fee             Fee        @relation(fields: [feeId], references: [id])
+  amount          Float
+  paymentDate     DateTime   @default(now())
+  paymentMode     String     // Cash, UPI, Bank Transfer, Cheque
+  referenceNumber String?
+  remarks         String?
+  receivedBy      Int        // Franchise User ID / Franchise ID
+  receiptNumber   String     @unique
+  createdAt       DateTime   @default(now())
 }
 
 enum FeeStatus {
   PAID
-
   PARTIAL
-
   PENDING
 }
 

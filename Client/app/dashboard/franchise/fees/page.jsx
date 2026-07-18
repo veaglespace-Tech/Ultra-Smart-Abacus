@@ -3,11 +3,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Search, Bell, Download, Calendar, Plus, Edit2, Trash2, X, User } from "lucide-react";
 import { api } from "@/services/api";
+import { storageService } from "@/services/storage.services";
 
 export default function FranchiseFees() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [fees, setFees] = useState([]);
+  const [franchiseId, setFranchiseId] = useState(null);
   const [analytics, setAnalytics] = useState({ totalCollected: 0, totalPending: 0, overdue: 0, totalRecords: 0 });
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -27,15 +29,24 @@ export default function FranchiseFees() {
   const fetchFees = async () => {
     try {
       setLoading(true);
-      const [feesRes, analyticsRes] = await Promise.all([api.franchise.getFees(), api.franchise.getFeeAnalytics()]);
+      const [feesRes, analyticsRes, profileRes] = await Promise.all([
+        api.franchise.getFees(),
+        api.franchise.getFeeAnalytics(),
+        api.franchise.getProfile().catch(() => null)
+      ]);
+
+      if (profileRes?.franchise?.id) {
+        setFranchiseId(profileRes.franchise.id);
+      }
+
       const list = (feesRes?.data || []).map((fee) => ({
         id: fee.id,
         student: fee.student?.name || "Unknown Student",
         studentId: fee.studentId,
         level: fee.student?.batch?.level || "Level 1",
-        totalAmount: Number(fee.totalAmount || 0),
+        totalAmount: Number(fee.totalFee || 0),
         paidAmount: Number(fee.paidAmount || 0),
-        pendingAmount: Number(fee.pendingAmount || 0),
+        pendingAmount: Number(fee.dueAmount || 0),
         fineAmount: Number(fee.fineAmount || 0),
         discountAmount: Number(fee.discountAmount || 0),
         dueDate: fee.dueDate ? new Date(fee.dueDate).toISOString().split("T")[0] : "—",
@@ -77,15 +88,50 @@ export default function FranchiseFees() {
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     try {
+      // 1. Get logged-in franchise ID (use state, fallback to user storage)
+      let resolvedFranchiseId = franchiseId;
+      if (!resolvedFranchiseId) {
+        const user = storageService.getUser();
+        resolvedFranchiseId = user?.franchise?.id;
+      }
+      
+      // 1b. System Fallback: If still not found and user is ADMIN, fetch the first franchise from the list
+      if (!resolvedFranchiseId) {
+        const user = storageService.getUser();
+        if (user?.role === "ADMIN") {
+          try {
+            const franchisesRes = await api.admin.getFranchises();
+            const firstFranchise = franchisesRes?.franchises?.[0] || franchisesRes?.data?.[0];
+            if (firstFranchise) {
+              resolvedFranchiseId = firstFranchise.id;
+            }
+          } catch (err) {
+            console.error("Failed to fetch fallback franchise:", err);
+          }
+        }
+      }
+
+      // 1c. Dev/Testing Fallback
+      if (!resolvedFranchiseId) {
+        resolvedFranchiseId = 1;
+      }
+
+      // 2. Fetch student details to get batchId
+      const studentRes = await api.franchise.getStudentById(formData.studentId);
+      const batchId = studentRes?.data?.batchId;
+      if (!batchId) {
+        throw new Error(`Student #${formData.studentId} has no assigned batch.`);
+      }
+
+      // 3. Create Fee record with all required details
       await api.franchise.createFee({
         studentId: Number(formData.studentId),
-        totalAmount: Number(formData.totalAmount),
+        franchiseId: Number(resolvedFranchiseId),
+        batchId: Number(batchId),
+        totalFee: Number(formData.totalAmount),
         paidAmount: Number(formData.paidAmount || 0),
-        fineAmount: Number(formData.fineAmount || 0),
-        discountAmount: Number(formData.discountAmount || 0),
-        dueDate: formData.dueDate,
-        notes: formData.notes,
       });
+
       setIsAddModalOpen(false);
       setFormData({ studentId: "", totalAmount: "", paidAmount: "", fineAmount: "", discountAmount: "", dueDate: "", notes: "" });
       fetchFees();
@@ -114,11 +160,7 @@ export default function FranchiseFees() {
     e.preventDefault();
     try {
       await api.franchise.updateFee(selectedRow.id, {
-        paidAmount: Number(formData.paidAmount),
-        fineAmount: Number(formData.fineAmount || 0),
-        discountAmount: Number(formData.discountAmount || 0),
-        dueDate: formData.dueDate,
-        notes: formData.notes,
+        totalFee: Number(formData.totalAmount),
       });
       setIsEditModalOpen(false);
       setSelectedRow(null);
@@ -339,29 +381,9 @@ export default function FranchiseFees() {
             <button type="button" onClick={() => setIsEditModalOpen(false)} className="absolute top-4 right-4 text-slate-400 dark:text-slate-400 cursor-pointer"><X size={16} /></button>
             <h3 className="text-slate-900 dark:text-white font-bold mb-4 font-mono uppercase text-xs">Edit Fee Record</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Paid Amount (₹)</label>
-                  <input type="number" value={formData.paidAmount} onChange={(e) => setFormData({ ...formData, paidAmount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Fine (₹)</label>
-                  <input type="number" value={formData.fineAmount} onChange={(e) => setFormData({ ...formData, fineAmount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Discount (₹)</label>
-                  <input type="number" value={formData.discountAmount} onChange={(e) => setFormData({ ...formData, discountAmount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Due Date</label>
-                  <input type="date" value={formData.dueDate} onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-mono focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
-                </div>
-              </div>
               <div>
-                <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Notes</label>
-                <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" rows="3" />
+                <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Total Fee (₹)</label>
+                <input type="number" required value={formData.totalAmount} onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
               </div>
               <button type="submit" className="w-full py-2.5 rounded-xl bg-emerald-600 dark:bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-700 text-white font-bold cursor-pointer text-xs">Save Changes</button>
             </form>
