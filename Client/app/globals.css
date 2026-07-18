@@ -39,35 +39,31 @@
     background-color: var(--background);
   }
 
-  /* Only override Tailwind BG classes — NOT inline style backgrounds */
-  .bg-white, .bg-slate-50, .bg-gray-50 {
-    background-color: #1d1340 !important;
+  /* Low specificity fallback overrides inside dark mode */
+  & :where(.bg-white, .bg-slate-50, .bg-gray-50) {
+    background-color: #1d1340;
     color: #f0ebff;
   }
 
-  .bg-slate-100, .bg-gray-100 {
-    background-color: #140d30 !important;
+  & :where(.bg-slate-100, .bg-gray-100) {
+    background-color: #140d30;
     color: #f0ebff;
   }
 
   /* Borders */
-  .border-slate-100, .border-slate-200, .border-gray-100, .border-gray-200 {
-    border-color: #2d1b69 !important;
+  & :where(.border-slate-100, .border-slate-200, .border-gray-100, .border-gray-200) {
+    border-color: #2d1b69;
   }
 
   /* 
    * SAFE text overrides — ONLY where bg-white parent is present.
-   * We do NOT globally override text-slate-XXX anymore to prevent
-   * white-text-on-white-inline-background bug.
    */
-  .bg-white .text-slate-900, .bg-white .text-slate-800, .bg-white .text-slate-700,
-  .bg-slate-50 .text-slate-900, .bg-slate-50 .text-slate-800 {
-    color: #f0ebff !important;
+  & :where(.bg-white, .bg-slate-50) :where(.text-slate-900, .text-slate-800, .text-slate-700) {
+    color: #f0ebff;
   }
 
-  .bg-white .text-slate-600, .bg-white .text-slate-500, .bg-white .text-gray-500,
-  .bg-slate-50 .text-slate-500, .bg-slate-50 .text-gray-500 {
-    color: #b8a9e8 !important;
+  & :where(.bg-white, .bg-slate-50) :where(.text-slate-600, .text-slate-500, .text-gray-500) {
+    color: #b8a9e8;
   }
 
   /* Inputs & Selects — always need dark styling */
@@ -84,6 +80,14 @@
   /* Tables */
   table, thead, tbody, th, td, tr {
     border-color: #2d1b69 !important;
+  }
+
+  table th {
+    color: #b8a9e8;
+  }
+
+  table td {
+    color: #f0ebff;
   }
 
   /* Dashboard sidebar / navigation elements */

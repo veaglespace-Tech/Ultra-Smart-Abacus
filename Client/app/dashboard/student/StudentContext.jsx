@@ -77,6 +77,7 @@ export function StudentDataProvider({ children }) {
             const s = res.data;
             setProfile((prev) => ({
               ...prev,
+              id: s.id,
               name: s.name || user.name || prev.name,
               email: s.email || user.email || prev.email,
               rollNo: s.rollNo || prev.rollNo,
@@ -87,6 +88,7 @@ export function StudentDataProvider({ children }) {
               address: s.address || prev.address,
               batch: s.batch ? (s.batch.name || `Batch - ${s.batch.code}`) : 'Unassigned',
               level: s.batch ? (s.batch.level || prev.level) : prev.level,
+              profilePhoto: s.profilePhoto || prev.profilePhoto,
             }));
           }
         } catch (err) {
