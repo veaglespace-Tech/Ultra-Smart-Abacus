@@ -54,45 +54,12 @@ router.post(
 
 // GET FEE BY ID (Admin, Franchise & Student)
 router.get(
-<<<<<<< HEAD
   "/:id",
   authMiddleware,
   authorize("ADMIN", "FRANCHISE", "STUDENT"),
   getFeeById
 );
-=======
-"/:id",
-authMiddleware,
-authorize("ADMIN","FRANCHISE"),
-getFeeById
-)
 
-// fee receipt download (student or admin/franchise)
-router.get(
-	"/:id/receipt",
-	authMiddleware,
-	getFeeReceipt
-)
-
-// FRANCHISE / ADMIN: mark a payment against a fee
-router.post(
-	"/:id/mark-payment",
-	authMiddleware,
-	authorize("ADMIN","FRANCHISE"),
-	async (req, res, next) => {
-		try {
-			const { markFeePayment } = await import("../controllers/feeController.js");
-			return markFeePayment(req, res, next);
-		} catch (err) {
-			return next(err);
-		}
-	}
-)
-
-
-
-// UPDATE
->>>>>>> b45c6b08f2c3412a020dae9668c3190529c2c059
 
 // UPDATE FEE DETAILS (Admin & Franchise only)
 router.put(
