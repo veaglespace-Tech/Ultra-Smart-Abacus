@@ -87,7 +87,9 @@ export default function StudentFeesPage() {
             </thead>
             <tbody className="divide-y divide-white/5 text-slate-300">
               {fees.map((fee) => {
-                const isPaid = fee.status === "Paid";
+                // treat any fee with a positive `amount` as having a payment (Paid or Partial)
+                const hasPayment = fee.lastPaymentId || Number(fee.amount) > 0;
+                const isFullyPaid = fee.status === "Paid";
                 return (
                   <tr key={fee.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4 font-bold text-slate-200">{fee.description}</td>
@@ -95,10 +97,15 @@ export default function StudentFeesPage() {
                     <td className="px-6 py-4 font-mono text-center text-slate-300">₹{fee.amount}.00</td>
                     <td className="px-6 py-4 font-mono text-slate-400">{fee.date}</td>
                     <td className="px-6 py-4">
-                      {isPaid ? (
+                      {isFullyPaid ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-emerald-500/25 bg-emerald-500/10 text-emerald-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                           Paid Successfully
+                        </span>
+                      ) : hasPayment ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-amber-500/25 bg-amber-500/10 text-amber-300">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                          Partial Payment
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-rose-500/25 bg-rose-500/10 text-rose-300 animate-pulse">
@@ -108,31 +115,33 @@ export default function StudentFeesPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {isPaid ? (
+                      {hasPayment ? (
                           <button
                             onClick={async () => {
-                              try {
-                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/fees/${fee.id}/receipt`, {
-                                  method: 'GET',
-                                  headers: {
-                                    Authorization: `Bearer ${localStorage.getItem('abacus_auth_token')}`
-                                  }
-                                });
-                                if (!res.ok) throw new Error('Failed to download');
-                                const blob = await res.blob();
-                                const url = window.URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = `FeeReceipt_${fee.id}.html`;
-                                document.body.appendChild(a);
-                                a.click();
-                                a.remove();
-                                window.URL.revokeObjectURL(url);
-                              } catch (err) {
-                                alert('Unable to download receipt');
-                                console.error(err);
-                              }
-                            }}
+                                try {
+                                  const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+                                  const receiptUrl = fee.lastPaymentId ? `${base}/api/fees/${fee.id}/receipt?paymentId=${fee.lastPaymentId}` : `${base}/api/fees/${fee.id}/receipt`;
+                                  const res = await fetch(receiptUrl, {
+                                    method: 'GET',
+                                    headers: {
+                                      Authorization: `Bearer ${localStorage.getItem('abacus_auth_token')}`
+                                    }
+                                  });
+                                  if (!res.ok) throw new Error('Failed to download');
+                                  const blob = await res.blob();
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = `FeeReceipt_${fee.id}.html`;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  a.remove();
+                                  window.URL.revokeObjectURL(url);
+                                } catch (err) {
+                                  alert('Unable to download receipt');
+                                  console.error(err);
+                                }
+                              }}
                             className="px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-xs text-slate-300 font-semibold transition-all active:scale-95 cursor-pointer"
                           >
                             Download Receipt

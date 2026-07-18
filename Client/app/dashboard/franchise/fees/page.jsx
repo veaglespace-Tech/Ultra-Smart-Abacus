@@ -12,6 +12,7 @@ export default function FranchiseFees() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
   
   const [selectedRow, setSelectedRow] = useState(null);
   const [formData, setFormData] = useState({ id: "", student: "", level: "Level 1", amount: "", dueDate: "", status: "Overdue" });
@@ -54,6 +55,42 @@ export default function FranchiseFees() {
     setFormData(selectedRow);
     setIsActionModalOpen(false);
     setIsEditModalOpen(true);
+  };
+
+  const handleOpenRecordPayment = () => {
+    if (!selectedRow) return alert('Select a row first');
+    setIsActionModalOpen(false);
+    setIsRecordPaymentOpen(true);
+  };
+
+  const handleRecordPaymentSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedRow) return alert('No selected invoice');
+    const feeId = selectedRow.id; // expect numeric id from DB; if not, server will respond accordingly
+    const token = localStorage.getItem('abacus_auth_token');
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/fees/${feeId}/mark-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: Number(formData.amount), txId: formData.id || undefined, remarks: 'Marked via franchise UI' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to record payment');
+      alert('Payment recorded successfully');
+      // optimistic UI update: mark row as Paid/Partial depending on response
+      if (data && data.data) {
+        const updated = feeData.map(item => item.id === selectedRow.id ? { ...item, amount: data.data.paidAmount, status: data.data.status === 'PAID' ? 'Paid' : 'Overdue' } : item);
+        setFeeData(updated);
+      }
+      setIsRecordPaymentOpen(false);
+      setSelectedRow(null);
+    } catch (err) {
+      alert(err.message || 'Error recording payment');
+      console.error(err);
+    }
   };
 
   const handleEditSubmit = (e) => {
@@ -264,6 +301,7 @@ export default function FranchiseFees() {
                 ) : (
                   <button type="button" className="w-full bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Bell size={13} /> Remind</button>
                 )}
+                <button type="button" onClick={handleOpenRecordPayment} className="w-full bg-[#4a5d4e] hover:bg-[#3d4d40] text-[#fcfbfa] font-bold rounded-xl py-2 flex items-center justify-center gap-1.5 cursor-pointer text-xs"><DollarSign size={13} /> Record Payment</button>
               
                 <button type="button" onClick={() => router.push(`/dashboard/franchise/fees/${selectedRow.id}`)} className="w-full bg-[#fcfbfa] hover:bg-[#f4f0e6] border border-[#e2dcd0] text-[#2c3539] rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Eye size={13} /> Profile</button>
               </div>
@@ -300,6 +338,31 @@ export default function FranchiseFees() {
                 </div>
               </div>
               <button type="submit" className="w-full py-2.5 rounded-xl bg-[#4a5d4e] hover:bg-[#3d4d40] text-[#fcfbfa] font-bold cursor-pointer text-xs">Add Transaction</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Record Payment (for selected invoice) */}
+      {isRecordPaymentOpen && selectedRow && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-[#fcfbfa] border border-[#e2dcd0] w-full max-w-sm rounded-2xl p-5 shadow-xl relative text-[#2c3539]">
+            <button type="button" onClick={() => setIsRecordPaymentOpen(false)} className="absolute top-4 right-4 text-[#7a8475] cursor-pointer"><X size={16} /></button>
+            <h3 className="text-[#1a202c] font-bold mb-4 font-mono uppercase text-xs tracking-wide">Record Payment for {selectedRow.student} ({selectedRow.id})</h3>
+            <form onSubmit={handleRecordPaymentSubmit} className="space-y-3">
+              <div>
+                <label className="text-[10px] text-[#7a8475] uppercase font-bold block mb-1">Amount (₹)</label>
+                <input type="number" required value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#2c3539] text-xs focus:outline-none focus:border-[#4a5d4e]" />
+              </div>
+              <div>
+                <label className="text-[10px] text-[#7a8475] uppercase font-bold block mb-1">Transaction ID (optional)</label>
+                <input type="text" value={formData.id} onChange={(e) => setFormData({...formData, id: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#2c3539] text-xs focus:outline-none focus:border-[#4a5d4e]" />
+              </div>
+              <div>
+                <label className="text-[10px] text-[#7a8475] uppercase font-bold block mb-1">Remarks (optional)</label>
+                <input type="text" value={formData.level} onChange={(e) => setFormData({...formData, level: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#2c3539] text-xs focus:outline-none focus:border-[#4a5d4e]" />
+              </div>
+              <button type="submit" className="w-full py-2.5 rounded-xl bg-[#4a5d4e] hover:bg-[#3d4d40] text-[#fcfbfa] font-bold cursor-pointer text-xs">Record Payment</button>
             </form>
           </div>
         </div>
