@@ -61,7 +61,9 @@ export default function TeacherNotificationsPage() {
       {/* HEADER SECTION */}
       <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">ALERTS & NOTIFICATIONS</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">ALERTS & NOTIFICATIONS</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Stay updated with classroom scheduling milestones and grading reviews.</p>
         </div>
         {notifications.length > 0 && (

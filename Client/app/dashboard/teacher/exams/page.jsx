@@ -169,12 +169,14 @@ export default function TeacherExamsPage() {
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">EXAMINATIONS & EVALUATIONS</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">EXAMINATIONS & EVALUATIONS</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Configure tests, input scores, and publish marks sheets to students.</p>
         </div>
         <button 
           onClick={handleOpenCreate}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-indigo-600/10"
+          className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine"
         >
           <Plus size={14} />
           <span>New Assessment</span>
@@ -205,7 +207,7 @@ export default function TeacherExamsPage() {
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40'
                         : exam.status === 'Pending Review'
                         ? 'bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40'
-                        : 'bg-indigo-50 text-indigo-750 border-indigo-250 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900/40'
+                        : 'bg-primary/5 text-primary border-primary/25 dark:bg-primary-light/20 dark:text-cream dark:border-primary-light/35'
                     }`}>
                       {exam.status === 'Published' ? '✓ Published' : exam.status === 'Pending Review' ? '⏱ Pending Review' : '📅 Scheduled'}
                     </span>
@@ -295,7 +297,7 @@ export default function TeacherExamsPage() {
                   placeholder="e.g. Bead Visualisation Assessment"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-indigo-500 text-xs font-bold text-slate-850 dark:text-slate-100"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-accent text-xs font-bold text-slate-850 dark:text-slate-100"
                 />
               </div>
 
@@ -305,7 +307,7 @@ export default function TeacherExamsPage() {
                   <select 
                     value={formData.batch}
                     onChange={(e) => setFormData(prev => ({ ...prev, batch: e.target.value }))}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-bold rounded-xl p-3 focus:outline-none focus:border-indigo-500 cursor-pointer text-slate-700 dark:text-slate-200"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-bold rounded-xl p-3 focus:outline-none focus:border-accent cursor-pointer text-slate-700 dark:text-slate-200"
                   >
                     <option value="Batch Alpha">Batch Alpha</option>
                     <option value="Batch Beta">Batch Beta</option>
@@ -316,7 +318,7 @@ export default function TeacherExamsPage() {
                   <select 
                     value={formData.level}
                     onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-bold rounded-xl p-3 focus:outline-none focus:border-indigo-500 cursor-pointer text-slate-700 dark:text-slate-200"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-bold rounded-xl p-3 focus:outline-none focus:border-accent cursor-pointer text-slate-700 dark:text-slate-200"
                   >
                     <option value="Level 1 Core">Level 1 Core</option>
                     <option value="Level 2 Foundations">Level 2 Foundations</option>
@@ -333,7 +335,7 @@ export default function TeacherExamsPage() {
                     required
                     value={formData.date}
                     onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-indigo-500 text-xs text-slate-800 dark:text-slate-100"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-accent text-xs text-slate-800 dark:text-slate-100"
                   />
                 </div>
                 <div>
@@ -343,7 +345,7 @@ export default function TeacherExamsPage() {
                     required
                     value={formData.maxMarks}
                     onChange={(e) => setFormData(prev => ({ ...prev, maxMarks: Number(e.target.value) || 100 }))}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-indigo-500 text-xs text-slate-850 dark:text-slate-100"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-accent text-xs text-slate-855 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -358,7 +360,7 @@ export default function TeacherExamsPage() {
                 </button>
                 <button 
                   type="submit"
-                  className="bg-indigo-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-755 cursor-pointer shadow-md"
+                  className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-5 py-2.5 rounded-xl cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine transition-all duration-300"
                 >
                   Create
                 </button>
@@ -401,7 +403,7 @@ export default function TeacherExamsPage() {
                         max={activeMarksExam.maxMarks}
                         value={tempMarks[student.id] !== undefined ? tempMarks[student.id] : ''}
                         onChange={(e) => setTempMarks(prev => ({ ...prev, [student.id]: e.target.value }))}
-                        className="w-16 bg-white dark:bg-slate-900 border border-slate-250 dark:border-slate-800 text-center rounded-lg p-2 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                        className="w-16 bg-white dark:bg-slate-900 border border-slate-250 dark:border-slate-800 text-center rounded-lg p-2 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-accent"
                         placeholder="0"
                       />
                       <span className="text-[10px] text-slate-400 font-bold">/ {activeMarksExam.maxMarks}</span>
@@ -420,7 +422,7 @@ export default function TeacherExamsPage() {
                 </button>
                 <button 
                   type="submit"
-                  className="bg-indigo-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-755 cursor-pointer shadow-md"
+                  className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-5 py-2.5 rounded-xl cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine transition-all duration-300"
                 >
                   Save Scores
                 </button>

@@ -1,140 +1,106 @@
-import express from "express"
-
-
+import express from "express";
 import {
+  createFee,
+  getFees,
+  getFeeById,
+  updateFee,
+  deleteFee,
+  getMyFees,
+  getFeeReceipt,
+  recordPayment,
+  getStudentFeesSummary,
+  createDemoFee
+} from "../controllers/feeController.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import authorize from "../middleware/roleMiddleware.js";
+import { createFeeValidation, recordPaymentValidation } from "../validation/feeValidation.js";
+import validationMiddleware from "../middleware/validation.middleware.js";
 
-createFee,
-getFees,
-getFeeById,
-updateFee,
-deleteFee,
-getMyFees,
-getFeeReceipt
+const router = express.Router();
 
-} from "../controllers/feeController.js"
-
-
-
-import authMiddleware from "../middleware/authMiddleware.js"
-
-import authorize from "../middleware/roleMiddleware.js"
-
-import feeValidation from "../validation/feeValidation.js"
-
-import validationMiddleware 
-from "../middleware/validation.middleware.js"
-
-
-
-const router=express.Router()
-
-
-
-// CREATE
-
+// CREATE FEE (Admin & Franchise only)
 router.post(
-"/",
-authMiddleware,
-authorize("ADMIN","FRANCHISE"),
-feeValidation,
-validationMiddleware,
-createFee
-)
+  "/",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  createFeeValidation,
+  validationMiddleware,
+  createFee
+);
 
-
-
-// READ ALL
-
+// GET ALL FEES WITH FILTERS (Admin & Franchise only)
 router.get(
-"/",
-authMiddleware,
-authorize("ADMIN","FRANCHISE"),
-getFees
-)
+  "/",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  getFees
+);
 
-
-// STUDENT: get own fees
+// STUDENT: Get own fees
 router.get(
-	"/me",
-	authMiddleware,
-	authorize("STUDENT"),
-	getMyFees
-)
+  "/me",
+  authMiddleware,
+  authorize("STUDENT"),
+  getMyFees
+);
 
-// TEMP: create a demo paid fee for the logged-in student
+// STUDENT: Create demo fee (Testing receipt download)
 router.post(
-	"/me/demo",
-	authMiddleware,
-	authorize("STUDENT"),
-	// no validation for demo endpoint
-	// controller will create a PAID fee for testing
-	(req, res, next) => next(),
-	// lazy import handler from controller
-	async (req, res, next) => {
-		try {
-			const { createDemoFee } = await import("../controllers/feeController.js");
-			return createDemoFee(req, res, next);
-		} catch (err) {
-			return next(err);
-		}
-	}
-)
+  "/me/demo",
+  authMiddleware,
+  authorize("STUDENT"),
+  createDemoFee
+);
 
-
-
-// READ ONE
-
+// GET FEE BY ID (Admin, Franchise & Student)
 router.get(
-"/:id",
-authMiddleware,
-authorize("ADMIN","FRANCHISE"),
-getFeeById
-)
-
-// fee receipt download (student or admin/franchise)
-router.get(
-	"/:id/receipt",
-	authMiddleware,
-	getFeeReceipt
-)
-
-// FRANCHISE / ADMIN: mark a payment against a fee
-router.post(
-	"/:id/mark-payment",
-	authMiddleware,
-	authorize("ADMIN","FRANCHISE"),
-	async (req, res, next) => {
-		try {
-			const { markFeePayment } = await import("../controllers/feeController.js");
-			return markFeePayment(req, res, next);
-		} catch (err) {
-			return next(err);
-		}
-	}
-)
+  "/:id",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE", "STUDENT"),
+  getFeeById
+);
 
 
-
-// UPDATE
-
+// UPDATE FEE DETAILS (Admin & Franchise only)
 router.put(
-"/:id",
-authMiddleware,
-authorize("ADMIN","FRANCHISE"),
-updateFee
-)
+  "/:id",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  updateFee
+);
 
+// RECORD FEE PAYMENT (Admin & Franchise only)
+router.post(
+  "/:id/payment",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  recordPaymentValidation,
+  validationMiddleware,
+  recordPayment
+);
 
+// GET FEE RECEIPT (Admin, Franchise & Student)
+router.get(
+  "/:id/receipt",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE", "STUDENT"),
+  getFeeReceipt
+);
 
-// DELETE
+// GET STUDENT FEES SUMMARY & HISTORY (Admin, Franchise & Student)
+router.get(
+  "/student/:studentId",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE", "STUDENT"),
+  getStudentFeesSummary
+);
 
+// DELETE FEE (Admin only)
 router.delete(
-"/:id",
-authMiddleware,
-authorize("ADMIN"),
-deleteFee
-)
+  "/:id",
+  authMiddleware,
+  authorize("ADMIN"),
+  deleteFee
+);
 
-
-
-export default router
+export default router;

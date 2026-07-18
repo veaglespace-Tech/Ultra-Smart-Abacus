@@ -46,7 +46,9 @@ export default function TeacherSettingsPage() {
       {/* HEADER SECTION */}
       <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">SETTINGS & PREFERENCES</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">SETTINGS & PREFERENCES</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-455 mt-0.5">Configure appearance theme, primary system language, and alarm triggers.</p>
         </div>
       </div>
@@ -64,7 +66,7 @@ export default function TeacherSettingsPage() {
               onClick={() => { if (theme === "dark") toggleTheme(); }}
               className={`flex-1 p-4 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
                 theme === 'light'
-                  ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700 font-bold dark:bg-indigo-950/20'
+                  ? 'border-accent bg-accent/5 text-accent font-bold'
                   : 'border-slate-200 dark:border-slate-800 text-slate-655 hover:bg-slate-50'
               }`}
             >
@@ -72,14 +74,14 @@ export default function TeacherSettingsPage() {
                 <Sun size={15} />
                 <span>Light Mode</span>
               </div>
-              {theme === 'light' && <span className="w-2 h-2 rounded-full bg-indigo-600"></span>}
+              {theme === 'light' && <span className="w-2 h-2 rounded-full bg-accent"></span>}
             </button>
             
             <button
               onClick={() => { if (theme === "light") toggleTheme(); }}
               className={`flex-1 p-4 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
                 theme === 'dark'
-                  ? 'border-indigo-500 bg-indigo-950/20 text-indigo-400 font-bold'
+                  ? 'border-accent bg-accent/10 text-accent font-bold'
                   : 'border-slate-200 dark:border-slate-850 text-slate-655 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40'
               }`}
             >
@@ -87,7 +89,7 @@ export default function TeacherSettingsPage() {
                 <Moon size={15} />
                 <span>Dark Mode</span>
               </div>
-              {theme === 'dark' && <span className="w-2 h-2 rounded-full bg-indigo-400"></span>}
+              {theme === 'dark' && <span className="w-2 h-2 rounded-full bg-accent"></span>}
             </button>
           </div>
         </div>
@@ -111,7 +113,7 @@ export default function TeacherSettingsPage() {
                 type="checkbox" 
                 checked={notifs.exams}
                 onChange={() => handleToggleNotif('exams')}
-                className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                className="w-4 h-4 accent-accent rounded cursor-pointer"
               />
             </label>
 
@@ -124,7 +126,7 @@ export default function TeacherSettingsPage() {
                 type="checkbox" 
                 checked={notifs.attendance}
                 onChange={() => handleToggleNotif('attendance')}
-                className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                className="w-4 h-4 accent-accent rounded cursor-pointer"
               />
             </label>
 
@@ -137,7 +139,7 @@ export default function TeacherSettingsPage() {
                 type="checkbox" 
                 checked={notifs.payments}
                 onChange={() => handleToggleNotif('payments')}
-                className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                className="w-4 h-4 accent-accent rounded cursor-pointer"
               />
             </label>
           </div>
@@ -148,7 +150,7 @@ export default function TeacherSettingsPage() {
           <button 
             onClick={handleSaveSettings}
             disabled={savingSettings}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10"
+            className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine"
           >
             {savingSettings ? 'Saving Settings...' : 'Save Settings'}
           </button>

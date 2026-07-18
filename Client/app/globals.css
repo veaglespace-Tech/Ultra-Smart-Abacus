@@ -107,6 +107,16 @@
   --font-sans: "Inter", Arial, Helvetica, sans-serif;
   --font-heading: "Poppins", Arial, sans-serif;
   --font-accent: "Outfit", Arial, sans-serif;
+  
+  --color-primary: #2D1B69;
+  --color-primary-light: #3d2a88;
+  --color-primary-dark: #1a1035;
+  --color-accent: #FF6B2B;
+  --color-accent-light: #FF8A50;
+  --color-accent-dark: #e55a1f;
+  --color-gold: #FFCA28;
+  --color-gold-light: #FFD654;
+  --color-cream: #FFF8F0;
 }
 
 body {

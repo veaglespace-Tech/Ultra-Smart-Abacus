@@ -46,8 +46,10 @@ export const api = {
     updateFee: (id, data) => apiHelper.put(`/fees/${id}`, data),
     deleteFee: (id) => apiHelper.delete(`/fees/${id}`),
     getFeeAnalytics: () => Promise.resolve({ success: true, data: { totalCollected: 0, totalPending: 0, overdue: 0, totalRecords: 0 } }),
-    recordPayment: (id, data) => apiHelper.put(`/fees/${id}`, { paidAmount: data.amount, notes: data.notes }),
+    recordPayment: (id, data) => apiHelper.post(`/fees/${id}/payment`, { amount: data.amount, paymentMode: data.paymentMode || "UPI", referenceNumber: data.referenceNumber || "", remarks: data.notes || "" }),
     sendReminder: (id) => Promise.resolve({ success: true, message: "Reminder simulated successfully" }),
+    getStudentById: (id) => apiHelper.get(`/students/${id}`),
+    getProfile: () => apiHelper.get('/franchise/profile'),
   },
   admin: {
     getTeachers: () => apiHelper.get('/teachers'),
