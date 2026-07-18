@@ -1,6 +1,7 @@
 import { storageService } from './storage.services';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Hya line la badal:
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 async function request(endpoint, options = {}) {
   const token = storageService.getToken();

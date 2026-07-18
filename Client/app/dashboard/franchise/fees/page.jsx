@@ -443,4 +443,4 @@ export default function FranchiseFees() {
       )}
     </div>
   );
-}
+}};
