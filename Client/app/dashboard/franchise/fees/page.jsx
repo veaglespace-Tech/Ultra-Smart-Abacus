@@ -3,18 +3,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Search, Bell, Download, Calendar, Plus, Edit2, Trash2, X, User } from "lucide-react";
 import { api } from "@/services/api";
+import { storageService } from "@/services/storage.services";
 
 export default function FranchiseFees() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [fees, setFees] = useState([]);
+  const [franchiseId, setFranchiseId] = useState(null);
   const [analytics, setAnalytics] = useState({ totalCollected: 0, totalPending: 0, overdue: 0, totalRecords: 0 });
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
-  
   const [selectedRow, setSelectedRow] = useState(null);
   const [formData, setFormData] = useState({
     studentId: "",
@@ -29,15 +29,24 @@ export default function FranchiseFees() {
   const fetchFees = async () => {
     try {
       setLoading(true);
-      const [feesRes, analyticsRes] = await Promise.all([api.franchise.getFees(), api.franchise.getFeeAnalytics()]);
+      const [feesRes, analyticsRes, profileRes] = await Promise.all([
+        api.franchise.getFees(),
+        api.franchise.getFeeAnalytics(),
+        api.franchise.getProfile().catch(() => null)
+      ]);
+
+      if (profileRes?.franchise?.id) {
+        setFranchiseId(profileRes.franchise.id);
+      }
+
       const list = (feesRes?.data || []).map((fee) => ({
         id: fee.id,
         student: fee.student?.name || "Unknown Student",
         studentId: fee.studentId,
         level: fee.student?.batch?.level || "Level 1",
-        totalAmount: Number(fee.totalAmount || 0),
+        totalAmount: Number(fee.totalFee || 0),
         paidAmount: Number(fee.paidAmount || 0),
-        pendingAmount: Number(fee.pendingAmount || 0),
+        pendingAmount: Number(fee.dueAmount || 0),
         fineAmount: Number(fee.fineAmount || 0),
         discountAmount: Number(fee.discountAmount || 0),
         dueDate: fee.dueDate ? new Date(fee.dueDate).toISOString().split("T")[0] : "—",
@@ -79,15 +88,50 @@ export default function FranchiseFees() {
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     try {
+      // 1. Get logged-in franchise ID (use state, fallback to user storage)
+      let resolvedFranchiseId = franchiseId;
+      if (!resolvedFranchiseId) {
+        const user = storageService.getUser();
+        resolvedFranchiseId = user?.franchise?.id;
+      }
+      
+      // 1b. System Fallback: If still not found and user is ADMIN, fetch the first franchise from the list
+      if (!resolvedFranchiseId) {
+        const user = storageService.getUser();
+        if (user?.role === "ADMIN") {
+          try {
+            const franchisesRes = await api.admin.getFranchises();
+            const firstFranchise = franchisesRes?.franchises?.[0] || franchisesRes?.data?.[0];
+            if (firstFranchise) {
+              resolvedFranchiseId = firstFranchise.id;
+            }
+          } catch (err) {
+            console.error("Failed to fetch fallback franchise:", err);
+          }
+        }
+      }
+
+      // 1c. Dev/Testing Fallback
+      if (!resolvedFranchiseId) {
+        resolvedFranchiseId = 1;
+      }
+
+      // 2. Fetch student details to get batchId
+      const studentRes = await api.franchise.getStudentById(formData.studentId);
+      const batchId = studentRes?.data?.batchId;
+      if (!batchId) {
+        throw new Error(`Student #${formData.studentId} has no assigned batch.`);
+      }
+
+      // 3. Create Fee record with all required details
       await api.franchise.createFee({
         studentId: Number(formData.studentId),
-        totalAmount: Number(formData.totalAmount),
+        franchiseId: Number(resolvedFranchiseId),
+        batchId: Number(batchId),
+        totalFee: Number(formData.totalAmount),
         paidAmount: Number(formData.paidAmount || 0),
-        fineAmount: Number(formData.fineAmount || 0),
-        discountAmount: Number(formData.discountAmount || 0),
-        dueDate: formData.dueDate,
-        notes: formData.notes,
       });
+
       setIsAddModalOpen(false);
       setFormData({ studentId: "", totalAmount: "", paidAmount: "", fineAmount: "", discountAmount: "", dueDate: "", notes: "" });
       fetchFees();
@@ -112,52 +156,11 @@ export default function FranchiseFees() {
     setIsEditModalOpen(true);
   };
 
-  const handleOpenRecordPayment = () => {
-    if (!selectedRow) return alert('Select a row first');
-    setIsActionModalOpen(false);
-    setIsRecordPaymentOpen(true);
-  };
-
-  const handleRecordPaymentSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedRow) return alert('No selected invoice');
-    const feeId = selectedRow.id; // expect numeric id from DB; if not, server will respond accordingly
-    const token = localStorage.getItem('abacus_auth_token');
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/fees/${feeId}/mark-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ amount: Number(formData.amount), txId: formData.id || undefined, remarks: 'Marked via franchise UI' })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to record payment');
-      alert('Payment recorded successfully');
-      // optimistic UI update: mark row as Paid/Partial depending on response
-      if (data && data.data) {
-        const updated = feeData.map(item => item.id === selectedRow.id ? { ...item, amount: data.data.paidAmount, status: data.data.status === 'PAID' ? 'Paid' : 'Overdue' } : item);
-        setFeeData(updated);
-      }
-      setIsRecordPaymentOpen(false);
-      setSelectedRow(null);
-    } catch (err) {
-      alert(err.message || 'Error recording payment');
-      console.error(err);
-    }
-  };
-
-  const handleEditSubmit = (e) => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
       await api.franchise.updateFee(selectedRow.id, {
-        paidAmount: Number(formData.paidAmount),
-        fineAmount: Number(formData.fineAmount || 0),
-        discountAmount: Number(formData.discountAmount || 0),
-        dueDate: formData.dueDate,
-        notes: formData.notes,
+        totalFee: Number(formData.totalAmount),
       });
       setIsEditModalOpen(false);
       setSelectedRow(null);
@@ -227,7 +230,7 @@ export default function FranchiseFees() {
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Professional ERP-style fee tracking for installment payments, reminders, and receipts.</p>
         </div>
         <div className="flex items-center gap-2 self-start lg:self-center">
-          <button onClick={downloadLedgerCSV} className="px-4 py-2.5 bg-slate-55 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-2 cursor-pointer text-xs">
+          <button onClick={downloadLedgerCSV} className="px-4 py-2.5 bg-slate-55 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-200 font-bold rounded-xl border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-2 cursor-pointer text-xs">
             <Download size={14} /> Export Ledger
           </button>
           <button onClick={() => setIsAddModalOpen(true)} className="bg-emerald-600 dark:bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer text-xs">
@@ -249,7 +252,7 @@ export default function FranchiseFees() {
           <p className="text-emerald-800 dark:text-emerald-450 font-medium text-xs">Collection Efficiency</p>
           <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 font-mono mt-1">{Math.round((totalCollected / totalTarget) * 100)}%</p>
         </div>
-        <div className="bg-amber-50 dark:bg-amber-955/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-2xl shadow-sm">
+        <div className="bg-amber-55 dark:bg-amber-955/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-2xl shadow-sm">
           <p className="text-amber-800 dark:text-amber-400 font-medium text-xs">Overdue Records</p>
           <p className="text-2xl font-bold text-amber-700 dark:text-amber-300 font-mono mt-1">{analytics.overdue}</p>
         </div>
@@ -288,7 +291,7 @@ export default function FranchiseFees() {
                   <td className="py-4 px-6 font-bold text-slate-900 dark:text-white text-sm">{row.student}</td>
                   <td className="py-4 px-6 font-bold text-slate-900 dark:text-white font-mono">₹{row.totalAmount.toLocaleString("en-IN")}</td>
                   <td className="py-4 px-6 text-slate-500 dark:text-slate-400 font-mono inline-flex items-center gap-1.5 mt-2"><Calendar size={12} className="text-slate-400 dark:text-slate-400" /> {row.dueDate}</td>
-                  <td className="py-4 px-6 text-center"><span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-wide inline-block min-w-[75px] font-mono ${row.status === "PAID" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/40" : row.status === "PARTIAL" ? "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-250 dark:border-amber-900/40" : "bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455 border border-rose-250 dark:border-rose-900/40"}`}>● {row.status}</span></td>
+                  <td className="py-4 px-6 text-center"><span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-wide inline-block min-w-[75px] font-mono ${row.status === "PAID" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/40" : row.status === "PARTIAL" ? "bg-amber-50 dark:bg-amber-955/20 text-amber-700 dark:text-amber-400 border border-amber-250 dark:border-amber-900/40" : "bg-rose-50 dark:bg-rose-955/20 text-rose-700 dark:text-rose-455 border border-rose-250 dark:border-rose-900/40"}`}>● {row.status}</span></td>
                 </tr>
               )) : <tr><td colSpan="5" className="py-10 text-center text-slate-400 dark:text-slate-400 font-medium">No records found.</td></tr>}
             </tbody>
@@ -311,25 +314,17 @@ export default function FranchiseFees() {
             <div className="bg-slate-50/50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 space-y-2.5 font-mono mb-4 text-slate-700 dark:text-slate-300">
               <div className="flex justify-between"><span>Total:</span><span className="text-slate-900 dark:text-white font-bold">₹{selectedRow.totalAmount.toLocaleString("en-IN")}</span></div>
               <div className="flex justify-between"><span>Paid:</span><span className="text-slate-700 dark:text-slate-300">₹{selectedRow.paidAmount.toLocaleString("en-IN")}</span></div>
-              <div className="flex justify-between"><span>Pending:</span><span className="text-rose-600 dark:text-rose-400 font-bold">₹{selectedRow.pendingAmount.toLocaleString("en-IN")}</span></div>
+              <div className="flex justify-between"><span>Pending:</span><span className="text-rose-600 dark:text-rose-455 font-bold">₹{selectedRow.pendingAmount.toLocaleString("en-IN")}</span></div>
               <div className="flex justify-between"><span>Due Date:</span><span className="text-slate-700 dark:text-slate-300">{selectedRow.dueDate}</span></div>
             </div>
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                {selectedRow.status === 'Paid' ? (
-                  <button type="button" className="w-full bg-[#f4f0e6] hover:bg-[#e2dcd0] text-[#4a5d4e] border border-[#e2dcd0] rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Download size={13} /> Slip</button>
-                ) : (
-                  <button type="button" className="w-full bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Bell size={13} /> Remind</button>
-                )}
-                <button type="button" onClick={handleOpenRecordPayment} className="w-full bg-[#4a5d4e] hover:bg-[#3d4d40] text-[#fcfbfa] font-bold rounded-xl py-2 flex items-center justify-center gap-1.5 cursor-pointer text-xs"><DollarSign size={13} /> Record Payment</button>
-              
-                <button type="button" onClick={() => router.push(`/dashboard/franchise/fees/${selectedRow.id}`)} className="w-full bg-[#fcfbfa] hover:bg-[#f4f0e6] border border-[#e2dcd0] text-[#2c3539] rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Eye size={13} /> Profile</button>
                 <button type="button" onClick={handleRecordInstallment} className="w-full bg-emerald-600 dark:bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-700 text-white rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Plus size={13} /> Installment</button>
                 <button type="button" onClick={handleReminder} className="w-full bg-amber-50 dark:bg-amber-955/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Bell size={13} /> Remind</button>
               </div>
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <button type="button" onClick={handleEditTrigger} className="w-full bg-slate-50 dark:bg-slate-850 hover:bg-amber-50 dark:hover:bg-slate-800 text-amber-700 dark:text-amber-400 rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Edit2 size={12} /> Edit</button>
-                <button type="button" onClick={handleDeleteTrigger} className="w-full bg-slate-50 dark:bg-slate-850 hover:bg-rose-50 dark:hover:bg-slate-800 text-rose-700 dark:text-rose-400 rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Trash2 size={12} /> Delete</button>
+                <button type="button" onClick={handleDeleteTrigger} className="w-full bg-slate-50 dark:bg-slate-850 hover:bg-rose-50 dark:hover:bg-slate-850 text-rose-700 dark:text-rose-455 rounded-xl py-2 font-bold flex items-center justify-center gap-1.5 cursor-pointer text-xs"><Trash2 size={12} /> Delete</button>
               </div>
             </div>
           </div>
@@ -380,61 +375,15 @@ export default function FranchiseFees() {
         </div>
       )}
 
-      {/* Record Payment (for selected invoice) */}
-      {isRecordPaymentOpen && selectedRow && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-[#fcfbfa] border border-[#e2dcd0] w-full max-w-sm rounded-2xl p-5 shadow-xl relative text-[#2c3539]">
-            <button type="button" onClick={() => setIsRecordPaymentOpen(false)} className="absolute top-4 right-4 text-[#7a8475] cursor-pointer"><X size={16} /></button>
-            <h3 className="text-[#1a202c] font-bold mb-4 font-mono uppercase text-xs tracking-wide">Record Payment for {selectedRow.student} ({selectedRow.id})</h3>
-            <form onSubmit={handleRecordPaymentSubmit} className="space-y-3">
-              <div>
-                <label className="text-[10px] text-[#7a8475] uppercase font-bold block mb-1">Amount (₹)</label>
-                <input type="number" required value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#2c3539] text-xs focus:outline-none focus:border-[#4a5d4e]" />
-              </div>
-              <div>
-                <label className="text-[10px] text-[#7a8475] uppercase font-bold block mb-1">Transaction ID (optional)</label>
-                <input type="text" value={formData.id} onChange={(e) => setFormData({...formData, id: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#2c3539] text-xs focus:outline-none focus:border-[#4a5d4e]" />
-              </div>
-              <div>
-                <label className="text-[10px] text-[#7a8475] uppercase font-bold block mb-1">Remarks (optional)</label>
-                <input type="text" value={formData.level} onChange={(e) => setFormData({...formData, level: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#2c3539] text-xs focus:outline-none focus:border-[#4a5d4e]" />
-              </div>
-              <button type="submit" className="w-full py-2.5 rounded-xl bg-[#4a5d4e] hover:bg-[#3d4d40] text-[#fcfbfa] font-bold cursor-pointer text-xs">Record Payment</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modify Ledger Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl p-5 shadow-xl relative text-slate-800 dark:text-slate-200">
             <button type="button" onClick={() => setIsEditModalOpen(false)} className="absolute top-4 right-4 text-slate-400 dark:text-slate-400 cursor-pointer"><X size={16} /></button>
             <h3 className="text-slate-900 dark:text-white font-bold mb-4 font-mono uppercase text-xs">Edit Fee Record</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Paid Amount (₹)</label>
-                  <input type="number" value={formData.paidAmount} onChange={(e) => setFormData({ ...formData, paidAmount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Fine (₹)</label>
-                  <input type="number" value={formData.fineAmount} onChange={(e) => setFormData({ ...formData, fineAmount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Discount (₹)</label>
-                  <input type="number" value={formData.discountAmount} onChange={(e) => setFormData({ ...formData, discountAmount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Due Date</label>
-                  <input type="date" value={formData.dueDate} onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-mono focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
-                </div>
-              </div>
               <div>
-                <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Notes</label>
-                <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" rows="3" />
+                <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Total Fee (₹)</label>
+                <input type="number" required value={formData.totalAmount} onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
               </div>
               <button type="submit" className="w-full py-2.5 rounded-xl bg-emerald-600 dark:bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-700 text-white font-bold cursor-pointer text-xs">Save Changes</button>
             </form>

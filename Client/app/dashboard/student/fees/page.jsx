@@ -77,7 +77,7 @@ export default function StudentFeesPage() {
                     <td className="px-6 py-4 font-mono text-center text-slate-800 dark:text-slate-300">₹{fee.amount}.00</td>
                     <td className="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">{fee.date}</td>
                     <td className="px-6 py-4">
-                      {isPaid ? (
+                      {isFullyPaid ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-emerald-200 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                           Paid Successfully
@@ -95,7 +95,7 @@ export default function StudentFeesPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {isPaid ? (
+                      {isFullyPaid ? (
                         <button
                           onClick={async () => {
                             try {
