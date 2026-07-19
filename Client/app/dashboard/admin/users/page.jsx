@@ -147,14 +147,14 @@ function UserManagementContent() {
       
       {/* Message Feed Alerts */}
       {userSuccess && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-300 shadow-inner flex items-center gap-2">
+        <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-3 text-xs text-emerald-700 dark:text-emerald-300 shadow-inner flex items-center gap-2">
           <span className="text-lg">✔</span>
           <span>{userSuccess}</span>
         </div>
       )}
 
       {/* Toolbar Actions */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-2xl backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
         
         {/* Search Inputs */}
         <div className="relative w-full sm:max-w-xs">
@@ -168,7 +168,7 @@ function UserManagementContent() {
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
             placeholder="Search users by name, role, email..."
-            className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+            className="w-full bg-slate-50 dark:bg-slate-950/55 border border-slate-200 dark:border-slate-800 rounded-xl py-2 pl-9 pr-4 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-550 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all font-medium"
           />
         </div>
 
@@ -185,11 +185,11 @@ function UserManagementContent() {
       </div>
 
       {/* USERS LIST TABLE */}
-      <div className="rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-md overflow-hidden shadow-xl">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-white/5 bg-white/[0.02] text-slate-400 uppercase tracking-wider text-[9px] font-bold">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] font-bold">
                 <th className="px-6 py-4">User Details</th>
                 <th className="px-6 py-4">Email</th>
                 <th className="px-6 py-4">System Role</th>
@@ -199,40 +199,40 @@ function UserManagementContent() {
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-350">
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => {
-                  let roleBadgeColor = "bg-rose-500/10 text-rose-400 border-rose-500/20";
-                  if (user.role === "Franchise") roleBadgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
-                  else if (user.role === "Teacher") roleBadgeColor = "bg-orange-500/10 text-orange-400 border-orange-500/20";
-                  else if (user.role === "Student") roleBadgeColor = "bg-purple-500/10 text-purple-400 border-purple-500/20";
+                  let roleBadgeColor = "bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20";
+                  if (user.role === "Franchise") roleBadgeColor = "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20";
+                  else if (user.role === "Teacher") roleBadgeColor = "bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20";
+                  else if (user.role === "Student") roleBadgeColor = "bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20";
 
                   return (
-                    <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-slate-300 border border-white/5 text-[10px]">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[10px]">
                             {user.name.charAt(0)}
                           </div>
-                          <span className="font-semibold text-slate-200 block text-xs">
+                          <span className="font-semibold text-slate-900 dark:text-slate-200 block text-xs">
                             {user.name}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 font-mono text-slate-400">{user.email}</td>
+                      <td className="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">{user.email}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${roleBadgeColor}`}>
                           {user.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-slate-400">{user.location}</td>
+                      <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{user.location}</td>
                       <td className="px-6 py-4">
                         <button
                           onClick={() => toggleUserStatus(user.id)}
                           className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
                             user.status === "Active"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
-                              : "bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20"
+                              ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-250 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20"
+                              : "bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-250 dark:border-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/20"
                           }`}
                           title="Click to toggle status"
                         >
@@ -252,7 +252,7 @@ function UserManagementContent() {
                               setEditUserStatus(user.status);
                               setEditUserError("");
                             }}
-                            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all"
+                            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all cursor-pointer"
                             title="Edit User"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -261,7 +261,7 @@ function UserManagementContent() {
                           </button>
                           <button
                             onClick={() => performDeleteUser(user.id)}
-                            className="p-1.5 rounded-lg hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition-all cursor-pointer"
+                            className="p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-450 transition-all cursor-pointer"
                             title="Delete User"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">

@@ -164,16 +164,16 @@ export default function FranchiseTeachers() {
     <div className="space-y-6 w-full text-[#2c3539]">
       
       {/* HEADER BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e2dcd0] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
-          <h2 className="text-base font-black tracking-tight text-[#1a202c] uppercase">Faculty Rosters</h2>
-          <p className="text-[11px] text-[#8a9485] mt-0.5 font-medium">Manage franchise instructors, core profiles, and assigned teaching logs.</p>
+          <h2 className="text-base font-black tracking-tight text-slate-900 uppercase">Faculty Rosters</h2>
+          <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Manage franchise instructors, core profiles, and assigned teaching logs.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-center">
-          <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f4f0e6] border border-[#e2dcd0] text-[11px] font-bold rounded-lg text-[#5a6455] hover:bg-[#e2dcd0]/50 transition-all cursor-pointer">
+          <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 text-[11px] font-bold rounded-lg text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
             <Download size={13} /><span>Export Faculty</span>
           </button>
-          <button onClick={() => { setEditingTeacher(null); resetForm(); setIsFormOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4a5d4e] text-[11px] font-bold rounded-lg text-[#fcfbfa] hover:bg-[#3d4d40] transition-all cursor-pointer shadow-sm">
+          <button onClick={() => { setEditingTeacher(null); resetForm(); setIsFormOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] text-[11px] font-bold rounded-lg text-white hover:bg-[#4338ca] transition-all cursor-pointer shadow-sm">
             <UserPlus size={13} /><span>Onboard Instructor</span>
           </button>
         </div>
@@ -181,27 +181,27 @@ export default function FranchiseTeachers() {
 
       {/* METRICS BLOCKS */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
-          <div className="text-[10px] uppercase font-bold tracking-wider text-[#8a9485]">Total Instructors</div>
-          <div className="text-xl font-black text-[#1a202c] mt-1">{metrics.total}</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Total Instructors</div>
+          <div className="text-xl font-black text-slate-900 mt-1">{metrics.total}</div>
         </div>
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
-          <div className="text-[10px] uppercase font-bold tracking-wider text-[#4a5d4e]">Active Faculty</div>
-          <div className="text-xl font-black text-[#4a5d4e] mt-1">{metrics.active}</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] uppercase font-bold tracking-wider text-indigo-650">Active Faculty</div>
+          <div className="text-xl font-black text-indigo-600 mt-1">{metrics.active}</div>
         </div>
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold tracking-wider text-amber-800">Batches Addressed</div>
           <div className="text-xl font-black text-amber-800 mt-1">{metrics.totalBatches} Slots</div>
         </div>
       </div>
 
       {/* SEARCH AND FILTERS */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] p-3 rounded-xl flex flex-col sm:flex-row gap-3 items-center shadow-sm">
+      <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col sm:flex-row gap-3 items-center shadow-sm">
         <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-2.5 text-[#8a9485]" size={14} />
-          <input type="text" placeholder="Search by Instructor name or ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#f4f0e6]/40 text-xs text-[#1a202c] rounded-lg pl-9 pr-4 py-1.5 border border-[#e2dcd0] focus:outline-none focus:border-[#4a5d4e]" />
+          <Search className="absolute left-3 top-2.5 text-slate-450" size={14} />
+          <input type="text" placeholder="Search by Instructor name or ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-50 text-xs text-slate-900 rounded-lg pl-9 pr-4 py-1.5 border border-slate-200 focus:outline-none focus:border-indigo-500" />
         </div>
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full sm:w-40 bg-[#fcfbfa] px-2 py-1.5 rounded-lg border border-[#e2dcd0] text-[#5a6455] font-medium focus:outline-none text-[11px]">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full sm:w-40 bg-white px-2 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-medium focus:outline-none text-[11px] cursor-pointer">
           <option value="All">All Status</option>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
@@ -209,7 +209,7 @@ export default function FranchiseTeachers() {
       </div>
 
       {/* TEACHERS DATA TABLE */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           {loading ? (
             <div className="p-8 text-center text-xs font-semibold text-slate-500">Retrieving instructors list...</div>
@@ -218,7 +218,7 @@ export default function FranchiseTeachers() {
           ) : (
             <table className="w-full text-left border-collapse text-xs min-w-[800px]">
               <thead>
-                <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6] text-[10px] uppercase font-bold tracking-wider text-[#7a8475]">
+                <tr className="border-b border-slate-200 bg-slate-50 text-[10px] uppercase font-bold tracking-wider text-slate-500">
                   <th className="py-3 px-4">Faculty ID</th>
                   <th className="py-3 px-6">Instructor</th>
                   <th className="py-3 px-6">Specialization Role</th>
@@ -228,26 +228,26 @@ export default function FranchiseTeachers() {
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e2dcd0]/40 text-[#2c3539] font-medium">
+              <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
                 {filteredTeachers.map((teacher) => (
-                  <tr key={teacher.id} onClick={() => { setSelectedTeacher(teacher); setIsViewOpen(true); }} className="hover:bg-[#f5f2eb]/30 cursor-pointer transition-colors group">
-                    <td className="py-3 px-4 font-mono text-[#4a5d4e] font-bold">{teacher.id}</td>
-                    <td className="py-3 px-6 font-bold text-[#1a202c] group-hover:text-[#4a5d4e] transition-colors">{teacher.name}</td>
-                    <td className="py-3 px-6 text-[#5a6455]">{teacher.role}</td>
-                    <td className="py-3 px-6 font-mono text-[#7a8475]">{teacher.experience}</td>
+                  <tr key={teacher.id} onClick={() => { setSelectedTeacher(teacher); setIsViewOpen(true); }} className="hover:bg-slate-50/50 cursor-pointer transition-colors group">
+                    <td className="py-3 px-4 font-mono text-indigo-600 font-bold">{teacher.id}</td>
+                    <td className="py-3 px-6 font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{teacher.name}</td>
+                    <td className="py-3 px-6 text-slate-600">{teacher.role}</td>
+                    <td className="py-3 px-6 font-mono text-slate-500">{teacher.experience}</td>
                     <td className="py-3 px-6">
-                      <span className="flex items-center gap-1 text-[#4a5d4e] font-bold">
+                      <span className="flex items-center gap-1 text-indigo-600 font-bold">
                         <Layers size={13} /> {teacher.batches?.length || 0} Active Batches
                       </span>
                     </td>
                     <td className="py-3 px-6" onClick={(e) => e.stopPropagation()}>
-                      <button onClick={() => toggleStatus(teacher.id, teacher.status)} className={`px-2.5 py-0.5 rounded text-[10px] font-bold border transition-all active:scale-95 cursor-pointer ${teacher.status === "Active" ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>{teacher.status}</button>
+                      <button onClick={() => toggleStatus(teacher.id, teacher.status)} className={`px-2.5 py-0.5 rounded text-[10px] font-bold border transition-all active:scale-[0.96] cursor-pointer ${teacher.status === "Active" ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>{teacher.status}</button>
                     </td>
                     <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => window.open(`https://wa.me/91${teacher.phone}`, "_blank")} className="p-1.5 text-[#8a9485] hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"><MessageSquare size={13} /></button>
-                        <button onClick={() => handleEdit(teacher)} className="p-1.5 text-[#8a9485] hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
-                        <button onClick={() => handleDelete(teacher.rawId)} className="p-1.5 text-[#8a9485] hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
+                        <button onClick={() => window.open(`https://wa.me/91${teacher.phone}`, "_blank")} className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"><MessageSquare size={13} /></button>
+                        <button onClick={() => handleEdit(teacher)} className="p-1.5 text-slate-400 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
+                        <button onClick={() => handleDelete(teacher.rawId)} className="p-1.5 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
                       </div>
                     </td>
                   </tr>

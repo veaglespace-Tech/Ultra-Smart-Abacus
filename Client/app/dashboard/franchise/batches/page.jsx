@@ -172,19 +172,19 @@ export default function FranchiseBatches() {
   };
 
   return (
-    <div className="space-y-6 w-full text-[#2c3539]">
+    <div className="space-y-6 w-full text-slate-800">
       
       {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e2dcd0] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
-          <h2 className="text-base font-black tracking-tight text-[#1a202c] uppercase">Batch Time Slots</h2>
-          <p className="text-[11px] text-[#8a9485] mt-0.5 font-medium">Structure time slots, optimize teacher assignment, and control classroom saturation.</p>
+          <h2 className="text-base font-black tracking-tight text-slate-900 uppercase">Batch Time Slots</h2>
+          <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Structure time slots, optimize teacher assignment, and control classroom saturation.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-center">
-          <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f4f0e6] border border-[#e2dcd0] text-[11px] font-bold rounded-lg text-[#5a6455] hover:bg-[#e2dcd0]/50 transition-all cursor-pointer">
+          <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 text-[11px] font-bold rounded-lg text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
             <Download size={13} /><span>Export Roster</span>
           </button>
-          <button onClick={() => { setEditingBatch(null); resetForm(); setIsFormOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4a5d4e] text-[11px] font-bold rounded-lg text-[#fcfbfa] hover:bg-[#3d4d40] transition-all cursor-pointer shadow-sm">
+          <button onClick={() => { setEditingBatch(null); resetForm(); setIsFormOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] text-[11px] font-bold rounded-lg text-white hover:bg-[#4338ca] transition-all cursor-pointer shadow-sm">
             <Plus size={13} /><span>Create Slot</span>
           </button>
         </div>
@@ -192,42 +192,42 @@ export default function FranchiseBatches() {
 
       {/* METRICS ROW */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
-          <div className="text-[10px] uppercase font-bold tracking-wider text-[#8a9485]">Total Active Batches</div>
-          <div className="text-xl font-black text-[#1a202c] mt-1">{metrics.total}</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Total Active Batches</div>
+          <div className="text-xl font-black text-slate-900 mt-1">{metrics.total}</div>
         </div>
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
-          <div className="text-[10px] uppercase font-bold tracking-wider text-[#4a5d4e]">Total Seated Students</div>
-          <div className="text-xl font-black text-[#4a5d4e] mt-1">{metrics.totalStudents} Pupils</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] uppercase font-bold tracking-wider text-indigo-650">Total Seated Students</div>
+          <div className="text-xl font-black text-indigo-600 mt-1">{metrics.totalStudents} Pupils</div>
         </div>
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold tracking-wider text-amber-800">At Max Capacity</div>
           <div className="text-xl font-black text-amber-800 mt-1">{metrics.fullBatches} Slots</div>
         </div>
       </div>
 
       {/* FILTER DASHBOARD LINE */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] p-3 rounded-xl flex flex-col sm:flex-row gap-3 items-center shadow-sm">
+      <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col sm:flex-row gap-3 items-center shadow-sm">
         <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-2.5 text-[#8a9485]" size={14} />
-          <input type="text" placeholder="Search by Level, Teacher, ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#f4f0e6]/40 text-xs text-[#1a202c] rounded-lg pl-9 pr-4 py-1.5 border border-[#e2dcd0] focus:outline-none focus:border-[#4a5d4e]" />
+          <Search className="absolute left-3 top-2.5 text-slate-450" size={14} />
+          <input type="text" placeholder="Search by Level, Teacher, ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-50 text-xs text-slate-900 rounded-lg pl-9 pr-4 py-1.5 border border-slate-200 focus:outline-none focus:border-indigo-500" />
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <select value={filterMode} onChange={(e) => setFilterMode(e.target.value)} className="w-full sm:w-36 bg-[#fcfbfa] px-2 py-1.5 rounded-lg border border-[#e2dcd0] text-[#5a6455] font-medium focus:outline-none text-[11px]">
+          <select value={filterMode} onChange={(e) => setFilterMode(e.target.value)} className="w-full sm:w-36 bg-white px-2 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-medium focus:outline-none text-[11px] cursor-pointer">
             <option value="All">All Modes</option><option value="Offline">Offline</option><option value="Online">Online</option>
           </select>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full sm:w-36 bg-[#fcfbfa] px-2 py-1.5 rounded-lg border border-[#e2dcd0] text-[#5a6455] font-medium focus:outline-none text-[11px]">
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full sm:w-36 bg-white px-2 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-medium focus:outline-none text-[11px] cursor-pointer">
             <option value="All">All Status</option><option value="Active">Active</option><option value="Full">Full</option>
           </select>
         </div>
       </div>
 
       {/* DATA ALLOCATION TABLE */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs min-w-[900px]">
             <thead>
-              <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6] text-[10px] uppercase font-bold tracking-wider text-[#7a8475]">
+              <tr className="border-b border-slate-200 bg-slate-50 text-[10px] uppercase font-bold tracking-wider text-slate-500">
                 <th className="py-3 px-4">Slot ID</th>
                 <th className="py-3 px-6">Timing / Days</th>
                 <th className="py-3 px-6">Assigned Instructor</th>
@@ -239,24 +239,24 @@ export default function FranchiseBatches() {
                 <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2dcd0]/40 text-[#2c3539] font-medium">
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
               {filteredBatches.map((batch) => {
                 const isFull = batch.totalStudents >= batch.maxCapacity;
                 return (
-                  <tr key={batch.id} onClick={(e) => handleRowClick(batch, e)} className="hover:bg-[#f5f2eb]/30 cursor-pointer transition-colors group">
-                    <td className="py-3 px-4 font-mono text-[#4a5d4e] font-bold">{batch.id}</td>
-                    <td className="py-3 px-6 font-bold text-[#1a202c] group-hover:text-[#4a5d4e] transition-colors">
-                      <span className="flex items-center gap-1.5"><Calendar size={13} className="text-[#8a9485]" /> {batch.slot}</span>
+                  <tr key={batch.id} onClick={(e) => handleRowClick(batch, e)} className="hover:bg-slate-50/50 cursor-pointer transition-colors group">
+                    <td className="py-3 px-4 font-mono text-indigo-600 font-bold">{batch.id}</td>
+                    <td className="py-3 px-6 font-bold text-slate-900 group-hover:text-indigo-650 transition-colors">
+                      <span className="flex items-center gap-1.5"><Calendar size={13} className="text-slate-450" /> {batch.slot}</span>
                     </td>
-                    <td className="py-3 px-6 text-[#1a202c]">{batch.teacher}</td>
+                    <td className="py-3 px-6 text-slate-900">{batch.teacher}</td>
                     <td className="py-3 px-6">
-                      <span className="px-2 py-0.5 bg-[#4a5d4e]/10 text-[#4a5d4e] rounded border border-[#4a5d4e]/10 font-mono font-bold text-[10px]">{batch.level}</span>
+                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 font-mono font-bold text-[10px]">{batch.level}</span>
                     </td>
                     <td className="py-3 px-6">
                       <div className="flex flex-col items-center justify-center gap-1 w-20 mx-auto">
-                        <span className="font-mono text-[10px] text-[#5a6455]">{batch.totalStudents} / {batch.maxCapacity}</span>
-                        <div className="w-full bg-[#f4f0e6] h-1 rounded-full overflow-hidden">
-                          <div className={`h-full ${isFull ? 'bg-amber-700' : 'bg-[#4a5d4e]'}`} style={{ width: `${(batch.totalStudents / batch.maxCapacity) * 100}%` }} />
+                        <span className="font-mono text-[10px] text-slate-500">{batch.totalStudents} / {batch.maxCapacity}</span>
+                        <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+                          <div className={`h-full ${isFull ? 'bg-amber-700' : 'bg-indigo-600'}`} style={{ width: `${(batch.totalStudents / batch.maxCapacity) * 100}%` }} />
                         </div>
                       </div>
                     </td>
@@ -265,7 +265,7 @@ export default function FranchiseBatches() {
                         {batch.mode === "Online" ? <Video size={12} /> : <MapPin size={12} />}{batch.mode}
                       </span>
                     </td>
-                    <td className="py-3 px-6 text-[#7a8475] font-mono">{batch.room}</td>
+                    <td className="py-3 px-6 text-slate-550 font-mono">{batch.room}</td>
                     <td className="py-3 px-6 text-center" onClick={(e) => e.stopPropagation()}>
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${isFull ? "bg-amber-50 text-amber-800 border-amber-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
                         {isFull ? "Full" : batch.status}
@@ -273,8 +273,8 @@ export default function FranchiseBatches() {
                     </td>
                     <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => handleEdit(batch)} className="p-1.5 text-[#8a9485] hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
-                        <button onClick={() => handleDelete(batch.id)} className="p-1.5 text-[#8a9485] hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
+                        <button onClick={() => handleEdit(batch)} className="p-1.5 text-slate-400 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
+                        <button onClick={() => handleDelete(batch.id)} className="p-1.5 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
                       </div>
                     </td>
                   </tr>

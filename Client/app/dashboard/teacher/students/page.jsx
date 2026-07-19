@@ -70,13 +70,15 @@ export default function TeacherStudentsPage() {
       {/* HEADER */}
       <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">STUDENTS ROSTER</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">STUDENTS ROSTER</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Observe details, enrollment milestones, and tracking parameters of all pupils.</p>
         </div>
       </div>
 
       {/* FILTER PANEL */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-4 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)]">
         <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl w-full sm:w-80">
           <Search size={14} className="text-slate-400" />
           <input 
@@ -104,7 +106,7 @@ export default function TeacherStudentsPage() {
       </div>
 
       {/* Roster Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 rounded-3xl overflow-hidden shadow-[0_2px_20px_rgba(45,27,105,0.06)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -126,7 +128,7 @@ export default function TeacherStudentsPage() {
                   
                   <td className="py-4 px-6">
                     <span className="font-bold text-slate-800 dark:text-slate-300 block">{s.batch}</span>
-                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-wide font-black">{s.level}</span>
+                    <span className="text-[10px] text-accent dark:text-accent uppercase tracking-wide font-black">{s.level}</span>
                   </td>
 
                   <td className="py-4 px-6">
@@ -150,7 +152,7 @@ export default function TeacherStudentsPage() {
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-200/40 dark:border-slate-800/40">
                         <div 
-                          className="bg-indigo-600 dark:bg-indigo-450 h-full rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-primary to-accent h-full rounded-full transition-all duration-300"
                           style={{ width: `${s.progress}%` }}
                         />
                       </div>
@@ -190,7 +192,7 @@ export default function TeacherStudentsPage() {
             </button>
 
             <div className="border-b border-slate-100 dark:border-slate-850 pb-3">
-              <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold tracking-widest uppercase">Student Profile Card</span>
+              <span className="text-[10px] text-accent dark:text-accent font-extrabold tracking-widest uppercase">Student Profile Card</span>
               <h3 className="text-base font-black text-slate-900 dark:text-slate-50 mt-0.5">{selectedStudent.name}</h3>
               <p className="text-[10px] text-slate-450 font-mono">Roll Ref: {selectedStudent.id}</p>
             </div>
@@ -267,7 +269,7 @@ export default function TeacherStudentsPage() {
             <div className="flex gap-2 justify-end pt-3 border-t border-slate-100 dark:border-slate-850">
               <button 
                 onClick={() => setSelectedStudent(null)}
-                className="bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-indigo-750 cursor-pointer shadow-md shadow-indigo-600/10"
+                className="bg-gradient-to-r from-primary to-primary-light hover:from-accent hover:to-accent-dark text-white text-xs font-bold px-5 py-2.5 rounded-xl cursor-pointer shadow-md shadow-primary/20 transition-all duration-300"
               >
                 Close Profile
               </button>

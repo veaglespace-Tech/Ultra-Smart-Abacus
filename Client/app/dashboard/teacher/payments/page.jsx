@@ -233,7 +233,9 @@ export default function TeacherPaymentsPage() {
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h2 className="text-xl font-black tracking-tight uppercase">SALARY & PAYMENTS LOGS</h2>
+          <h2 className="text-xl font-black tracking-tight uppercase">
+            <span className="gradient-text">SALARY & PAYMENTS LOGS</span>
+          </h2>
           <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Observe current payroll details, disbursal modes, and download monthly statements.</p>
         </div>
         <button 
@@ -254,21 +256,21 @@ export default function TeacherPaymentsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Latest Salary */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex justify-between items-start">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm card-hover hover:shadow-xl hover:border-primary/20 dark:hover:border-primary-light/30 transition-all duration-300 flex justify-between items-start">
           <div className="space-y-2">
             <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest">Latest Payout</p>
             <h3 className="text-2xl font-black tracking-tight">{metrics.currentMonthSalary}</h3>
-            <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1">
+            <p className="text-[11px] text-accent dark:text-accent font-semibold flex items-center gap-1">
               <span>Status: {metrics.currentMonthStatus}</span>
             </p>
           </div>
-          <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
+          <div className="p-3 rounded-xl bg-primary/10 text-primary dark:bg-primary-light/20 dark:text-cream">
             <IndianRupee size={18} />
           </div>
         </div>
 
         {/* Status */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex justify-between items-start">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm card-hover hover:shadow-xl hover:border-primary/20 dark:hover:border-primary-light/30 transition-all duration-300 flex justify-between items-start">
           <div className="space-y-2">
             <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest">Status of Latest Payout</p>
             <h3 className={`text-2xl font-black tracking-tight ${metrics.currentMonthStatus === "PAID" ? "text-emerald-600 dark:text-emerald-450" : "text-amber-600 dark:text-amber-450"}`}>
@@ -282,7 +284,7 @@ export default function TeacherPaymentsPage() {
         </div>
 
         {/* Total Earnings */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex justify-between items-start">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm card-hover hover:shadow-xl hover:border-primary/20 dark:hover:border-primary-light/30 transition-all duration-300 flex justify-between items-start">
           <div className="space-y-2">
             <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest">Aggregate Disbursed Amount</p>
             <h3 className="text-2xl font-black tracking-tight">{metrics.totalDisbursed}</h3>
@@ -294,7 +296,7 @@ export default function TeacherPaymentsPage() {
         </div>
 
         {/* Last Payday */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex justify-between items-start">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm card-hover hover:shadow-xl hover:border-primary/20 dark:hover:border-primary-light/30 transition-all duration-300 flex justify-between items-start">
           <div className="space-y-2">
             <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest">Last Payout Settled On</p>
             <h3 className="text-xl font-black tracking-tight">{metrics.lastPaymentDate}</h3>
@@ -316,7 +318,7 @@ export default function TeacherPaymentsPage() {
             placeholder="Search by period, status, or reference number..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-650/15"
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs placeholder-slate-400 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
           />
         </div>
       </div>
@@ -357,7 +359,7 @@ export default function TeacherPaymentsPage() {
                         <p className="text-emerald-600">Bonus: +₹{s.bonus.toLocaleString()}</p>
                         <p className="text-rose-500">Ded: -₹{s.deductions.toLocaleString()}</p>
                       </td>
-                      <td className="py-4 px-6 font-black text-indigo-650 dark:text-indigo-400">
+                      <td className="py-4 px-6 font-black text-primary dark:text-cream">
                         ₹{s.netSalary.toLocaleString()}
                       </td>
                       <td className="py-4 px-6 text-slate-500 dark:text-slate-450 space-y-0.5">
@@ -383,7 +385,7 @@ export default function TeacherPaymentsPage() {
                       <td className="py-4 px-6 text-right">
                         <button 
                           onClick={() => triggerPrintSlip(s)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/20 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold rounded-lg border border-indigo-200 dark:border-indigo-900 transition-all cursor-pointer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/5 hover:bg-primary/10 dark:bg-primary-light/20 dark:hover:bg-primary-light/30 border border-primary/20 dark:border-primary-light/35 text-primary dark:text-cream text-[10px] font-bold rounded-lg transition-all cursor-pointer"
                         >
                           <FileText size={12} /> Payslip
                         </button>

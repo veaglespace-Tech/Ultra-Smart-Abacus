@@ -40,6 +40,16 @@ export const api = {
   },
   franchise: {
     getNotifications: () => apiHelper.get('/notifications/franchise'),
+    getFees: () => apiHelper.get('/fees'),
+    getFeeById: (id) => apiHelper.get(`/fees/${id}`),
+    createFee: (data) => apiHelper.post('/fees', data),
+    updateFee: (id, data) => apiHelper.put(`/fees/${id}`, data),
+    deleteFee: (id) => apiHelper.delete(`/fees/${id}`),
+    getFeeAnalytics: () => Promise.resolve({ success: true, data: { totalCollected: 0, totalPending: 0, overdue: 0, totalRecords: 0 } }),
+    recordPayment: (id, data) => apiHelper.post(`/fees/${id}/payment`, { amount: data.amount, paymentMode: data.paymentMode || "UPI", referenceNumber: data.referenceNumber || "", remarks: data.notes || "" }),
+    sendReminder: (id) => Promise.resolve({ success: true, message: "Reminder simulated successfully" }),
+    getStudentById: (id) => apiHelper.get(`/students/${id}`),
+    getProfile: () => apiHelper.get('/franchise/profile'),
   },
   admin: {
     getTeachers: () => apiHelper.get('/teachers'),
@@ -82,5 +92,12 @@ export const api = {
     getHistory: (teacherId) => apiHelper.get(`/salary/history${teacherId ? `?teacherId=${teacherId}` : ''}`),
     getMyHistory: () => apiHelper.get('/salary/my-history'),
     getDetails: (id) => apiHelper.get(`/salary/${id}`),
+  },
+  attendance: {
+    mark: (data) => apiHelper.post('/attendance/mark', data),
+    update: (id, data) => apiHelper.put(`/attendance/${id}`, data),
+    getByStudent: (studentId) => apiHelper.get(`/attendance/student/${studentId}`),
+    getByBatchAndDate: (batchId, date) => apiHelper.get(`/attendance?batchId=${batchId}&date=${date}`),
+    delete: (id) => apiHelper.delete(`/attendance/${id}`),
   }
 };

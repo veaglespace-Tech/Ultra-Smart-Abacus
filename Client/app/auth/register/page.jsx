@@ -77,7 +77,7 @@ function RegisterPageContent() {
     confirmPassword: "",
     gender: "MALE",
     city: "",
-    Address: "",
+    address: "",
     role: invitedRole || "STUDENT",
     parentGuardianName: "",
     dateOfBirth: "",
@@ -107,7 +107,7 @@ function RegisterPageContent() {
     }
     setLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api";
       const formPayload = new FormData();
       formPayload.append("fullName", formData.fullName);
       formPayload.append("email", formData.email);
@@ -121,7 +121,8 @@ function RegisterPageContent() {
         formPayload.append("phone", `${formData.mobileCode} ${formData.mobileNumber}`);
       }
       formPayload.append("gender", formData.gender);
-      formPayload.append("address", formData.Address);
+      formPayload.append("city", formData.city);
+      formPayload.append("address", formData.address);
       if (profilePhoto) {
         formPayload.append("profilePhoto", profilePhoto);
       }
@@ -585,8 +586,8 @@ if (!response.ok) {
                 <MapPin className="absolute left-4 top-4 text-slate-400" size={18} />
                 <textarea
                   rows={1}
-                  name="Address"
-                  value={formData.Address}
+                  name="address"
+                  value={formData.address}
                   onChange={handleChange}
                   placeholder="Enter current address..."
                   className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] py-3.5 pl-12 pr-4 text-slate-800 dark:text-white text-sm placeholder-slate-450 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all resize-none"

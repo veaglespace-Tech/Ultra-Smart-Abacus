@@ -5,7 +5,7 @@ import {createStudent,
     updateStudent,
     deleteStudent,
     getMyProfile} from "../controllers/studentController.js";
-import { createStudentValidation } from "../validation/studentValidation.js";
+import { createStudentValidation, updateStudentValidation } from "../validation/studentValidation.js";
 import { validate } from "../middleware/studentMiddleware.js";
 import  authMiddleware from "../middleware/authMiddleware.js";
 import authorize from "../middleware/roleMiddleware.js";
@@ -28,7 +28,7 @@ router.get("/profile/me", authMiddleware, getMyProfile);
 router.get("/:id",getStudentById);
 
 router.put("/:id", upload.single("profilePhoto"),
- createStudentValidation, 
+ updateStudentValidation, 
  validate,
   updateStudent);
   
