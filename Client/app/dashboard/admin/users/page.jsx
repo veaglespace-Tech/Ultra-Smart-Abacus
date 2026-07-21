@@ -145,6 +145,15 @@ function UserManagementContent() {
   return (
     <div className="space-y-6">
       
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
+        <div>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">USER MANAGEMENT HUB</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Create, edit, suspend or manage certified instructors, regional owners and student profiles.</p>
+        </div>
+      </div>
+
       {/* Message Feed Alerts */}
       {userSuccess && (
         <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-3 text-xs text-emerald-700 dark:text-emerald-300 shadow-inner flex items-center gap-2">
@@ -175,7 +184,7 @@ function UserManagementContent() {
         {/* Add User Action Trigger Button */}
         <button
           onClick={() => setShowAddUserModal(true)}
-          className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-xs font-bold text-white shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-90 text-xs font-bold text-white shadow-md shadow-[#FF6B2B]/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -398,7 +407,7 @@ function UserManagementContent() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/10 hover:from-blue-600 hover:to-indigo-700 active:scale-95 transition-all cursor-pointer"
+                  className="flex-1 px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
                 >
                   Add User
                 </button>
@@ -522,7 +531,7 @@ function UserManagementContent() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/10 hover:from-blue-600 hover:to-indigo-700 active:scale-95 transition-all cursor-pointer"
+                  className="flex-1 px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
                 >
                   Save Changes
                 </button>

@@ -47,18 +47,19 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       
-      {/* Header and Toolbar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-950 dark:text-white">System Alerts & Notifications</h3>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-light mt-0.5">Disseminate notices, review automated inventory warnings, and inspect activity logs.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">SYSTEM ALERTS & NOTIFICATIONS</span>
+          </h2>
+          <p className="text-xs text-slate-555 dark:text-slate-455 mt-0.5">Disseminate notices, review automated inventory warnings, and inspect activity logs.</p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto self-start sm:self-center">
           <button
             onClick={() => {
               notifications.forEach(n => markNotificationRead(n.id));
             }}
-            className="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-[11px] text-slate-700 dark:text-slate-300 font-semibold transition-all cursor-pointer"
+            className="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl border border-[#3d2a88]/30 hover:bg-[#FFF8F0]/30 dark:hover:bg-[#1e1445]/50 text-[11px] text-slate-700 dark:text-slate-300 font-semibold transition-all cursor-pointer"
           >
             Mark All as Read
           </button>
@@ -127,7 +128,7 @@ export default function NotificationsPage() {
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-xs font-bold text-white shadow-lg shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-90 text-xs font-bold text-white shadow-md shadow-[#FF6B2B]/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
             >
               Dispatch Broadcast
             </button>

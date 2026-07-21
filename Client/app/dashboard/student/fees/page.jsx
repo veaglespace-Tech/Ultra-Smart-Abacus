@@ -36,14 +36,14 @@ export default function StudentFeesPage() {
           <span className="text-lg">✔</span>
           <span>{paymentSuccess}</span>
         </div>
-      )}
-
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 p-4 rounded-2xl backdrop-blur-md">
+      )}      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 dark:text-white">Course Fees & Transaction Billing Log</h3>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-light mt-0.5">Pay outstanding tuition fees online or check past payments receipts.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">COURSE FEES & TRANSACTION BILLING LOG</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Pay outstanding tuition fees online or check past payments receipts.</p>
         </div>
-        <div className="text-right">
+        <div className="text-right self-start sm:self-center">
           <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold">Outstanding Balance</span>
           <span className="text-xl font-black text-rose-600 dark:text-rose-400 font-mono">
             ₹{outstandingBalance}.00
@@ -78,7 +78,7 @@ export default function StudentFeesPage() {
                     <td className="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">{fee.date}</td>
                     <td className="px-6 py-4">
                       {isFullyPaid ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-emerald-200 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-emerald-250 dark:border-emerald-500/25 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                           Paid Successfully
                         </span>
@@ -120,7 +120,7 @@ export default function StudentFeesPage() {
                               console.error(err);
                             }
                           }}
-                          className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-300 font-semibold transition-all active:scale-95 cursor-pointer"
+                          className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1"
                         >
                           Download Receipt
                         </button>
@@ -130,7 +130,7 @@ export default function StudentFeesPage() {
                             setPayingFeeItem(fee);
                             setShowPayModal(true);
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-xs text-white font-bold transition-all active:scale-95 shadow-md shadow-blue-500/10 cursor-pointer"
+                          className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine border-none"
                         >
                           Pay Fee Now
                         </button>

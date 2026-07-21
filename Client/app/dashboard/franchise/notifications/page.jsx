@@ -77,10 +77,12 @@ export default function FranchiseNotificationsPage() {
     <div className="space-y-6">
       
       {/* Header Panel */}
-      <div className="bg-white/5 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-5 rounded-3xl backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">ALERTS & BROADCASTS</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Send custom updates to center students, teachers, or view system wide logs.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">ALERTS & BROADCASTS</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Send custom updates to center students, teachers, or view system wide logs.</p>
         </div>
       </div>
 
@@ -153,7 +155,7 @@ export default function FranchiseNotificationsPage() {
 
             <button
               type="submit"
-              className="w-full rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-indigo-200 dark:shadow-none transition-all duration-200 hover:-translate-y-0.5"
+              className="w-full rounded-2xl bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white font-bold text-xs py-3 flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 shadow-md shadow-[#FF6B2B]/25 btn-shine"
             >
               <Send size={12} />
               <span>Broadcast Announcement</span>

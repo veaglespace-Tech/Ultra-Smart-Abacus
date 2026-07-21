@@ -122,14 +122,14 @@ export default function StudentAttendancePage() {
     <div className="space-y-6 animate-fade-in font-sans antialiased text-slate-800 dark:text-slate-100">
       
       {/* Top Banner Overview */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h3 className="text-sm font-black text-slate-950 dark:text-white uppercase tracking-tight">Student Attendance Dashboard</h3>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mt-0.5 uppercase tracking-wider">
-            Track your class attendance rate, upcoming schedules, and manage leave requests.
-          </p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">STUDENT ATTENDANCE DASHBOARD</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Track your class attendance rate, upcoming schedules, and manage leave requests.</p>
         </div>
-        <div className="px-4 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-xs font-bold text-indigo-700 dark:text-indigo-400">
+        <div className="px-4 py-2.5 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/50 text-xs font-bold text-orange-600 dark:text-orange-400 self-start sm:self-center">
           Academic Term: June - August 2026
         </div>
       </div>
@@ -392,7 +392,7 @@ export default function StudentAttendancePage() {
                   className={`w-full py-3.5 text-xs font-bold rounded-xl text-white shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     upcomingClasses.length === 0 
                       ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed border border-slate-300/50 dark:border-slate-800/50 shadow-none" 
-                      : "bg-indigo-600 hover:bg-indigo-700 active:scale-95 shadow-indigo-100"
+                      : "bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 shadow-md shadow-[#FF6B2B]/25 btn-shine border-none"
                   }`}
                 >
                   {isSubmitting ? (

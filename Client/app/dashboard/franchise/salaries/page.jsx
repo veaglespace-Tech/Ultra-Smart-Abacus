@@ -348,29 +348,30 @@ export default function SalariesManagement() {
       </html>
     `;
 
-    printWindow.document.write(html);
+  printWindow.document.write(html);
     printWindow.document.close();
   };
 
   return (
-    <div className="space-y-6 p-4 md:p-6 text-slate-800 dark:text-slate-200 max-w-[1600px] mx-auto min-h-screen">
-      
+    <div className="space-y-6 p-4 md:p-6 text-slate-800 dark:text-slate-200 max-w-[1600px] mx-auto min-h-screen">      
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-black tracking-tight">Salary <span className="text-indigo-600 dark:text-indigo-400">Management Console</span></h2>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Generate monthly payslips, issue teacher payouts, and audit center payroll ledger.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">SALARY MANAGEMENT CONSOLE</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Generate monthly payslips, issue teacher payouts, and audit center payroll ledger.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-center">
           <button 
             onClick={handleExportCSV} 
-            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 hover:bg-slate-55/80 dark:hover:bg-slate-800 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 transition-all cursor-pointer shadow-sm"
+            className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
           >
             <Download size={14} /> Export CSV
           </button>
           <button 
             onClick={handleOpenCreateModal}
-            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10"
+            className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine"
           >
             <Plus size={14} /> Create Salary Record
           </button>
