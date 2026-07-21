@@ -38,7 +38,7 @@ const contactInfo = [
     title: "Visit Us",
     textSize:"text-lg",
     lineTextSize: "text-base",
-    lines: ["123 Abacus Street, Pune", "Maharashtra – 411001"],
+    lines: ["vadgav budruk, Pune, Maharashtra 411041"],
     color: "#FFCA28",
     bg: "rgba(255,202,40,0.1)",
   },
@@ -141,7 +141,7 @@ if (title === "Email Inquiries") {
   return (
     <a
       key={li}
-      href="https://www.google.com/maps/search/?api=1&query=123+Abacus+Street+Pune+Maharashtra+411001"
+      href="https://maps.app.goo.gl/bGUXoYNs1f3paBaF6"
       target="_blank"
       rel="noopener noreferrer"
       className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline cursor-pointer`}
@@ -284,9 +284,9 @@ return (
             className="space-y-6"
           >
             {/* Map Placeholder */}
-            <div className="h-56 rounded-3xl overflow-hidden shadow-lg">
+              <div className="h-56 rounded-3xl overflow-hidden shadow-lg">
           <iframe
-            src="https://www.google.com/maps?q=123+Abacus+Street,+Pune,+Maharashtra+411001&output=embed"
+            src="https://www.google.com/maps?q=Shrimant+Dagdusheth+Halwai+Ganpati+Mandir+Pune&output=embed"
             width="100%"
             height="100%"
             style={{ border: 0 }}
