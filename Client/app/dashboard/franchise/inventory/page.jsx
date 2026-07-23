@@ -95,18 +95,20 @@ export default function InventoryManagement() {
     <div className="space-y-6 p-4 md:p-6 text-slate-800 max-w-[1600px] mx-auto bg-white font-sans min-h-screen">
       
       {/* Top Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900">Inventory & <span className="text-indigo-650">Material Ledger</span></h2>
-          <p className="text-xs text-slate-500 mt-1">Track abacus learning tools, textbook dispatches, and certificate allocations.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">INVENTORY & MATERIAL LEDGER</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Track abacus learning tools, textbook dispatches, and certificate allocations.</p>
         </div>
         
         {/* Chrome-friendly Download Action */}
         <button 
           onClick={downloadInventoryCSV}
-          className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-xl border border-slate-200 text-xs transition-all flex items-center gap-2 cursor-pointer self-start sm:self-center shadow-sm"
+          className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
         >
-          <Download size={14} className="text-slate-500" /> Download Inventory CSV
+          <Download size={14} className="text-slate-550" /> Download Inventory CSV
         </button>
       </div>
 

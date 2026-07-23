@@ -87,22 +87,24 @@ export default function PaymentsManagement() {
     <div className="space-y-6 p-4 md:p-6 text-slate-800 dark:text-slate-100 max-w-[1600px] mx-auto bg-white dark:bg-slate-950 font-sans min-h-screen">
       
       {/* Top Banner Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">Payment <span className="text-indigo-600 dark:text-indigo-400">Gateway Ledger</span></h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Audit inbound cashflows, track direct UPI transfers, and manage manual cheque clears.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">PAYMENT GATEWAY LEDGER</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Audit inbound cashflows, track direct UPI transfers, and manage manual cheque clears.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-center">
           {/* Chrome-friendly Download Action Button */}
           <button 
             onClick={downloadPaymentsExcel} 
-            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-300 transition-all cursor-pointer shadow-sm"
+            className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
           >
-            <Download size={14} className="text-slate-500" /><span>Download Payments Excel</span>
+            <Download size={14} className="text-slate-550" /><span>Download Payments Excel</span>
           </button>
           <button 
             onClick={() => setIsRecordOpen(true)} 
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#4f46e5] hover:bg-[#4338ca] text-xs font-extrabold rounded-xl text-white shadow-sm transition-all cursor-pointer"
+            className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine"
           >
             <Plus size={14} /><span>Record Payment</span>
           </button>

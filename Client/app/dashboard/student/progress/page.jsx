@@ -150,18 +150,14 @@ export default function StudentProgressPage() {
     <div className="space-y-6 animate-fade-in">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-950 dark:text-white">
-            Student Progress & Learning Metrics
-          </h3>
-
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-            Track performance, scores, learning progress and teacher feedback.
-          </p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">STUDENT PROGRESS & LEARNING METRICS</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Track performance, scores, learning progress and teacher feedback.</p>
         </div>
-
-        <div className="px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+        <div className="px-4 py-2.5 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/50 text-xs font-bold text-orange-600 dark:text-orange-400 self-start sm:self-center">
           Level Completion: {profile.progress}%
         </div>
       </div>
@@ -410,7 +406,7 @@ export default function StudentProgressPage() {
 
             <button
               onClick={() => setShowFeedback(true)}
-              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold transition-colors"
+              className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-md shadow-[#FF6B2B]/25 btn-shine border-none"
             >
               View Full Feedback
             </button>

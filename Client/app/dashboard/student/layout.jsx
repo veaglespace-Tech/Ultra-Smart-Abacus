@@ -1,200 +1,361 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { StudentDataProvider, useStudentData } from "./StudentContext";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
-// Refined icons
-import { 
-  LayoutDashboard, Calendar, BarChart3, Award, 
-  CreditCard, Bell, User, LogOut, Menu, Grid, Sun, Moon
+import { StudentDataProvider, useStudentData } from "./StudentContext";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Sun, Moon, LayoutDashboard, Calendar, BarChart3, Award,
+  CreditCard, Bell, User, LogOut, Menu, X, Search
 } from "lucide-react";
 
 function StudentLayoutInner({ children }) {
-  const router = useRouter();
   const pathname = usePathname();
-  const { profile } = useStudentData();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
   const { theme, toggleTheme, mounted } = useTheme();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const { profile, notifications } = useStudentData();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [isClientMounted, setIsClientMounted] = useState(false);
+
+  useEffect(() => {
+    setIsClientMounted(true);
+  }, []);
 
   const handleLogout = () => {
-    logout();
+    if (logout) {
+      logout();
+    }
     router.push("/auth/login");
   };
 
-  // Active route and active tab ID tracking
-  let activeTabName = "Overview";
-  let activeTabId = "overview";
-
-  if (pathname.endsWith("/exams")) {
-    activeTabName = "Exams";
-    activeTabId = "exams";
-  } else if (pathname.endsWith("/fees")) {
-    activeTabName = "Fees / Invoices";
-    activeTabId = "fees";
-  } else if (pathname.endsWith("/notifications")) {
-    activeTabName = "Notifications";
-    activeTabId = "notifications";
-  } else if (pathname.endsWith("/profile")) {
-    activeTabName = "My Profile";
-    activeTabId = "profile";
-  } else if (pathname.endsWith("/progress")) {
-    activeTabName = "Learning Progress";
-    activeTabId = "progress";
-  } else if (pathname.endsWith("/attendance")) {
-    activeTabName = "Class Attendance";
-    activeTabId = "attendance";
-  }
-
-  const navLinks = [
-    { id: "overview", label: "Overview", href: "/dashboard/student", icon: <LayoutDashboard className="w-5 h-5" /> },
-    { id: "attendance", label: "Attendance", href: "/dashboard/student/attendance", icon: <Calendar className="w-5 h-5" /> },
-    { id: "progress", label: "Progress", href: "/dashboard/student/progress", icon: <BarChart3 className="w-5 h-5" /> },
-    { id: "exams", label: "Exams", href: "/dashboard/student/exams", icon: <Award className="w-5 h-5" /> },
-    { id: "fees", label: "Fees / Invoices", href: "/dashboard/student/fees", icon: <CreditCard className="w-5 h-5" /> },
-    { id: "notifications", label: "Notifications", href: "/dashboard/student/notifications", icon: <Bell className="w-5 h-5" /> },
-    { id: "profile", label: "My Profile", href: "/dashboard/student/profile", icon: <User className="w-5 h-5" /> }
+  const sidebarItems = [
+    { name: 'Overview', href: '/dashboard/student', icon: LayoutDashboard },
+    { name: 'Attendance', href: '/dashboard/student/attendance', icon: Calendar },
+    { name: 'Progress', href: '/dashboard/student/progress', icon: BarChart3 },
+    { name: 'Exams', href: '/dashboard/student/exams', icon: Award },
+    { name: 'Fees / Invoices', href: '/dashboard/student/fees', icon: CreditCard },
+    { name: 'Notifications', href: '/dashboard/student/notifications', icon: Bell },
+    { name: 'My Profile', href: '/dashboard/student/profile', icon: User }
   ];
 
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+
+  const studentName = isClientMounted && profile.name ? profile.name : (user?.name || "Student");
+  const studentInitials = isClientMounted && studentName
+    ? studentName.split(" ").filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2)
+    : "ST";
+
   return (
-    <main className="min-h-screen bg-[#edf2f9] dark:bg-slate-950 text-slate-700 dark:text-slate-200 font-sans flex relative overflow-hidden p-3 md:p-4 gap-4 transition-colors duration-300">
-      
-      {/* MOBILE SIDEBAR OVERLAY */}
-      {sidebarOpen && (
-        <div 
-          onClick={() => setSidebarOpen(false)}
-          className="lg:hidden fixed inset-0 z-40 bg-slate-900/20 dark:bg-slate-950/40 backdrop-blur-xs transition-all"
-        />
-      )}
+    <div className="flex h-screen bg-[#FFF8F0] dark:bg-[#150e2a] text-[#1a1035] dark:text-[#f0ebff] font-sans antialiased transition-colors duration-300 w-full overflow-hidden">
 
-      {/* SIDEBAR PANEL */}
-      <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-64 rounded-3xl bg-white dark:bg-slate-900 p-6 flex flex-col justify-between border border-slate-200/60 dark:border-slate-800 shadow-xs transition-all duration-300 lg:transform-none ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      }`}>
-        
-        {/* Sidebar Header / Logo */}
+      {/* SIDEBAR FOR DESKTOP */}
+      <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-[#150e2a] border-r border-[#3d2a88]/15 dark:border-[#3d2a88]/30 p-6 justify-between shrink-0 shadow-sm">
         <div>
-         <Link href="/" onClick={() => setSidebarOpen(false)}>
-  <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-5 mb-6 cursor-pointer hover:opacity-80 transition-all">
-    <span className="w-2.5 h-2.5 rounded-full bg-[#4f46e5]" />
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 px-2 mb-8 group">
+            <div className="relative flex-shrink-0 w-8 h-8 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#2D1B69] to-[#FF6B2B] rounded-lg opacity-90 transition-opacity shadow-md" />
+              <svg viewBox="0 0 32 32" className="relative w-5 h-5" fill="none">
+                <rect x="3" y="4" width="26" height="24" rx="2" stroke="white" strokeWidth="2" fill="none"/>
+                <line x1="10" y1="4" x2="10" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                <line x1="16" y1="4" x2="16" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                <line x1="22" y1="4" x2="22" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                <line x1="3" y1="16" x2="29" y2="16" stroke="white" strokeWidth="1" strokeDasharray="1.5 1"/>
+                <circle cx="10" cy="11" r="2" fill="#FFCA28"/>
+                <circle cx="16" cy="13" r="2" fill="#FF6B2B"/>
+                <circle cx="22" cy="11" r="2" fill="#FFCA28"/>
+                <circle cx="10" cy="22" r="2" fill="white" fillOpacity="0.7"/>
+                <circle cx="16" cy="21" r="2" fill="white" fillOpacity="0.7"/>
+                <circle cx="22" cy="22" r="2" fill="white" fillOpacity="0.7"/>
+              </svg>
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="font-black text-sm tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
+                <span className="text-[#2D1B69] dark:text-violet-300">SMART</span>{" "}
+                <span className="text-[#FF6B2B]">ABACUS</span>
+              </span>
+              <span className="text-[9px] font-semibold tracking-wider text-[#2D1B69]/60 dark:text-violet-400/60 uppercase mt-0.5" style={{ fontFamily: "Outfit, sans-serif" }}>
+                Student Console
+              </span>
+            </div>
+          </Link>
 
-    <div>
-      <h1 className="font-extrabold text-sm tracking-wider uppercase text-slate-900 dark:text-white">
-        Smart Abacus
-      </h1>
-
-      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block mt-0.5">
-        Student Console
-      </span>
-    </div>
-  </div>
-</Link>
-
-          {/* Navigation Links */}
+          {/* Nav Links */}
           <nav className="space-y-1">
-            {navLinks.map((tab) => {
-              const active = activeTabId === tab.id;
+            {sidebarItems.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
               return (
                 <Link
-                  key={tab.id}
-                  href={tab.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 ${
-                    active
-                      ? "bg-[#4f46e5] text-white shadow-md shadow-indigo-600/10 dark:shadow-none"
-                      : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-250 ${
+                    isActive
+                      ? "bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20"
+                      : "text-slate-655 dark:text-slate-400 hover:bg-accent/10 dark:hover:bg-accent/15 hover:text-[#FF6B2B] dark:hover:text-accent"
                   }`}
                 >
-                  <div className={active ? "text-white" : "text-slate-400 dark:text-slate-500"}>
-                    {tab.icon}
-                  </div>
-                  {tab.label}
+                  <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
+                  <span>{item.name}</span>
                 </Link>
               );
             })}
           </nav>
         </div>
 
-        {/* Sidebar Footer / Profile Info */}
-        <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
-          <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/40 p-3 border border-slate-100 dark:border-slate-800 mb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-[#4f46e5]/10 text-[#4f46e5] flex items-center justify-center font-bold text-xs">
-                {profile.name ? profile.name.charAt(0) : "S"}
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-xs font-bold text-slate-900 dark:text-slate-200 truncate">{profile.name}</p>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium block mt-0.5">Level {profile.level} Student</span>
-              </div>
+        {/* Footer */}
+        <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
+          <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
+              {studentInitials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{studentName}</p>
+              <p className="text-[9px] text-slate-455 dark:text-slate-500 font-bold uppercase truncate">Level {profile.level || 1} Student</p>
             </div>
           </div>
-
-          <button
+          <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-rose-500 dark:text-rose-450 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all"
+            className="w-full flex items-center gap-2 text-left text-xs text-rose-500 dark:text-rose-455 font-bold px-4 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors"
           >
-            <LogOut className="w-4 h-4" />
-            Sign Out
+            <LogOut size={14} />
+            <span>Logout</span>
           </button>
         </div>
       </aside>
 
-      {/* MAIN WINDOW CONTAINER */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
-        
-        {/* HEADER BAR */}
-        <header className="px-4 py-3 flex items-center justify-between sticky top-0 z-30 mb-2">
-          <div className="flex items-center gap-3">
-            {/* Hamburger for mobile */}
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-350 border border-slate-200/60 dark:border-slate-800 shadow-xs"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+      {/* MOBILE HEADER & SIDEBAR */}
+      <div className="lg:hidden">
+        {/* Toggle Hamburger */}
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="fixed top-4 left-4 z-40 p-2 rounded-xl bg-white dark:bg-[#150e2a] border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 shadow-md text-slate-700 dark:text-slate-355"
+        >
+          <Menu size={20} />
+        </button>
 
-            {/* Breadcrumb */}
-            <div className="block">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold flex items-center gap-1.5">
-                <span>Workspace</span>
-                <span>/</span>
-                <span className="text-[#4f46e5]">{activeTabId}</span>
-              </div>
-            </div>
+        {/* Drawer backdrop & panel wrapped in AnimatePresence */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMobileMenuOpen(false)}
+                className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-45"
+              />
+
+              {/* Drawer Panel */}
+              <motion.aside
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "spring", stiffness: 320, damping: 30 }}
+                className="fixed top-0 bottom-0 left-0 w-64 bg-white dark:bg-[#150e2a] z-50 p-6 flex flex-col justify-between shadow-2xl"
+              >
+                <div>
+                  <div className="flex justify-between items-center mb-8">
+                    <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2.5 group">
+                      <div className="relative flex-shrink-0 w-8 h-8 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#2D1B69] to-[#FF6B2B] rounded-lg opacity-90 transition-opacity shadow-md" />
+                        <svg viewBox="0 0 32 32" className="relative w-5 h-5" fill="none">
+                          <rect x="3" y="4" width="26" height="24" rx="2" stroke="white" strokeWidth="2" fill="none"/>
+                          <line x1="10" y1="4" x2="10" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                          <line x1="16" y1="4" x2="16" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                          <line x1="22" y1="4" x2="22" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                          <line x1="3" y1="16" x2="29" y2="16" stroke="white" strokeWidth="1" strokeDasharray="1.5 1"/>
+                          <circle cx="10" cy="11" r="2" fill="#FFCA28"/>
+                          <circle cx="16" cy="13" r="2" fill="#FF6B2B"/>
+                          <circle cx="22" cy="11" r="2" fill="#FFCA28"/>
+                          <circle cx="10" cy="22" r="2" fill="white" fillOpacity="0.7"/>
+                          <circle cx="16" cy="21" r="2" fill="white" fillOpacity="0.7"/>
+                          <circle cx="22" cy="22" r="2" fill="white" fillOpacity="0.7"/>
+                        </svg>
+                      </div>
+                      <div className="flex flex-col leading-none">
+                        <span className="font-black text-sm tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
+                          <span className="text-[#2D1B69] dark:text-violet-300">SMART</span>{" "}
+                          <span className="text-[#FF6B2B]">ABACUS</span>
+                        </span>
+                        <span className="text-[9px] font-semibold tracking-wider text-[#2D1B69]/60 dark:text-violet-400/60 uppercase mt-0.5" style={{ fontFamily: "Outfit, sans-serif" }}>
+                          Student Console
+                        </span>
+                      </div>
+                    </Link>
+                    <button 
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-350"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  <nav className="space-y-1">
+                    {sidebarItems.map((item) => {
+                      const isActive = pathname === item.href;
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                            isActive
+                              ? "bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20"
+                              : "text-slate-655 dark:text-slate-400 hover:bg-accent/10 dark:hover:bg-accent/15 hover:text-[#FF6B2B] dark:hover:text-accent"
+                          }`}
+                        >
+                          <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
+                          <span>{item.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </nav>
+                </div>
+
+                <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
+                  <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
+                      {studentInitials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{studentName}</p>
+                      <p className="text-[9px] text-slate-455 dark:text-slate-500 font-bold uppercase truncate text-left">Level {profile.level || 1} Student</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 text-left text-xs text-rose-500 dark:text-rose-455 font-bold px-4 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors"
+                  >
+                    <LogOut size={14} />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* MAIN CONTAINER */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        {/* HEADER / TOP NAVBAR */}
+        <header className="h-16 shrink-0 bg-white/90 dark:bg-[#0f0a1e]/90 border-b border-slate-200 dark:border-[#3d2a88]/30 px-4 md:px-8 flex items-center justify-between shadow-sm relative z-30 text-slate-800 dark:text-white backdrop-blur-md">
+          {/* Left spacer for mobile menu */}
+          <div className="w-12 lg:hidden"></div>
+
+          {/* Search bar */}
+          <div className="hidden sm:flex items-center gap-2 bg-slate-50 dark:bg-[#1a1035]/60 border border-slate-200 dark:border-[#3d2a88]/45 px-3 py-1.5 rounded-xl w-64 md:w-80">
+            <Search size={14} className="text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search exams, attendance, progress..."
+              className="bg-transparent border-none text-xs focus:outline-none w-full placeholder-slate-400 text-slate-700 dark:text-slate-200"
+            />
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Theme Toggle Button */}
+          {/* Right items */}
+          <div className="flex items-center gap-4 ml-auto">
+            {/* Current Date */}
+            <span className="hidden md:inline text-xs font-semibold text-slate-655 dark:text-slate-300 bg-slate-50 dark:bg-[#2D1B69]/50 border border-slate-200 dark:border-[#3d2a88]/30 px-3 py-1.5 rounded-xl">
+              {currentDate}
+            </span>
+
+            {/* Notification bell */}
+            <div className="relative">
+              <button
+                onClick={() => setNotificationOpen(!notificationOpen)}
+                className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-905/30 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors relative cursor-pointer"
+              >
+                <Bell size={15} />
+                {notifications && notifications.length > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-orange-600 dark:bg-orange-500 rounded-full animate-pulse"></span>
+                )}
+              </button>
+
+              {/* Notification Dropdown */}
+              {notificationOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setNotificationOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1a1035] border border-slate-200 dark:border-[#3d2a88]/40 rounded-2xl p-4 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100 dark:border-[#3d2a88]/30">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Recent Alerts</h4>
+                      <Link
+                        href="/dashboard/student/notifications"
+                        onClick={() => setNotificationOpen(false)}
+                        className="text-[10px] text-accent dark:text-accent hover:underline font-bold"
+                      >
+                        View All
+                      </Link>
+                    </div>
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {notifications && notifications.length > 0 ? (
+                        notifications.slice(0, 4).map((notif) => (
+                          <div key={notif.id} className="text-xs border-b border-slate-55 dark:border-[#3d2a88]/20 pb-2 last:border-0 last:pb-0">
+                            <p className="text-slate-700 dark:text-slate-350 font-bold">{notif.title}</p>
+                            <p className="text-slate-650 dark:text-slate-400 font-medium mt-0.5 line-clamp-2">{notif.text}</p>
+                            <span className="text-[9px] text-slate-400 font-semibold">{notif.time}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-455 text-center py-4 font-semibold">No recent announcements</p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors cursor-pointer"
               aria-label="Toggle Theme"
-              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {mounted && theme === "dark" ? (
-                <Sun size={14} className="text-amber-400" />
+                <Sun size={15} className="text-amber-500" />
               ) : (
-                <Moon size={14} />
+                <Moon size={15} />
               )}
             </button>
 
-            {/* Live Status Display */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#e6f4ea] dark:bg-emerald-950/40 text-[#137333] dark:text-emerald-400 text-xs font-bold tracking-wide border dark:border-emerald-900/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#137333] dark:bg-emerald-400 animate-pulse" />
-              Live Sync Active
-            </div>
+            {/* Profile Avatar */}
+            <Link href="/dashboard/student/profile" className="flex items-center gap-2 hover:opacity-90">
+              <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 font-black flex items-center justify-center text-xs shadow-sm shadow-orange-500/10">
+                {studentInitials}
+              </div>
+              <div className="hidden sm:block text-left">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">
+                  {studentName}
+                </p>
+                <span className="text-[9px] text-slate-400 dark:text-slate-450 font-bold">online</span>
+              </div>
+            </Link>
           </div>
         </header>
 
-        {/* VIEW SCENARIOS (CONTENT BODY) */}
-        <div className="px-4 pb-4 flex-1">
-          {children}
-        </div>
+        {/* PAGE CONTENT */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-br from-[#f8f6ff] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] text-slate-800 dark:text-slate-100">
+          <div className="max-w-6xl mx-auto space-y-6">
+            {children}
+          </div>
+        </main>
       </div>
-    </main>
+
+    </div>
   );
 }
 

@@ -6,9 +6,13 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-        <h3 className="text-sm font-bold text-slate-950 dark:text-white">Academy Activity & Financial Reports</h3>
-        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-light mt-0.5">Statistical metrics representing monthly center additions and workbook orders.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
+        <div>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">ACADEMY ACTIVITY & FINANCIAL REPORTS</span>
+          </h2>
+          <p className="text-xs text-slate-555 dark:text-slate-455 mt-0.5">Statistical metrics representing monthly center additions and workbook orders.</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -31,7 +35,7 @@ export default function ReportsPage() {
                 <div className="flex-1 h-3.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800">
                   <div 
                     style={{ width: bar.pct }}
-                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+                    className="h-full bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] rounded-full"
                   />
                 </div>
                 <span className="w-12 text-right text-xs font-mono font-bold text-slate-900 dark:text-white">{bar.count}</span>

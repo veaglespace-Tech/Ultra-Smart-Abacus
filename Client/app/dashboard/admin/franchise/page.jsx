@@ -75,15 +75,16 @@ function FranchiseListContent() {
   return (
     <div className="space-y-6">
       
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-950 dark:text-white">Registered Academy Franchises</h3>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-light mt-0.5">Manage regional training branch details and approvals.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">REGISTERED ACADEMY FRANCHISES</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Manage regional training branch details and approvals.</p>
         </div>
         <button
           onClick={() => setShowAddFranchiseModal(true)}
-          className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-xs font-bold text-white transition-all cursor-pointer"
+          className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-xs font-bold text-white shadow-md shadow-[#FF6B2B]/20 hover:opacity-90 transition-all cursor-pointer"
         >
           Register Franchise Center
         </button>
@@ -280,7 +281,7 @@ function FranchiseListContent() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/10 hover:from-blue-600 hover:to-indigo-700 transition-all cursor-pointer"
+                  className="flex-1 px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20 hover:opacity-90 transition-all cursor-pointer"
                 >
                   Add Franchise
                 </button>

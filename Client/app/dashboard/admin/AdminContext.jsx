@@ -27,9 +27,11 @@ export function AdminDataProvider({ children }) {
     emailAlerts: true,
     autoApproveFranchise: false
   });
+  const [loading, setLoading] = useState(true);
 
   const fetchAdminData = async () => {
     try {
+      setLoading(true);
       // 1. Fetch Franchises
       let franchiseRes = { franchises: [] };
       try {
@@ -144,6 +146,8 @@ export function AdminDataProvider({ children }) {
     } catch (error) {
       console.error("Failed to load admin dashboard data", error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -332,7 +336,8 @@ export function AdminDataProvider({ children }) {
         adjustStock,
         addNotification,
         markNotificationRead,
-        deleteNotification
+        deleteNotification,
+        loading
       }}
     >
       {children}

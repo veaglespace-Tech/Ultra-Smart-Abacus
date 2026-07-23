@@ -8,11 +8,13 @@ export default function StudentNotificationsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-        <h3 className="text-sm font-bold text-slate-950 dark:text-white">Announcements & Notifications Feed</h3>
-        <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-          Read communication dispatches from academy teachers or system administrators.
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
+        <div>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">ANNOUNCEMENTS & NOTIFICATIONS FEED</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Read communication dispatches from academy teachers or system administrators.</p>
+        </div>
       </div>
 
       {/* Notifications Listing */}

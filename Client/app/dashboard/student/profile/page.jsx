@@ -83,9 +83,19 @@ export default function StudentProfilePage() {
 
   return (
     <div className="space-y-6">
+      {/* Top Banner Overview */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
+        <div>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">STUDENT PROFILE HUB</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Manage your personal profile details, contact information, and upload avatar.</p>
+        </div>
+      </div>
+
       {/* Profile modification success message */}
       {profileSuccess && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-300 shadow-inner flex items-center gap-2 animate-fade-in">
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-350 shadow-inner flex items-center gap-2 animate-fade-in">
           <span className="text-lg">✔</span>
           <span>{profileSuccess}</span>
         </div>
@@ -100,11 +110,11 @@ export default function StudentProfilePage() {
     <img
       src={resolvedProfilePhoto}
       alt="Profile"
-      className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
+      className="w-24 h-24 rounded-full object-cover border-4 border-orange-500"
     />
   ) : (
-    <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-1">
-      <div className="w-full h-full rounded-full bg-slate-955 flex items-center justify-center font-black text-2xl text-blue-300">
+    <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#FF6B2B] to-[#FFCA28] p-1">
+      <div className="w-full h-full rounded-full bg-slate-955 flex items-center justify-center font-black text-2xl text-orange-400">
         {initials}
       </div>
     </div>
@@ -127,7 +137,7 @@ export default function StudentProfilePage() {
   <button
     type="button"
     onClick={() => fileInputRef.current.click()}
-    className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg cursor-pointer"
+    className="absolute bottom-0 right-0 bg-[#FF6B2B] hover:bg-orange-600 text-white p-2 rounded-full shadow-lg cursor-pointer"
   >
     <Camera size={14} />
   </button>
@@ -160,8 +170,8 @@ export default function StudentProfilePage() {
         {/* Profile detail values sheet / edit form */}
         <div className="lg:col-span-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-150 dark:border-slate-800 pb-4 mb-5">
-            <h3 className="text-sm font-bold text-slate-950 dark:text-white tracking-wide uppercase">
-              {isEditingProfile ? "Modify Profile Information" : "Personal Records Profile Information"}
+            <h3 className="text-xs font-black tracking-tight uppercase">
+              <span className="gradient-text">{isEditingProfile ? "MODIFY PROFILE INFORMATION" : "PERSONAL RECORDS PROFILE INFORMATION"}</span>
             </h3>
             {!isEditingProfile && (
               <button
@@ -172,7 +182,7 @@ export default function StudentProfilePage() {
                   setEditParentName(profile.parentName);
                   setIsEditingProfile(true);
                 }}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-white/5 text-xs text-slate-700 dark:text-slate-300 font-bold transition-all active:scale-95 cursor-pointer"
+                className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1"
               >
                 Modify Profile
               </button>
@@ -191,7 +201,7 @@ export default function StudentProfilePage() {
                     required
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all"
                   />
                 </div>
                 <div>
@@ -203,7 +213,7 @@ export default function StudentProfilePage() {
                     required
                     value={editEmail}
                     onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all"
                   />
                 </div>
               </div>
@@ -218,7 +228,7 @@ export default function StudentProfilePage() {
                     required
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all"
                   />
                 </div>
                 <div>
@@ -230,7 +240,7 @@ export default function StudentProfilePage() {
                     required
                     value={editParentName}
                     onChange={(e) => setEditParentName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all"
                   />
                 </div>
               </div>
@@ -239,13 +249,13 @@ export default function StudentProfilePage() {
                 <button
                   type="button"
                   onClick={() => setIsEditingProfile(false)}
-                  className="px-4 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 text-slate-550 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-95 transition-all"
+                  className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1"
                 >
                   Cancel Change
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/10 hover:from-blue-600 hover:to-indigo-700 active:scale-95 transition-all cursor-pointer"
+                  className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine border-none"
                 >
                   Apply Change
                 </button>

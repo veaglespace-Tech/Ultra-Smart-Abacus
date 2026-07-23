@@ -164,16 +164,18 @@ export default function FranchiseTeachers() {
     <div className="space-y-6 w-full text-[#2c3539]">
       
       {/* HEADER BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-base font-black tracking-tight text-slate-900 uppercase">Faculty Rosters</h2>
-          <p className="text-[11px] text-slate-500 mt-0.5 font-medium">Manage franchise instructors, core profiles, and assigned teaching logs.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">FACULTY ROSTERS</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Manage franchise instructors, core profiles, and assigned teaching logs.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-center">
-          <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 text-[11px] font-bold rounded-lg text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
+          <button onClick={exportToCSV} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1.5">
             <Download size={13} /><span>Export Faculty</span>
           </button>
-          <button onClick={() => { setEditingTeacher(null); resetForm(); setIsFormOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] text-[11px] font-bold rounded-lg text-white hover:bg-[#4338ca] transition-all cursor-pointer shadow-sm">
+          <button onClick={() => { setEditingTeacher(null); resetForm(); setIsFormOpen(true); }} className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine">
             <UserPlus size={13} /><span>Onboard Instructor</span>
           </button>
         </div>

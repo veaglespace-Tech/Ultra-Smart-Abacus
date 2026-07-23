@@ -135,23 +135,17 @@ export default function StudentExamsPage() {
     <div className="space-y-6">
 
       {/* HEADER */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-950 dark:text-white">
-            Academic Examination Schedule & Grades
-          </h3>
-
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-            View upcoming examinations, assessment schedules, results and performance feedback.
-          </p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">ACADEMIC EXAMINATION SCHEDULE & GRADES</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">View upcoming examinations, assessment schedules, results and performance feedback.</p>
         </div>
-
-        <div className="px-4 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+        <div className="px-4 py-2.5 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/50 text-xs font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1.5 self-start sm:self-center">
           <Award size={14} />
           Avg. Score: {averageScore}%
         </div>
-
       </div>
 
       {/* SUMMARY CARDS */}

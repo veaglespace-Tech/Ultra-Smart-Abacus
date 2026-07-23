@@ -9,9 +9,13 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-        <h3 className="text-sm font-bold text-slate-950 dark:text-white">Academy System Settings</h3>
-        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-light mt-0.5">Configure feature flags, user sign-up capabilities, and alert setups.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
+        <div>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">SYSTEM CONFIGURATION SETTINGS</span>
+          </h2>
+          <p className="text-xs text-slate-555 dark:text-slate-455 mt-0.5">Configure feature flags, user sign-up security policy, and automatic email logs.</p>
+        </div>
       </div>
 
       {/* Toggles */}
@@ -44,7 +48,7 @@ export default function SettingsPage() {
               }}
               className={`w-11 h-6 rounded-full p-1 transition-colors relative flex-shrink-0 cursor-pointer ${
                 settings[toggle.key]
-                  ? toggle.type === "danger" ? "bg-rose-500" : "bg-blue-500"
+                  ? toggle.type === "danger" ? "bg-rose-500" : "bg-[#FF6B2B]"
                   : "bg-slate-200 dark:bg-slate-800 border border-slate-350 dark:border-white/5"
               }`}
             >

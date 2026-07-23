@@ -65,17 +65,19 @@ export default function ReportsAnalytics() {
     <div className="space-y-6 p-4 md:p-6 text-slate-800 max-w-[1600px] mx-auto bg-white font-sans min-h-screen">
       
       {/* Top Controls Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900">Business <span className="text-indigo-600">Intelligence Engine</span></h2>
-          <p className="text-xs text-slate-500 mt-1">Audit gross revenue channels, curriculum popularity, and batch scale vectors.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">BUSINESS INTELLIGENCE ENGINE</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Audit gross revenue channels, curriculum popularity, and batch scale vectors.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-center text-xs">
-          <select value={reportRange} onChange={(e) => setReportRange(e.target.value)} className="bg-white px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500 font-mono">
+          <select value={reportRange} onChange={(e) => setReportRange(e.target.value)} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#FF6B2B] text-slate-700 dark:text-slate-200">
             <option value="2026">FY 2026</option>
             <option value="2025">FY 2025</option>
           </select>
-          <button onClick={downloadAuditReport} className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-xs font-extrabold rounded-xl text-white shadow-sm transition-all cursor-pointer">
+          <button onClick={downloadAuditReport} className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine">
             <Download size={14} /> <span>Export Audit Sheet</span>
           </button>
         </div>
