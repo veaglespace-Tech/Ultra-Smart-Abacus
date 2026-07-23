@@ -272,11 +272,11 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t pt-6 flex flex-col md:flex-row justify-between items-center gap-3" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
           <p className="text-slate-400 text-sm" style={{ fontFamily: "Inter, sans-serif" }}>
-            © {new Date().getFullYear()} <span className="text-[#FF6B2B] font-semibold">Smart Abacus</span>. All Rights Reserved.
+            © {new Date().getFullYear()} <span className="text-[#FF6B2B] font-semibold">Smart Abacus</span>. ALL RIGHTS RESERVED.
           </p>
-          <p className="text-slate-500 text-xs" style={{ fontFamily: "Outfit, sans-serif" }}>
+          <p className="text-slate-500 text-xs" style={{ fontFamily: "Outfit, sans-serif", letterSpacing: "1px" }}>
             Designed &amp; Developed by{" "}
-            <span className="text-[#FFCA28] font-semibold">Veagle Space technology Pvt. Ltd.</span>
+            <span className="text-[#FFCA28] font-semibold">VEAGLE SPACE TECHNOLOGY PVT. LTD.</span>
           </p>
         </div>
       </div>
