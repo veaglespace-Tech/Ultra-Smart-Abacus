@@ -177,8 +177,7 @@ export default function Footer() {
   className="text-sm text-slate-300 leading-relaxed hover:text-[#FFCA28] transition-colors"
   style={{ fontFamily: "Inter, sans-serif" }}
 >
-  123 Abacus Street, Pune,<br />
-  Maharashtra – 411001
+ Office no 207, Kudale Patil Chambers, Heritage, near Bhairavnath Temple, Jadhav Nagar, Vadgaon Budruk, Pune, Maharashtra 411041
 </a>
               </div>
 
