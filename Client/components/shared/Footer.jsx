@@ -170,33 +170,91 @@ export default function Footer() {
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: "rgba(255,107,43,0.15)", border: "1px solid rgba(255,107,43,0.3)" }}>
                   <MapPin size={14} className="text-[#FF6B2B]" />
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-white/70 mb-0.5 uppercase tracking-wider" style={{ fontFamily: "Outfit, sans-serif" }}>Address</p>
-                  <p className="text-sm text-slate-300 leading-relaxed" style={{ fontFamily: "Inter, sans-serif" }}>123 Abacus Street, Pune,<br/>Maharashtra – 411001</p>
-                </div>
+                <a
+  href="https://maps.app.goo.gl/bGUXoYNs1f3paBaF6"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-sm text-slate-300 leading-relaxed hover:text-[#FFCA28] transition-colors"
+  style={{ fontFamily: "Inter, sans-serif" }}
+>
+  123 Abacus Street, Pune,<br />
+  Maharashtra – 411001
+</a>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,107,43,0.15)", border: "1px solid rgba(255,107,43,0.3)" }}>
-                  <Phone size={14} className="text-[#FF6B2B]" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-white/70 mb-0.5 uppercase tracking-wider" style={{ fontFamily: "Outfit, sans-serif" }}>Phone</p>
-                  <p className="text-sm text-slate-300" style={{ fontFamily: "Inter, sans-serif" }}>+91 98765 43210</p>
-                  <p className="text-sm text-slate-300" style={{ fontFamily: "Inter, sans-serif" }}>+91 87678 76567</p>
-                </div>
-              </div>
+  <div
+    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+    style={{
+      background: "rgba(255,107,43,0.15)",
+      border: "1px solid rgba(255,107,43,0.3)",
+    }}
+  >
+    <Phone size={14} className="text-[#FF6B2B]" />
+  </div>
 
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,107,43,0.15)", border: "1px solid rgba(255,107,43,0.3)" }}>
-                  <Mail size={14} className="text-[#FF6B2B]" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-white/70 mb-0.5 uppercase tracking-wider" style={{ fontFamily: "Outfit, sans-serif" }}>Email</p>
-                  <p className="text-sm text-slate-300" style={{ fontFamily: "Inter, sans-serif" }}>info@smartabacus.com</p>
-                  <p className="text-sm text-slate-300" style={{ fontFamily: "Inter, sans-serif" }}>admissions@smartabacus.com</p>
-                </div>
-              </div>
+  <div>
+    <p
+      className="text-xs font-bold text-white/70 mb-0.5 uppercase tracking-wider"
+      style={{ fontFamily: "Outfit, sans-serif" }}
+    >
+      Phone
+    </p>
+
+    <a
+      href="tel:+919876543210"
+      className="block text-sm text-slate-300 hover:text-[#FFCA28] transition-colors"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    >
+      +91 9325252246
+    </a>
+
+    <a
+      href="tel:+918767876567"
+      className="block text-sm text-slate-300 hover:text-[#FFCA28] transition-colors"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    >
+      +91 87678 76567
+    </a>
+  </div>
+</div>
+
+<div className="flex items-start gap-3">
+  <div
+    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+    style={{
+      background: "rgba(255,107,43,0.15)",
+      border: "1px solid rgba(255,107,43,0.3)",
+    }}
+  >
+    <Mail size={14} className="text-[#FF6B2B]" />
+  </div>
+
+  <div>
+    <p
+      className="text-xs font-bold text-white/70 mb-2 uppercase tracking-wider"
+      style={{ fontFamily: "Outfit, sans-serif" }}
+    >
+      Email
+    </p>
+
+    <a
+      href="mailto:gunjalsejal04@gmail.com"
+      className="block text-sm text-slate-300 hover:text-[#FFCA28] transition-colors leading-6 break-all"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    >
+      gunjalsejal04@gmail.com
+    </a>
+
+    <a
+      href="mailto:admissions@smartabacus.com"
+      className="block text-sm text-slate-300 hover:text-[#FFCA28] transition-colors leading-6 break-all"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    >
+      admissions@smartabacus.com
+    </a>
+  </div>
+</div>
 
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,107,43,0.15)", border: "1px solid rgba(255,107,43,0.3)" }}>
