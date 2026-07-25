@@ -504,7 +504,7 @@ export default function Home() {
         <div className=" mx-auto grid md:grid-cols-2 gap-16 items-center">
           {/* Image */}
           <div className="relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[420px]">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl w-[700px] h-[550px]">
               <img src="/images/banner.jpg" alt="Smart Abacus Academy" className="w-full h-full object-cover" />
               <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(45,27,105,0.3), transparent)" }} />
             </div>
