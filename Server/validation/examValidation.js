@@ -7,44 +7,29 @@ export const createExamValidation = [
     .withMessage("Exam title is required"),
 
   body("curriculumTrack")
-    .trim()
-    .notEmpty()
-    .withMessage("Curriculum Track is required"),
+    .optional()
+    .trim(),
 
   body("batchId")
-    .isInt({ min: 1 })
-    .withMessage("Valid Batch ID is required"),
+    .optional(),
 
   body("examDate")
-    .isISO8601()
-    .withMessage("Valid Exam Date is required"),
+    .optional(),
 
   body("examType")
-    .isIn(["WEEKLY", "MONTHLY", "LEVEL", "FINAL"])
-    .withMessage("Invalid Exam Type"),
+    .optional(),
 
   body("duration")
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage("Duration must be greater than 0"),
+    .optional(),
 
   body("totalMarks")
-    .isInt({ min: 1 })
-    .withMessage("Total Marks must be greater than 0"),
+    .optional(),
 
   body("passingMarks")
-    .isInt({ min: 0 })
-    .withMessage("Passing Marks must be greater than or equal to 0")
-    .custom((value, { req }) => {
-      if (value > req.body.totalMarks) {
-        throw new Error("Passing marks cannot exceed total marks");
-      }
-      return true;
-    }),
+    .optional(),
 
   body("teacherId")
-    .isInt({ min: 1 })
-    .withMessage("Valid Teacher ID is required"),
+    .optional(),
 ];
 
 export const updateExamValidation = [

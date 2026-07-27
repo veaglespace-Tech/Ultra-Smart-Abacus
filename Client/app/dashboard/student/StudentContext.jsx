@@ -123,6 +123,37 @@ export function StudentDataProvider({ children }) {
       fetchNotifications();
       // fetch fees
       fetchFees();
+
+      // Fetch dynamic student exams
+      const fetchExams = async () => {
+        try {
+          const res = await api.exams.getStudentExams();
+          if (res && res.success && res.data) {
+            const mapped = (res.data || []).map((ex) => {
+              const myResult = ex.results && ex.results.length > 0 ? ex.results[0] : null;
+              const isPublished = ex.status === 'PUBLISHED' || (myResult && myResult.publishedAt);
+              return {
+                id: ex.examCode || `EX-${ex.id}`,
+                name: ex.title,
+                date: ex.examDate ? new Date(ex.examDate).toLocaleDateString() : '',
+                time: ex.startTime || '10:00 AM',
+                duration: `${ex.duration || 60} mins`,
+                maxMarks: ex.totalMarks,
+                passingMarks: ex.passingMarks,
+                score: isPublished && myResult ? myResult.obtainedMarks : null,
+                grade: isPublished && myResult ? myResult.grade : null,
+                status: isPublished ? (myResult && myResult.isPassed ? 'Passed' : 'Completed') : 'Scheduled',
+                feedback: myResult?.remarks || 'Your assessment details are logged.',
+              };
+            });
+            setExams(mapped);
+          }
+        } catch (err) {
+          console.error("Failed to fetch student exams:", err);
+        }
+      };
+
+      fetchExams();
     }
   }, [user]);
 

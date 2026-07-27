@@ -6,6 +6,9 @@ import {
   getExamById,
   updateExam,
   deleteExam,
+  submitMarks,
+  publishResults,
+  getStudentExams,
 } from "../controllers/examController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -28,31 +31,62 @@ router.post(
   "/",
   authMiddleware,
   authorize("ADMIN", "TEACHER"),
-  createExamValidation,
-  validationMiddleware,
   createExam
 );
 
 /**
+ * GET STUDENT EXAMS
+ * Access: Student
+ */
+router.get(
+  "/student/me",
+  authMiddleware,
+  authorize("STUDENT"),
+  getStudentExams
+);
+
+/**
  * GET ALL EXAMS
- * Access: Admin & Teacher
+ * Access: Admin, Teacher & Student
  */
 router.get(
   "/",
   authMiddleware,
-  authorize("ADMIN", "TEACHER"),
+  authorize("ADMIN", "TEACHER", "STUDENT"),
   getAllExams
 );
 
 /**
  * GET EXAM BY ID
- * Access: Admin & Teacher
+ * Access: Admin, Teacher & Student
  */
 router.get(
   "/:id",
   authMiddleware,
-  authorize("ADMIN", "TEACHER"),
+  authorize("ADMIN", "TEACHER", "STUDENT"),
   getExamById
+);
+
+/**
+ * SUBMIT MARKS FOR EXAM
+ * Access: Admin & Teacher
+ */
+router.post(
+  "/:id/marks",
+  authMiddleware,
+  authorize("ADMIN", "TEACHER"),
+  submitMarks
+);
+
+/**
+ * PUBLISH EXAM RESULTS
+ * Access: Admin & Teacher
+ */
+router.patch(
+  "/:id/publish",
+  authMiddleware,
+  authorize("ADMIN", "TEACHER"),
+  publishResults
 );
 
 /**
@@ -70,12 +104,12 @@ router.put(
 
 /**
  * DELETE EXAM
- * Access: Admin only
+ * Access: Admin & Teacher
  */
 router.delete(
   "/:id",
   authMiddleware,
-  authorize("ADMIN"),
+  authorize("ADMIN", "TEACHER"),
   deleteExam
 );
 

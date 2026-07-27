@@ -52,7 +52,12 @@ async function request(endpoint, options = {}) {
     }
 
     if (!response.ok) {
-      const errMsg = data.message || data.error || (data.errors ? JSON.stringify(data.errors) : null) || `Request failed with status ${response.status}`;
+      let errMsg = data.message;
+      if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+        errMsg = data.errors.map((e) => `${e.field ? e.field + ': ' : ''}${e.message}`).join('; ');
+      } else if (!errMsg) {
+        errMsg = data.error || `Request failed with status ${response.status}`;
+      }
       throw new Error(errMsg);
     }
     

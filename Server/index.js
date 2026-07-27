@@ -1,6 +1,7 @@
 import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
+import prisma from "./config/prisma.js"
 
 import authRoutes from "./routes/authRoutes.js"
 import teacherRoutes from "./routes/teacherRoutes.js"
@@ -18,9 +19,7 @@ import salaryRoutes from "./routes/salaryRoutes.js";
 import examRoutes from "./routes/examRoutes.js";
 import path from "path";
 
-
 const app = express()
-
 
 app.use(cors())
 app.use(express.json())
@@ -44,11 +43,38 @@ app.use(
   express.static(path.join(process.cwd(), "uploads"))
 );
 
+async function ensureDefaultTeacher() {
+  try {
+    const existing = await prisma.teacher.findFirst();
+    if (!existing) {
+      let user = await prisma.user.findFirst();
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            name: "Teacher Admin",
+            email: `teacher_${Date.now()}@abacus.com`,
+            password: "password123",
+            role: "TEACHER",
+          },
+        });
+      }
+      await prisma.teacher.create({
+        data: {
+          name: user.name || "Teacher Admin",
+          qualification: "Abacus Master Instructor",
+          experience: 5,
+          userId: user.id,
+        },
+      });
+      console.log("[Setup] Default Teacher record initialized in database.");
+    }
+  } catch (err) {
+    console.error("[Setup Teacher Error]", err.message);
+  }
+}
+ensureDefaultTeacher();
 
 const PORT = process.env.PORT || 5000
-
-//console.log(process.env.DATABASE_URL);
-
 
 app.listen(PORT,()=>{
  console.log(`Server running at http://localhost:${PORT}`)
