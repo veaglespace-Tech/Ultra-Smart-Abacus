@@ -321,39 +321,64 @@ enum ExamType {
   LEVEL
   FINAL
 }
+enum ExamStatus {
+  DRAFT
+  SCHEDULED
+  COMPLETED
+  RESULT_PENDING
+  PUBLISHED
+  CANCELLED
+}
 
 model Exam {
+
   id Int @id @default(autoincrement())
 
   title String
 
+  examCode String @unique
+
   description String?
+
+  curriculumTrack String
 
   examType ExamType
 
+  status ExamStatus @default(DRAFT)
+
   examDate DateTime
+
+  startTime String?
+
+  duration Int?
 
   totalMarks Int
 
   passingMarks Int
 
-  duration Int? // minutes
-
-  isPublished Boolean @default(false)
+  
 
   teacherId Int
 
   batchId Int
 
-  teacher Teacher @relation(fields: [teacherId], references: [id])
+  teacher Teacher @relation(fields:[teacherId],references:[id])
 
-  batch Batch @relation(fields: [batchId], references: [id])
+  batch Batch @relation(fields:[batchId],references:[id])
 
   results ExamResult[]
 
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
+
+  @@index([teacherId])
+
+  @@index([batchId])
+
+  @@index([examDate])
+
+  @@index([status])
 }
 
 model ExamResult {
@@ -365,9 +390,17 @@ model ExamResult {
 
   obtainedMarks Int
 
+  percentage Float?
+
+  grade String?
+
   isPassed Boolean @default(false)
 
+  isAbsent Boolean @default(false)
+
   remarks String?
+
+  publishedAt DateTime?
 
   exam Exam @relation(fields: [examId], references: [id])
 
@@ -376,6 +409,10 @@ model ExamResult {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+
+  @@index([examId])
 
   @@unique([examId, studentId])
 }
@@ -403,4 +440,4 @@ model Salary {
   updatedAt         DateTime  @updatedAt
 
   @@unique([teacherId, month, year])
-}
+}
