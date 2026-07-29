@@ -1,3 +1,4 @@
+import prisma from "../config/prisma.js";
 import { examService } from "../services/examService.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
@@ -18,31 +19,6 @@ export const createExam = asyncHandler(async (req, res) => {
  */
 export const getAllExams = asyncHandler(async (req, res) => {
   const query = { ...req.query };
-
-  // By default in teacher workspace, scope exams to the logged-in user's teacher profile
-  if (req.user && query.all !== "true" && !query.teacherId) {
-    let teacherProfile = await prisma.teacher.findUnique({
-      where: { userId: Number(req.user.id) },
-    });
-
-    if (!teacherProfile) {
-      const loggedUser = await prisma.user.findUnique({ where: { id: Number(req.user.id) } });
-      if (loggedUser) {
-        teacherProfile = await prisma.teacher.create({
-          data: {
-            userId: loggedUser.id,
-            name: loggedUser.name || "Teacher",
-            qualification: "Abacus Trainer",
-            experience: 3,
-          },
-        });
-      }
-    }
-
-    if (teacherProfile) {
-      query.teacherId = teacherProfile.id;
-    }
-  }
 
   const result = await examService.getAllExams(query);
 

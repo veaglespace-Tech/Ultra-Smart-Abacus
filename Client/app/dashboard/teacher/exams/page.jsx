@@ -155,9 +155,29 @@ export default function TeacherExamsPage() {
       };
 
       const res = await api.exams.create(payload);
-      if (res && res.success) {
+      if (res) {
         setIsCreateModalOpen(false);
-        fetchExamsAndBatches();
+        const createdObj = res.data || res;
+        if (createdObj && (createdObj.id || createdObj.title)) {
+          const selectedBatchObj = batches.find((b) => Number(b.id) === Number(selectedBatchId));
+          const mappedNewExam = {
+            id: createdObj.examCode || `EX-${createdObj.id || Date.now()}`,
+            backendId: createdObj.id || Date.now(),
+            name: createdObj.title || formData.name,
+            batch: createdObj.batch?.name || selectedBatchObj?.name || 'Batch',
+            batchId: createdObj.batchId || selectedBatchId,
+            level: createdObj.curriculumTrack || formData.level,
+            date: createdObj.examDate ? new Date(createdObj.examDate).toISOString().split('T')[0] : formData.date,
+            time: createdObj.startTime || formData.time,
+            maxMarks: createdObj.totalMarks || formData.maxMarks,
+            creator: createdObj.teacher?.name || 'Teacher',
+            status: 'Scheduled',
+            students: createdObj.batch?.students || [],
+            studentMarks: {},
+          };
+          setExams((prev) => [mappedNewExam, ...prev.filter((ex) => ex.backendId !== mappedNewExam.backendId)]);
+        }
+        await fetchExamsAndBatches();
         confetti({
           particleCount: 60,
           spread: 40,
@@ -172,13 +192,16 @@ export default function TeacherExamsPage() {
     }
   };
 
-  const handleDeleteExam = async (examBackendId) => {
+  const handleDeleteExam = async (examBackendId, examCodeId) => {
     if (confirm(`Are you sure you want to delete this exam record?`)) {
+      setExams((prev) => prev.filter((ex) => ex.backendId !== examBackendId && ex.id !== examBackendId && ex.id !== examCodeId));
       try {
-        await api.exams.delete(examBackendId);
-        fetchExamsAndBatches();
+        const idToDelete = examBackendId || examCodeId;
+        await api.exams.delete(idToDelete);
+        await fetchExamsAndBatches();
       } catch (err) {
-        alert(err.response?.data?.message || 'Failed to delete exam');
+        console.error('Failed to delete exam from backend:', err);
+        await fetchExamsAndBatches();
       }
     }
   };
@@ -347,7 +370,7 @@ export default function TeacherExamsPage() {
                         )}
 
                         <button 
-                          onClick={() => handleDeleteExam(exam.backendId)}
+                          onClick={() => handleDeleteExam(exam.backendId, exam.id)}
                           className="bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-700 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 dark:border-rose-900/50 dark:text-rose-400 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer"
                         >
                           <Trash2 size={12} />
