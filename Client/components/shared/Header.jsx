@@ -11,7 +11,7 @@ const Header = () => {
         <Link href="/">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-wider text-blue-500 cursor-pointer">
   SMART <span className="text-orange-500">ABACUS</span>
-</h1>
+</h1>a
         </Link>
     <p className="hidden sm:block text-[10px] tracking-widest text-slate-400 uppercase font-mono mt-0.5">
           Indias leading abacus mental arithmetic institute

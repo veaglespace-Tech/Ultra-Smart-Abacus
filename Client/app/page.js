@@ -110,8 +110,8 @@ const benefits = [
 /* ─── Testimonials ─── */
 const testimonials = [
   { name: "Radhika", age: 9, city: "Mumbai", initials: "R", color: "#FF6B2B", quote: "I improved my calculation speed by 10× in just 6 months! Now I solve math problems faster than my calculator.", stars: 5 },
-  { name: "Arjun", age: 11, city: "Delhi", initials: "A", color: "#2D1B69", quote: "I won the National Abacus Championship! The training was rigorous but worth every moment. I'm now helping other students.", stars: 5 },
-  { name: "Maya", age: 8, city: "Bangalore", initials: "M", color: "#FFCA28", quote: "My grades improved from C to A+ in mathematics! I feel more confident in class now and love solving problems.", stars: 5 },
+  { name: "Arjun", age: 11, city: "Delhi", initials: "A", color: "#FF6B2B", quote: "I won the National Abacus Championship! The training was rigorous but worth every moment. I'm now helping other students.", stars: 5 },
+  { name: "Maya", age: 8, city: "Bangalore", initials: "M", color: "#FF6B2B", quote: "My grades improved from C to A+ in mathematics! I feel more confident in class now and love solving problems.", stars: 5 },
 ];
 
 /* ─── Animated Counter Hook ─── */
@@ -474,7 +474,7 @@ export default function Home() {
       {/* ════════════════════════════════════════
           ANIMATED STATS BAR
           ════════════════════════════════════════ */}
-      <section ref={statsRef} className="py-12 px-6" style={{ background: "linear-gradient(135deg, #2D1B69, #1a1035)" }}>
+      <section ref={statsRef} className="pt-20 pb-10 px-6" style={{ background: "linear-gradient(135deg, #2D1B69, #1a1035)" }}>
         <div className=" mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
           {[
             { value: students, suffix: "+", label: "Students Trained", icon: Users },
@@ -500,12 +500,10 @@ export default function Home() {
       {/* ════════════════════════════════════════
           ABOUT SECTION
           ════════════════════════════════════════ */}
-      <section className="py-24 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
-        <div className=" mx-auto grid md:grid-cols-2 gap-16 items-center">
-          {/* Image */}
-          <div className="relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl w-[700px] h-[550px]">
-              <img src="/images/banner.jpg" alt="Smart Abacus Academy" className="w-full h-full object-cover" />
+      <section className="pt-20 pb-10 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
+<div className="max-w-7xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-16 items-center">
+            <div className="relative">
+<div className="relative rounded-3xl overflow-hidden shadow-2xl w-full max-w-[700px] h-[300px] sm:h-[400px] lg:h-[550px] mx-auto">              <img src="/images/banner.jpg" alt="Smart Abacus Academy" className="w-full h-full object-cover" />
               <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(45,27,105,0.3), transparent)" }} />
             </div>
             {/* Decorative card floating */}
@@ -564,9 +562,9 @@ export default function Home() {
       {/* ════════════════════════════════════════
           BENEFITS SECTION — ULTRA MODERN CARDS
           ════════════════════════════════════════ */}
-      <section className="py-24 px-6 overflow-hidden bg-gradient-to-b from-[#f8f6ff] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] transition-colors duration-300">
+      <section className="pt-20 pb-10 px-6 overflow-hidden bg-gradient-to-b from-[#f8f6ff] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] transition-colors duration-300">
         <div className=" mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <span className="badge-primary mb-4 inline-flex">Why Abacus?</span>
             <h2 className="section-heading text-[#2D1B69]">
               Benefits That Last a <span style={{ color: "#FF6B2B" }}>Lifetime</span>
@@ -699,9 +697,9 @@ export default function Home() {
       {/* ════════════════════════════════════════
           COURSES SECTION
           ════════════════════════════════════════ */}
-      <section className="py-24 px-6 bg-gradient-to-b from-[#FFF8F0] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] transition-colors duration-300">
+      <section className="pt-10 pb-10 px-6 bg-gradient-to-b from-[#FFF8F0] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] transition-colors duration-300">
         <div className=" mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <span className="badge-accent mb-4 inline-flex">Our Programs</span>
             <h2 className="section-heading text-[#2D1B69]">
               Comprehensive <span style={{ color: "#FF6B2B" }}>Courses</span>
@@ -790,9 +788,9 @@ export default function Home() {
       {/* ════════════════════════════════════════
           TESTIMONIALS SECTION
           ════════════════════════════════════════ */}
-      <section className="py-24 px-6" style={{ background: "linear-gradient(135deg, #2D1B69 0%, #1a1035 100%)" }}>
+      <section className="pt-8 pb-10 px-6" style={{ background: "linear-gradient(135deg, #2D1B69 0%, #1a1035 100%)" }}>
         <div className=" mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4"
               style={{ background: "rgba(255,202,40,0.15)", color: "#FFCA28", border: "1px solid rgba(255,202,40,0.3)" }}>
               Student Stories
@@ -841,9 +839,9 @@ export default function Home() {
       {/* ════════════════════════════════════════
           FAQ SECTION
           ════════════════════════════════════════ */}
-      <section className="py-24 px-6 bg-white">
+      <section className="pt-20 pb-10 px-6 bg-white">
         <div className=" mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <span className="badge-primary mb-4 inline-flex">Have Questions?</span>
             <h2 className="section-heading text-[#2D1B69]">
               Frequently Asked <span style={{ color: "#FF6B2B" }}>Questions</span>
@@ -897,7 +895,7 @@ export default function Home() {
       {/* ════════════════════════════════════════
           CTA SECTION
           ════════════════════════════════════════ */}
-      <section className="relative py-24 px-6 overflow-hidden" style={{ background: "linear-gradient(135deg, #2D1B69, #3d2a88, #1a1035)" }}>
+      <section className="relative pt-20 pb-10 px-6 overflow-hidden" style={{ background: "linear-gradient(135deg, #2D1B69, #3d2a88, #1a1035)" }}>
         <div className="absolute inset-0 dot-pattern opacity-10" />
         <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full opacity-20 animate-blob1"
           style={{ background: "radial-gradient(circle, #FF6B2B, transparent 70%)", filter: "blur(60px)" }} />
