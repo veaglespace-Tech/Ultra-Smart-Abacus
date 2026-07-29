@@ -67,7 +67,7 @@ export const registerFranchise = async (req, res, next) => {
 
                         create: {
 
-                            fullName: name,
+                            name,
 
                             email,
 
@@ -262,7 +262,7 @@ const franchise =
 await prisma.franchise.update({
 
 where:{
-id
+id: Number(id)
 },
 
 
@@ -313,7 +313,7 @@ const franchise =
 await prisma.franchise.findUnique({
 
 where:{
-id
+id: Number(id)
 }
 
 })
@@ -335,7 +335,7 @@ message:"Franchise not found"
 await prisma.franchise.delete({
 
 where:{
-id
+id: Number(id)
 }
 
 })
