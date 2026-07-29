@@ -25,12 +25,12 @@ const router = express.Router();
 
 /**
  * CREATE EXAM
- * Access: Admin & Teacher
+ * Access: Admin, Teacher & Franchise
  */
 router.post(
   "/",
   authMiddleware,
-  authorize("ADMIN", "TEACHER"),
+  authorize("ADMIN", "TEACHER", "FRANCHISE"),
   createExam
 );
 
@@ -47,56 +47,56 @@ router.get(
 
 /**
  * GET ALL EXAMS
- * Access: Admin, Teacher & Student
+ * Access: Admin, Teacher, Student & Franchise
  */
 router.get(
   "/",
   authMiddleware,
-  authorize("ADMIN", "TEACHER", "STUDENT"),
+  authorize("ADMIN", "TEACHER", "STUDENT", "FRANCHISE"),
   getAllExams
 );
 
 /**
  * GET EXAM BY ID
- * Access: Admin, Teacher & Student
+ * Access: Admin, Teacher, Student & Franchise
  */
 router.get(
   "/:id",
   authMiddleware,
-  authorize("ADMIN", "TEACHER", "STUDENT"),
+  authorize("ADMIN", "TEACHER", "STUDENT", "FRANCHISE"),
   getExamById
 );
 
 /**
  * SUBMIT MARKS FOR EXAM
- * Access: Admin & Teacher
+ * Access: Admin, Teacher & Franchise
  */
 router.post(
   "/:id/marks",
   authMiddleware,
-  authorize("ADMIN", "TEACHER"),
+  authorize("ADMIN", "TEACHER", "FRANCHISE"),
   submitMarks
 );
 
 /**
  * PUBLISH EXAM RESULTS
- * Access: Admin & Teacher
+ * Access: Admin, Teacher & Franchise
  */
 router.patch(
   "/:id/publish",
   authMiddleware,
-  authorize("ADMIN", "TEACHER"),
+  authorize("ADMIN", "TEACHER", "FRANCHISE"),
   publishResults
 );
 
 /**
  * UPDATE EXAM
- * Access: Admin & Teacher
+ * Access: Admin, Teacher & Franchise
  */
 router.put(
   "/:id",
   authMiddleware,
-  authorize("ADMIN", "TEACHER"),
+  authorize("ADMIN", "TEACHER", "FRANCHISE"),
   updateExamValidation,
   validationMiddleware,
   updateExam
@@ -104,13 +104,13 @@ router.put(
 
 /**
  * DELETE EXAM
- * Access: Admin & Teacher
+ * Access: Admin, Teacher & Franchise
  */
 router.delete(
   "/:id",
   authMiddleware,
-  authorize("ADMIN", "TEACHER"),
+  authorize("ADMIN", "TEACHER", "FRANCHISE"),
   deleteExam
 );
 
-export default router;
+export default router;

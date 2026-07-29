@@ -38,7 +38,8 @@ router.get(
     authorizeRoles(
         "ADMIN",
         "TEACHER",
-        "STUDENT"
+        "STUDENT",
+        "FRANCHISE"
     ),
     getAttendanceByStudent
 );

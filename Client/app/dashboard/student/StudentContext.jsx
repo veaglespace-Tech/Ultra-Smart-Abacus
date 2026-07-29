@@ -69,7 +69,7 @@ export function StudentDataProvider({ children }) {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && user.role && user.role.toUpperCase() === "STUDENT") {
       const fetchStudentProfile = async () => {
         try {
           const res = await api.student.getProfile();
