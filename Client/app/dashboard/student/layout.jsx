@@ -43,6 +43,8 @@ function StudentLayoutInner({ children }) {
     { name: 'My Profile', href: '/dashboard/student/profile', icon: User }
   ];
 
+  const unreadNotificationsCount = notifications ? notifications.length : 0;
+
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
     year: 'numeric',
@@ -99,14 +101,21 @@ function StudentLayoutInner({ children }) {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-250 ${
+                  className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-250 ${
                     isActive
                       ? "bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20"
                       : "text-slate-655 dark:text-slate-400 hover:bg-accent/10 dark:hover:bg-accent/15 hover:text-[#FF6B2B] dark:hover:text-accent"
                   }`}
                 >
-                  <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
-                  <span>{item.name}</span>
+                  <div className="flex items-center space-x-3">
+                    <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
+                    <span>{item.name}</span>
+                  </div>
+                  {item.name === 'Notifications' && unreadNotificationsCount > 0 && (
+                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black leading-none ${isActive ? 'bg-white text-orange-600' : 'bg-[#FF6B2B] text-white'}`}>
+                      {unreadNotificationsCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -211,14 +220,21 @@ function StudentLayoutInner({ children }) {
                           key={item.name}
                           href={item.href}
                           onClick={() => setMobileMenuOpen(false)}
-                          className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                          className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
                             isActive
                               ? "bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20"
                               : "text-slate-655 dark:text-slate-400 hover:bg-accent/10 dark:hover:bg-accent/15 hover:text-[#FF6B2B] dark:hover:text-accent"
                           }`}
                         >
-                          <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
-                          <span>{item.name}</span>
+                          <div className="flex items-center space-x-3">
+                            <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
+                            <span>{item.name}</span>
+                          </div>
+                          {item.name === 'Notifications' && unreadNotificationsCount > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-[#FF6B2B] text-white">
+                              {unreadNotificationsCount}
+                            </span>
+                          )}
                         </Link>
                       );
                     })}
@@ -231,7 +247,7 @@ function StudentLayoutInner({ children }) {
                       {studentInitials}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{studentName}</p>
+                      <p className="text-xs font-bold text-[#1a1035] dark:text-white font-medium">{studentName}</p>
                       <p className="text-[9px] text-slate-455 dark:text-slate-500 font-bold uppercase truncate text-left">Level {profile.level || 1} Student</p>
                     </div>
                   </div>
@@ -275,13 +291,13 @@ function StudentLayoutInner({ children }) {
             </span>
 
             {/* Notification bell */}
-            <div className="relative">
+            <div className="relative z-50">
               <button
                 onClick={() => setNotificationOpen(!notificationOpen)}
                 className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-905/30 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors relative cursor-pointer"
               >
                 <Bell size={15} />
-                {notifications && notifications.length > 0 && (
+                {unreadNotificationsCount > 0 && (
                   <span className="absolute top-1 right-1 w-2 h-2 bg-orange-600 dark:bg-orange-500 rounded-full animate-pulse"></span>
                 )}
               </button>
@@ -304,11 +320,16 @@ function StudentLayoutInner({ children }) {
                     <div className="space-y-3 max-h-60 overflow-y-auto">
                       {notifications && notifications.length > 0 ? (
                         notifications.slice(0, 4).map((notif) => (
-                          <div key={notif.id} className="text-xs border-b border-slate-55 dark:border-[#3d2a88]/20 pb-2 last:border-0 last:pb-0">
+                          <Link
+                            key={notif.id}
+                            href="/dashboard/student/notifications"
+                            onClick={() => setNotificationOpen(false)}
+                            className="block text-xs border-b border-slate-100 dark:border-[#3d2a88]/20 pb-2 last:border-0 last:pb-0 hover:bg-orange-50/50 dark:hover:bg-[#2D1B69]/40 p-1.5 rounded-lg transition-colors cursor-pointer"
+                          >
                             <p className="text-slate-700 dark:text-slate-350 font-bold">{notif.title}</p>
                             <p className="text-slate-650 dark:text-slate-400 font-medium mt-0.5 line-clamp-2">{notif.text}</p>
                             <span className="text-[9px] text-slate-400 font-semibold">{notif.time}</span>
-                          </div>
+                          </Link>
                         ))
                       ) : (
                         <p className="text-xs text-slate-455 text-center py-4 font-semibold">No recent announcements</p>

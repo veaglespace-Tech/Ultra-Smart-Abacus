@@ -11,6 +11,7 @@ import {
   CheckSquare, CreditCard, Box, BarChart3, Menu, X, LogOut, Bell,
   DollarSign, Search
 } from "lucide-react";
+import { api } from "@/services/api";
 
 export default function FranchiseLayout({ children }) {
   const pathname = usePathname();
@@ -19,10 +20,26 @@ export default function FranchiseLayout({ children }) {
   const { logout, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [isClientMounted, setIsClientMounted] = useState(false);
 
   useEffect(() => {
     setIsClientMounted(true);
+    const fetchNotifications = async () => {
+      try {
+        const res = await api.franchise.getNotifications();
+        const list = (res.data || []).map(n => ({
+          id: n.id,
+          title: n.title,
+          text: n.message || n.title,
+          time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Recent"
+        }));
+        setNotifications(list);
+      } catch (err) {
+        console.error("Failed to fetch notifications in FranchiseLayout:", err);
+      }
+    };
+    fetchNotifications();
   }, []);
 
   const handleLogout = () => {
@@ -46,11 +63,7 @@ export default function FranchiseLayout({ children }) {
     { name: 'Notifications', href: '/dashboard/franchise/notifications', icon: Bell }
   ];
 
-  const notifications = [
-    { id: 1, text: "New Admission Rohan Deshmukh verified", time: "10 mins ago" },
-    { id: 2, text: "Tuition Fees inventory inventory sale logged", time: "1 hour ago" },
-    { id: 3, text: "Teacher salary queue processed successfully", time: "3 hours ago" }
-  ];
+  const unreadNotificationsCount = notifications ? notifications.length : 0;
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
@@ -108,14 +121,21 @@ export default function FranchiseLayout({ children }) {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-250 ${
+                  className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-250 ${
                     isActive
                       ? "bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20"
                       : "text-slate-655 dark:text-slate-400 hover:bg-accent/10 dark:hover:bg-accent/15 hover:text-[#FF6B2B] dark:hover:text-accent"
                   }`}
                 >
-                  <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
-                  <span>{item.name}</span>
+                  <div className="flex items-center space-x-3">
+                    <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
+                    <span>{item.name}</span>
+                  </div>
+                  {item.name === 'Notifications' && unreadNotificationsCount > 0 && (
+                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black leading-none ${isActive ? 'bg-white text-orange-600' : 'bg-[#FF6B2B] text-white'}`}>
+                      {unreadNotificationsCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -220,14 +240,21 @@ export default function FranchiseLayout({ children }) {
                           key={item.name}
                           href={item.href}
                           onClick={() => setMobileMenuOpen(false)}
-                          className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                          className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
                             isActive
                               ? "bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20"
                               : "text-slate-655 dark:text-slate-400 hover:bg-accent/10 dark:hover:bg-accent/15 hover:text-[#FF6B2B] dark:hover:text-accent"
                           }`}
                         >
-                          <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
-                          <span>{item.name}</span>
+                          <div className="flex items-center space-x-3">
+                            <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
+                            <span>{item.name}</span>
+                          </div>
+                          {item.name === 'Notifications' && unreadNotificationsCount > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-[#FF6B2B] text-white">
+                              {unreadNotificationsCount}
+                            </span>
+                          )}
                         </Link>
                       );
                     })}
@@ -284,13 +311,15 @@ export default function FranchiseLayout({ children }) {
             </span>
 
             {/* Notification bell */}
-            <div className="relative">
+            <div className="relative z-50">
               <button
                 onClick={() => setNotificationOpen(!notificationOpen)}
                 className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-905/30 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors relative cursor-pointer"
               >
                 <Bell size={15} />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-orange-600 dark:bg-orange-500 rounded-full animate-pulse"></span>
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-orange-600 dark:bg-orange-500 rounded-full animate-pulse"></span>
+                )}
               </button>
 
               {/* Notification Dropdown */}
@@ -308,13 +337,25 @@ export default function FranchiseLayout({ children }) {
                         View All
                       </Link>
                     </div>
-                    <div className="space-y-3">
-                      {notifications.map((notif) => (
-                        <div key={notif.id} className="text-xs border-b border-slate-55 dark:border-[#3d2a88]/20 pb-2 last:border-0 last:pb-0">
-                          <p className="text-slate-700 dark:text-slate-350 font-bold">{notif.text}</p>
-                          <span className="text-[9px] text-slate-400 font-semibold">{notif.time}</span>
-                        </div>
-                      ))}
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {notifications && notifications.length > 0 ? (
+                        notifications.slice(0, 5).map((notif) => (
+                          <Link
+                            key={notif.id}
+                            href="/dashboard/franchise/notifications"
+                            onClick={() => setNotificationOpen(false)}
+                            className="block text-xs border-b border-slate-100 dark:border-[#3d2a88]/20 pb-2 last:border-0 last:pb-0 hover:bg-orange-50/50 dark:hover:bg-[#2D1B69]/40 p-1.5 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <p className="text-slate-900 dark:text-slate-100 font-bold">{notif.title || notif.text}</p>
+                            {notif.text && notif.title && notif.text !== notif.title && (
+                              <p className="text-slate-600 dark:text-slate-400 font-medium mt-0.5 line-clamp-2">{notif.text}</p>
+                            )}
+                            <span className="text-[9px] text-slate-400 font-semibold">{notif.time}</span>
+                          </Link>
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-400 text-center py-4 font-semibold">No recent announcements</p>
+                      )}
                     </div>
                   </div>
                 </>

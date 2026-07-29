@@ -173,7 +173,7 @@ const teacher =
 await prisma.teacher.update({
 
 where:{
-id
+id: Number(id)
 },
 
 
@@ -183,7 +183,7 @@ name,
 
 qualification,
 
-experience
+experience: experience ? parseInt(experience) : undefined
 
 }
 
@@ -224,7 +224,7 @@ const teacher =
 await prisma.teacher.findUnique({
 
 where:{
-id
+id: Number(id)
 }
 
 })
@@ -246,7 +246,7 @@ message:"Teacher not found"
 await prisma.teacher.delete({
 
 where:{
-id
+id: Number(id)
 }
 
 })

@@ -111,7 +111,7 @@ const inventory =
 await prisma.inventory.findUnique({
 
 where:{
-id
+id: Number(id)
 }
 
 })
@@ -179,7 +179,7 @@ const inventory =
 await prisma.inventory.update({
 
 where:{
-id
+id: Number(id)
 },
 
 
@@ -189,9 +189,9 @@ itemName,
 
 description,
 
-quantity,
+quantity: quantity !== undefined ? Number(quantity) : undefined,
 
-price
+price: price !== undefined ? Number(price) : undefined
 
 }
 
@@ -238,7 +238,7 @@ const {id}=req.params
 await prisma.inventory.delete({
 
 where:{
-id
+id: Number(id)
 }
 
 })
