@@ -47,16 +47,25 @@ export default function TeacherPaymentsPage() {
       };
     }
 
+    if (!salaries || salaries.length === 0) {
+      return {
+        currentMonthSalary: "₹0",
+        currentMonthStatus: "PENDING",
+        lastPaymentDate: "N/A",
+        totalDisbursed: "₹0"
+      };
+    }
+
     const latest = salaries[0]; // ordered by date desc
     const totalPaidSum = salaries
       .filter(s => s.paymentStatus === "PAID")
-      .reduce((acc, s) => acc + s.netSalary, 0);
+      .reduce((acc, s) => acc + (s.netSalary || 0), 0);
 
     const lastPaidSalary = salaries.find(s => s.paymentStatus === "PAID");
 
     return {
-      currentMonthSalary: `₹${latest.netSalary.toLocaleString()}`,
-      currentMonthStatus: latest.paymentStatus,
+      currentMonthSalary: `₹${(latest?.netSalary || 0).toLocaleString()}`,
+      currentMonthStatus: latest?.paymentStatus || "PENDING",
       lastPaymentDate: lastPaidSalary?.paymentDate 
         ? new Date(lastPaidSalary.paymentDate).toLocaleDateString() 
         : "N/A",

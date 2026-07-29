@@ -99,5 +99,15 @@ export const api = {
     getByStudent: (studentId) => apiHelper.get(`/attendance/student/${studentId}`),
     getByBatchAndDate: (batchId, date) => apiHelper.get(`/attendance?batchId=${batchId}&date=${date}`),
     delete: (id) => apiHelper.delete(`/attendance/${id}`),
+  },
+  exams: {
+    getAll: (params) => apiHelper.get('/exams' + (params ? '?' + new URLSearchParams(params).toString() : '')),
+    getById: (id) => apiHelper.get(`/exams/${id}`),
+    create: (data) => apiHelper.post('/exams', data),
+    update: (id, data) => apiHelper.put(`/exams/${id}`, data),
+    delete: (id) => apiHelper.delete(`/exams/${id}`),
+    submitMarks: (id, studentMarks) => apiHelper.post(`/exams/${id}/marks`, { studentMarks }),
+    publishResults: (id) => apiHelper.patch(`/exams/${id}/publish`),
+    getStudentExams: () => apiHelper.get('/exams/student/me'),
   }
 };

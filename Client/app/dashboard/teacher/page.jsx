@@ -122,9 +122,10 @@ export default function TeacherOverviewPage() {
       : 94.2;
 
     // Latest Salary
-    const latestSalary = salaries[0];
-    const salaryString = latestSalary ? `₹${latestSalary.amount.toLocaleString()}` : "₹3,200";
-    const salarySubtext = latestSalary ? `Status: ${latestSalary.status}` : "Status: Processed";
+    const latestSalary = salaries && salaries.length > 0 ? salaries[0] : null;
+    const amountVal = (latestSalary && latestSalary.amount != null) ? Number(latestSalary.amount) : 3200;
+    const salaryString = `₹${isNaN(amountVal) ? "3,200" : amountVal.toLocaleString()}`;
+    const salarySubtext = latestSalary && latestSalary.status ? `Status: ${latestSalary.status}` : "Status: Processed";
 
     return {
       totalBatches,
