@@ -17,13 +17,18 @@ function AdminLayoutInner({ children }) {
   const router = useRouter();
   const { theme, toggleTheme, mounted } = useTheme();
   const { logout, user } = useAuth();
-  const { notifications } = useAdminData();
+  const { notifications, markNotificationRead } = useAdminData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState([]);
   const [isClientMounted, setIsClientMounted] = useState(false);
 
   useEffect(() => {
     setIsClientMounted(true);
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("read_notifications_admin") || "[]");
+      setReadNotificationIds(stored);
+    }
   }, []);
 
   const handleLogout = () => {
@@ -31,6 +36,21 @@ function AdminLayoutInner({ children }) {
       logout();
     }
     router.push("/auth/login");
+  };
+
+  const handleToggleNotifications = () => {
+    const nextState = !notificationOpen;
+    setNotificationOpen(nextState);
+    if (nextState && notifications && notifications.length > 0) {
+      const allIds = notifications.map(n => n.id);
+      setReadNotificationIds(allIds);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("read_notifications_admin", JSON.stringify(allIds));
+      }
+      notifications.forEach(n => {
+        if (markNotificationRead) markNotificationRead(n.id);
+      });
+    }
   };
 
   const sidebarItems = [
@@ -50,7 +70,7 @@ function AdminLayoutInner({ children }) {
     day: 'numeric'
   });
 
-  const unreadNotificationsCount = notifications ? notifications.filter(n => !n.read).length : 0;
+  const unreadNotificationsCount = notifications ? notifications.filter(n => !n.read && !readNotificationIds.includes(n.id)).length : 0;
   const adminName = isClientMounted && user?.name ? user.name : "Saideep Admin";
   const adminInitials = isClientMounted && adminName
     ? adminName.split(" ").filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2)

@@ -25,14 +25,19 @@ export default function FranchiseLayout({ children }) {
 
   useEffect(() => {
     setIsClientMounted(true);
+    if (!user || !user.role || (user.role.toUpperCase() !== "FRANCHISE" && user.role.toUpperCase() !== "ADMIN")) {
+      return;
+    }
     const fetchNotifications = async () => {
       try {
         const res = await api.franchise.getNotifications();
+        const readIds = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("read_notifications_franchise") || "[]") : [];
         const list = (res.data || []).map(n => ({
           id: n.id,
           title: n.title,
           text: n.message || n.title,
-          time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Recent"
+          time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Recent",
+          read: readIds.includes(n.id)
         }));
         setNotifications(list);
       } catch (err) {
@@ -49,6 +54,18 @@ export default function FranchiseLayout({ children }) {
     router.push("/auth/login");
   };
 
+  const handleToggleNotifications = () => {
+    const nextState = !notificationOpen;
+    setNotificationOpen(nextState);
+    if (nextState && notifications.length > 0) {
+      const readIds = notifications.map(n => n.id);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("read_notifications_franchise", JSON.stringify(readIds));
+      }
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    }
+  };
+
   const sidebarItems = [
     { name: 'Overview', href: '/dashboard/franchise', icon: LayoutDashboard },
     { name: 'Students', href: '/dashboard/franchise/students', icon: GraduationCap },
@@ -63,7 +80,7 @@ export default function FranchiseLayout({ children }) {
     { name: 'Notifications', href: '/dashboard/franchise/notifications', icon: Bell }
   ];
 
-  const unreadNotificationsCount = notifications ? notifications.length : 0;
+  const unreadNotificationsCount = notifications ? notifications.filter(n => !n.read).length : 0;
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',

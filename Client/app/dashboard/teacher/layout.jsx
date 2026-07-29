@@ -26,14 +26,19 @@ export default function TeacherLayout({ children }) {
 
   useEffect(() => {
     setIsClientMounted(true);
+    if (!user || !user.role || (user.role.toUpperCase() !== "TEACHER" && user.role.toUpperCase() !== "ADMIN")) {
+      return;
+    }
     const fetchNotifications = async () => {
       try {
         const res = await api.teacher.getNotifications();
+        const readIds = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("read_notifications_teacher") || "[]") : [];
         const list = (res.data || []).map(n => ({
           id: n.id,
           title: n.title,
           text: n.message || n.title,
-          time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Recent"
+          time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Recent",
+          read: readIds.includes(n.id)
         }));
         setNotifications(list);
       } catch (err) {
@@ -50,6 +55,18 @@ export default function TeacherLayout({ children }) {
     router.push("/auth/login");
   };
 
+  const handleToggleNotifications = () => {
+    const nextState = !notificationOpen;
+    setNotificationOpen(nextState);
+    if (nextState && notifications.length > 0) {
+      const readIds = notifications.map(n => n.id);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("read_notifications_teacher", JSON.stringify(readIds));
+      }
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    }
+  };
+
   const sidebarItems = [
     { name: 'Dashboard', href: '/dashboard/teacher', icon: LayoutDashboard },
     { name: 'My Batches', href: '/dashboard/teacher/batches', icon: Users },
@@ -63,7 +80,7 @@ export default function TeacherLayout({ children }) {
     { name: 'Settings', href: '/dashboard/teacher/settings', icon: Settings },
   ];
 
-  const unreadNotificationsCount = notifications ? notifications.length : 0;
+  const unreadNotificationsCount = notifications ? notifications.filter(n => !n.read).length : 0;
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',

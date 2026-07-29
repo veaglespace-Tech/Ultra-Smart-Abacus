@@ -26,14 +26,14 @@ router.get("/", authMiddleware, authorize("ADMIN", "FRANCHISE"), getAllNotificat
 router.get(
     "/teacher",
     authMiddleware,
-    authorize("TEACHER"),
+    authorize("TEACHER", "ADMIN"),
     getTeacherNotifications
 );
 
 router.get(
     "/franchise",
     authMiddleware,
-    authorize("FRANCHISE"),
+    authorize("FRANCHISE", "ADMIN"),
     getFranchiseNotifications
 );
 

@@ -51,11 +51,15 @@ export default function TeacherOverviewPage() {
 
   // Fetch all necessary data on mount
   useEffect(() => {
+    if (!user || !user.role || (user.role.toUpperCase() !== "TEACHER" && user.role.toUpperCase() !== "ADMIN")) {
+      setLoading(false);
+      return;
+    }
     const loadDashboardData = async () => {
       try {
         setLoading(true);
         // Load batches
-        const batchRes = await api.batches.getAll();
+        const batchRes = await api.batches.getAll().catch(() => null);
         if (batchRes && batchRes.success && batchRes.data) {
           setBatches(batchRes.data);
         }
@@ -137,12 +141,12 @@ export default function TeacherOverviewPage() {
   }, [batches, salaries, attendanceLogs]);
 
   const stats = [
-    { title: "Total Assigned Batches", value: calculatedMetrics.totalBatches.toString(), subtext: "Active abacus levels", icon: Layers, color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream", trend: "+1 new", trendType: "up" },
-    { title: "Total Students", value: calculatedMetrics.totalStudents.toString(), subtext: "Active roster strength", icon: Users, color: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400", trend: "+4% m-o-m", trendType: "up" },
-    { title: "Today's Classes", value: `${Math.min(3, calculatedMetrics.totalBatches)} Scheduled`, subtext: "Across Rooms A & B", icon: Calendar, color: "bg-orange-50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400", trend: "Normal", trendType: "neutral" },
-    { title: "Attendance Percentage", value: `${calculatedMetrics.attendancePercent}%`, subtext: "Overall cohort rate", icon: CheckSquare, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400", trend: "+1.2%", trendType: "up" },
-    { title: "Upcoming Exams", value: "2 Pending", subtext: "Scheduled this week", icon: GraduationCap, color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400", trend: "Urgent", trendType: "down" },
-    { title: "Monthly Salary", value: calculatedMetrics.salaryString, subtext: calculatedMetrics.salarySubtext, icon: DollarSign, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", trend: "Verified", trendType: "up" },
+    { title: "Total Assigned Batches", value: calculatedMetrics.totalBatches.toString(), subtext: "Active abacus levels", icon: Layers, color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream" },
+    { title: "Total Students", value: calculatedMetrics.totalStudents.toString(), subtext: "Active roster strength", icon: Users, color: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400" },
+    { title: "Today's Classes", value: `${Math.min(3, calculatedMetrics.totalBatches)} Scheduled`, subtext: "Across Rooms A & B", icon: Calendar, color: "bg-orange-50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400" },
+    { title: "Attendance Percentage", value: `${calculatedMetrics.attendancePercent}%`, subtext: "Overall cohort rate", icon: CheckSquare, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400" },
+    { title: "Upcoming Exams", value: "2 Pending", subtext: "Scheduled this week", icon: GraduationCap, color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400" },
+    { title: "Monthly Salary", value: calculatedMetrics.salaryString, subtext: calculatedMetrics.salarySubtext, icon: DollarSign, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400" },
   ];
 
   // 2. Today's Schedule (Mapped from actual batches)

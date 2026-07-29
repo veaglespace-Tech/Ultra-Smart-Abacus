@@ -20,10 +20,15 @@ function StudentLayoutInner({ children }) {
   const { profile, notifications } = useStudentData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState([]);
   const [isClientMounted, setIsClientMounted] = useState(false);
 
   useEffect(() => {
     setIsClientMounted(true);
+    if (typeof window !== "undefined") {
+      const stored = JSON.parse(localStorage.getItem("read_notifications_student") || "[]");
+      setReadNotificationIds(stored);
+    }
   }, []);
 
   const handleLogout = () => {
@@ -31,6 +36,18 @@ function StudentLayoutInner({ children }) {
       logout();
     }
     router.push("/auth/login");
+  };
+
+  const handleToggleNotifications = () => {
+    const nextState = !notificationOpen;
+    setNotificationOpen(nextState);
+    if (nextState && notifications && notifications.length > 0) {
+      const allIds = notifications.map(n => n.id);
+      setReadNotificationIds(allIds);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("read_notifications_student", JSON.stringify(allIds));
+      }
+    }
   };
 
   const sidebarItems = [
@@ -43,7 +60,7 @@ function StudentLayoutInner({ children }) {
     { name: 'My Profile', href: '/dashboard/student/profile', icon: User }
   ];
 
-  const unreadNotificationsCount = notifications ? notifications.length : 0;
+  const unreadNotificationsCount = notifications ? notifications.filter(n => !n.read && !readNotificationIds.includes(n.id)).length : 0;
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
