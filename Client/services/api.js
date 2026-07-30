@@ -85,6 +85,16 @@ export const api = {
     createNotification: (data) => apiHelper.post('/notifications', data),
     deleteNotification: (id) => apiHelper.delete(`/notifications/${id}`),
   },
+  inventory: {
+    getAll: (params) => apiHelper.get('/inventory' + (params ? '?' + new URLSearchParams(params).toString() : '')),
+    getById: (id) => apiHelper.get(`/inventory/${id}`),
+    create: (data) => apiHelper.post('/inventory', data),
+    update: (id, data) => apiHelper.put(`/inventory/${id}`, data),
+    delete: (id) => apiHelper.delete(`/inventory/${id}`),
+    distribute: (data) => apiHelper.patch('/inventory/distribute', data),
+    getLowStock: () => apiHelper.get('/inventory/low-stock'),
+    getHistory: () => apiHelper.get('/inventory/history'),
+  },
   notifications: {
     getAll: () => apiHelper.get('/notifications'),
     getForRole: (role) => {

@@ -1,3 +1,4 @@
+// BigInt JSON serializer initialization (v7)
 BigInt.prototype.toJSON = function () {
   return Number(this);
 };

@@ -46,6 +46,8 @@ model User {
   student Student?
 
   notificationReads NotificationRead[]
+  createdInventories Inventory[] @relation("InventoryCreator")
+  transfersSent      InventoryTransfer[] @relation("TransferSender")
 
   createdAt DateTime @default(now())
 }
@@ -98,6 +100,8 @@ model Franchise {
   teachers Teacher[]
   students Student[]
   batches  Batch[]
+  inventories Inventory[]
+  inventoryTransfers InventoryTransfer[]
 }
 
 
@@ -107,15 +111,52 @@ model Inventory {
 
   itemName String
 
+  category String @default("General")
+
+  sku String? @unique
+
   description String?
 
-  quantity Int
+  quantity Int @default(0)
 
-  price Float
+  minimumStock Int @default(10)
+
+  unitPrice Float @default(0)
+
+  price Float @default(0)
+
+  status String @default("ACTIVE")
+
+  createdBy Int?
+  creator User? @relation("InventoryCreator", fields: [createdBy], references: [id])
+
+  franchiseId Int?
+  franchise Franchise? @relation(fields: [franchiseId], references: [id])
+
+  transfers InventoryTransfer[]
 
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
+}
+
+model InventoryTransfer {
+  id Int @id @default(autoincrement())
+
+  inventoryId Int
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  franchiseId Int
+  franchise Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+
+  quantity Int
+
+  remarks String?
+
+  transferredBy Int
+  user User @relation("TransferSender", fields: [transferredBy], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model Student {
