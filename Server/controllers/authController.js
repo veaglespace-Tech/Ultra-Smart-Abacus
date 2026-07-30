@@ -134,6 +134,11 @@ export const loginUser = asyncHandler(async (req, res) => {
 
     const token = generateToken(user);
     const { password: userPassword, ...safeUser } = user;
+    if (safeUser.student && safeUser.student.profilePhoto) {
+        safeUser.profilePhoto = safeUser.student.profilePhoto;
+    } else if (safeUser.teacher && safeUser.teacher.profilePhoto) {
+        safeUser.profilePhoto = safeUser.teacher.profilePhoto;
+    }
 
     res.status(200).json({
         message: "Login successful",
