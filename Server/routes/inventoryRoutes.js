@@ -1,72 +1,76 @@
-import express from "express"
-
-
+import express from "express";
 import {
+  createInventory,
+  getInventories,
+  getInventoryById,
+  updateInventory,
+  deleteInventory,
+  distributeInventory,
+  getLowStock,
+  getTransferHistory
+} from "../controllers/inventoryController.js";
 
-createInventory,
-getInventories,
-getInventoryById,
-updateInventory,
-deleteInventory
+import authMiddleware from "../middleware/authMiddleware.js";
+import authorize from "../middleware/roleMiddleware.js";
 
-}
-from "../controllers/inventoryController.js"
+const router = express.Router();
 
+// Specific routes MUST be defined before parametric /:id routes
+router.get(
+  "/low-stock",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  getLowStock
+);
 
+router.get(
+  "/history",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  getTransferHistory
+);
 
-import authMiddleware from "../middleware/authMiddleware.js"
+router.patch(
+  "/distribute",
+  authMiddleware,
+  authorize("ADMIN"),
+  distributeInventory
+);
 
-import authorize from "../middleware/roleMiddleware.js"
-
-
-
-const router = express.Router()
-
-
-
+// Standard CRUD routes
 router.post(
-"/",
-authMiddleware,
-authorize("ADMIN","FRANCHISE"),
-createInventory
-)
-
-
+  "/",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  createInventory
+);
 
 router.get(
-"/",
-authMiddleware,
-authorize("ADMIN","FRANCHISE","TEACHER","STUDENT"),
-getInventories
-)
-
-
+  "/",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  getInventories
+);
 
 router.get(
-"/:id",
-authMiddleware,
-authorize("ADMIN","FRANCHISE","TEACHER","STUDENT"),
-getInventoryById
-)
-
-
+  "/:id",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  getInventoryById
+);
 
 router.put(
-"/:id",
-authMiddleware,
-authorize("ADMIN","FRANCHISE"),
-updateInventory
-)
-
-
+  "/:id",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  updateInventory
+);
 
 router.delete(
-"/:id",
-authMiddleware,
-authorize("ADMIN", "FRANCHISE"),
-deleteInventory
-)
+  "/:id",
+  authMiddleware,
+  authorize("ADMIN"),
+  deleteInventory
+);
 
-
-
-export default router
+export default router;

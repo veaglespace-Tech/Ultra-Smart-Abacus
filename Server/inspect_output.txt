@@ -28,7 +28,7 @@
   }
 ]
 
---- NOTIFICATION READS (16) ---
+--- NOTIFICATION READS (25) ---
 [
   {
     "id": 1,
@@ -125,5 +125,59 @@
     "notificationId": 25,
     "userId": 9,
     "readAt": "2026-07-30T13:55:07.000Z"
+  },
+  {
+    "id": 26,
+    "notificationId": 25,
+    "userId": 1,
+    "readAt": "2026-07-30T14:56:27.000Z"
+  },
+  {
+    "id": 27,
+    "notificationId": 25,
+    "userId": 24,
+    "readAt": "2026-07-30T14:57:51.000Z"
+  },
+  {
+    "id": 28,
+    "notificationId": 25,
+    "userId": 26,
+    "readAt": "2026-07-30T14:58:26.000Z"
+  },
+  {
+    "id": 29,
+    "notificationId": 24,
+    "userId": 57,
+    "readAt": "2026-07-30T15:37:51.000Z"
+  },
+  {
+    "id": 30,
+    "notificationId": 25,
+    "userId": 57,
+    "readAt": "2026-07-30T15:37:51.000Z"
+  },
+  {
+    "id": 32,
+    "notificationId": 24,
+    "userId": 35,
+    "readAt": "2026-07-30T15:42:11.000Z"
+  },
+  {
+    "id": 33,
+    "notificationId": 25,
+    "userId": 35,
+    "readAt": "2026-07-30T15:42:11.000Z"
+  },
+  {
+    "id": 35,
+    "notificationId": 24,
+    "userId": 55,
+    "readAt": "2026-07-30T16:52:07.000Z"
+  },
+  {
+    "id": 36,
+    "notificationId": 25,
+    "userId": 55,
+    "readAt": "2026-07-30T16:52:07.000Z"
   }
 ]
