@@ -2,12 +2,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Mail, Phone, Award, Briefcase, Lock, ShieldCheck, Camera } from 'lucide-react';
+import { User, Mail, Phone, Award, Briefcase, Lock, ShieldCheck, Camera, Trash2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
+import { storageService } from '@/services/storage.services';
 
 export default function TeacherProfilePage() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const fileInputRef = useRef(null);
   const [profileImage, setProfileImage] = useState(null);
   const [profile, setProfile] = useState({
@@ -49,9 +50,76 @@ export default function TeacherProfilePage() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX = 400;
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > MAX) { h *= MAX / w; w = MAX; }
+          } else {
+            if (h > MAX) { w *= MAX / h; h = MAX; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+
+          setProfileImage(compressedDataUrl);
+
+          const updatedUser = {
+            ...(user || {}),
+            name: profile.name || user?.name,
+            email: profile.email || user?.email,
+            phone: profile.phone || user?.phone,
+            profilePhoto: compressedDataUrl
+          };
+          if (setUser) setUser(updatedUser);
+          storageService.setUser(updatedUser);
+        };
+      };
+    }
+  };
+
+  const handleDeletePhoto = () => {
+    if (window.confirm("Are you sure you want to delete your profile photo?")) {
+      setProfileImage(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      const updatedUser = {
+        ...(user || {}),
+        profilePhoto: null
+      };
+      if (setUser) setUser(updatedUser);
+      storageService.setUser(updatedUser);
+    }
+  };
+
   const handleUpdateProfile = (e) => {
     e.preventDefault();
     setIsSavingProfile(true);
+
+    const updatedUser = {
+      ...(user || {}),
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+      profilePhoto: profileImage || null
+    };
+
+    if (setUser) setUser(updatedUser);
+    storageService.setUser(updatedUser);
+
     setTimeout(() => {
       setIsSavingProfile(false);
       confetti({
@@ -60,7 +128,7 @@ export default function TeacherProfilePage() {
         origin: { y: 0.8 }
       });
       alert("Faculty Profile Successfully Updated.");
-    }, 1000);
+    }, 600);
   };
 
   const handleUpdatePassword = (e) => {
@@ -94,49 +162,67 @@ export default function TeacherProfilePage() {
         
         {/* PROFILE PICTURE CARD */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm text-center space-y-4">
-       <div className="relative w-28 h-28 mx-auto">
+          <div className="relative w-28 h-28 mx-auto">
+            {resolvedProfileImage ? (
+              <img
+                src={resolvedProfileImage}
+                alt="Profile"
+                className="w-full h-full rounded-2xl object-cover border-2 border-primary/20 shadow-md"
+              />
+            ) : (
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-3xl font-black shadow-md shadow-primary/20">
+                {profile.name
+                  ? profile.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)
+                  : "TA"}
+              </div>
+            )}
 
-  {resolvedProfileImage ? (
-    <img
-      src={resolvedProfileImage}
-      alt="Profile"
-      className="w-full h-full rounded-2xl object-cover"
-    />
-  ) : (
-    <div className="w-full h-full rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-3xl font-black shadow-md shadow-primary/20">
-      {profile.name
-        ? profile.name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2)
-        : "TA"}
-    </div>
-  )}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+            />
 
-  <input
-    type="file"
-    accept="image/*"
-    ref={fileInputRef}
-    className="hidden"
-    onChange={(e) => {
-      const file = e.target.files[0];
-      if (file) {
-        setProfileImage(URL.createObjectURL(file));
-      }
-    }}
-  />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+              className="absolute bottom-1 right-1 p-2 bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+              title="Change Photo"
+            >
+              <Camera size={14} />
+            </button>
+          </div>
 
-  <button
-    type="button"
-    onClick={() => fileInputRef.current.click()}
-    className="absolute bottom-1 right-1 p-2 bg-white rounded-xl shadow border"
-  >
-    <Camera size={14} />
-  </button>
-
-</div>
+          {/* ACTION BUTTONS FOR PHOTO */}
+          <div className="flex items-center justify-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            >
+              <Camera size={13} />
+              <span>{resolvedProfileImage ? 'Change Photo' : 'Upload Photo'}</span>
+            </button>
+            
+            {resolvedProfileImage && (
+              <button
+                type="button"
+                onClick={handleDeletePhoto}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-xs font-bold rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer"
+                title="Delete Profile Photo"
+              >
+                <Trash2 size={13} />
+                <span>Delete Photo</span>
+              </button>
+            )}
+          </div>
           <div>
             <h3 className="font-black text-slate-900 dark:text-slate-50 text-base">{profile.name}</h3>
             <p className="text-[10px] text-slate-450 font-black uppercase tracking-wider">Senior Math Facilitator</p>

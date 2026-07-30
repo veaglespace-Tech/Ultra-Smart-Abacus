@@ -142,9 +142,17 @@ function StudentLayoutInner({ children }) {
         {/* Footer */}
         <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
           <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
-              {studentInitials}
-            </div>
+            {user?.profilePhoto || profile?.profilePhoto ? (
+              <img
+                src={user?.profilePhoto || profile?.profilePhoto}
+                alt="Avatar"
+                className="w-8 h-8 rounded-lg object-cover border border-primary/20"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
+                {studentInitials}
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{studentName}</p>
               <p className="text-[9px] text-slate-455 dark:text-slate-500 font-bold uppercase truncate">Level {profile.level || 1} Student</p>
