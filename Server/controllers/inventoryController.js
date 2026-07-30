@@ -45,27 +45,89 @@ export const createInventory = async (req, res, next) => {
       return res.status(400).json({ success: false, error: "Item name is required" });
     }
 
-    const itemSku = sku || `SKU-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const priceVal = Number(req.body.price ?? req.body.unitPrice ?? unitPrice ?? 0);
     const qtyVal = Number(quantity || 0);
     const minVal = Number(minimumStock || 10);
     const createdBy = req.user?.id || null;
     const targetFranchiseId = req.user?.role === "FRANCHISE" ? req.user.franchiseId : (franchiseId ? Number(franchiseId) : null);
 
-    // Create base inventory record
+    const escName = itemName.trim().replace(/'/g, "''");
+    const escCategory = category.replace(/'/g, "''");
+    const escStatus = status.replace(/'/g, "''");
+
+    // Scope check: Check if item with same SKU or Name exists in target scope
+    let scopeWhere = targetFranchiseId ? `i.franchiseId = ${targetFranchiseId}` : `i.franchiseId IS NULL`;
+    let matchConditions = [`LOWER(TRIM(i.itemName)) = LOWER('${escName}')`];
+    if (sku && sku.trim()) {
+      const escSkuParam = sku.trim().replace(/'/g, "''");
+      matchConditions.push(`i.sku = '${escSkuParam}'`);
+    }
+
+    const existingQuery = `SELECT i.* FROM Inventory i WHERE ${scopeWhere} AND (${matchConditions.join(" OR ")})`;
+    const existingRows = await prisma.$queryRawUnsafe(existingQuery).catch(() => []);
+
+    if (existingRows && existingRows.length > 0) {
+      // Existing item found in scope: Update stock quantity instead of creating duplicate row
+      const existing = existingRows[0];
+      const newQty = Number(existing.quantity || 0) + qtyVal;
+      const updatedPrice = priceVal > 0 ? priceVal : Number(existing.price || existing.unitPrice || 0);
+
+      await prisma.inventory.update({
+        where: { id: existing.id },
+        data: {
+          quantity: newQty,
+          price: updatedPrice
+        }
+      });
+
+      const setClauses = [
+        `category = '${escCategory}'`,
+        `minimumStock = ${minVal}`,
+        `unitPrice = ${updatedPrice}`,
+        `status = '${escStatus}'`
+      ];
+      if (sku && sku.trim()) {
+        setClauses.push(`sku = '${sku.trim().replace(/'/g, "''")}'`);
+      }
+      if (description) {
+        setClauses.push(`description = '${description.replace(/'/g, "''")}'`);
+      }
+
+      await prisma.$executeRawUnsafe(`UPDATE Inventory SET ${setClauses.join(', ')} WHERE id = ${existing.id}`).catch(() => {});
+
+      const resultItem = {
+        ...existing,
+        itemName: existing.itemName,
+        description: description || existing.description,
+        quantity: newQty,
+        price: updatedPrice,
+        unitPrice: updatedPrice,
+        category,
+        sku: sku ? sku.trim() : (existing.sku || `SKU-${existing.id}`),
+        minimumStock: minVal,
+        status,
+        franchiseId: targetFranchiseId
+      };
+
+      return res.status(200).json({
+        success: true,
+        message: `Updated stock quantity for existing item '${existing.itemName}' (+${qtyVal} units, Total: ${newQty})`,
+        inventory: resultItem
+      });
+    }
+
+    // New item creation if not found in scope
+    const itemSku = sku && sku.trim() ? sku.trim() : `SKU-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const escSku = itemSku.replace(/'/g, "''");
+
     const inventory = await prisma.inventory.create({
       data: {
-        itemName,
+        itemName: itemName.trim(),
         description: description || null,
         quantity: qtyVal,
         price: priceVal
       }
     });
-
-    // Update extended columns directly via SQL to bypass stale Prisma Client validation
-    const escCategory = category.replace(/'/g, "''");
-    const escSku = itemSku.replace(/'/g, "''");
-    const escStatus = status.replace(/'/g, "''");
 
     const sql = `
       UPDATE Inventory 
@@ -356,10 +418,16 @@ export const distributeInventory = async (req, res, next) => {
 
     // Check if target franchise already has this item
     const skuEsc = (sourceItem.sku || '').replace(/'/g, "''");
-    const nameEsc = (sourceItem.itemName || '').replace(/'/g, "''");
+    const nameEsc = (sourceItem.itemName || '').trim().replace(/'/g, "''");
+    const targetSku = `${sourceItem.sku || 'SKU'}-F${targetFranchiseId}`;
+    const targetSkuEsc = targetSku.replace(/'/g, "''");
 
     const existingTarget = await prisma.$queryRawUnsafe(
-      `SELECT * FROM Inventory WHERE franchiseId = ${targetFranchiseId} AND (sku = '${skuEsc}' OR itemName = '${nameEsc}')`
+      `SELECT * FROM Inventory WHERE franchiseId = ${targetFranchiseId} AND (
+        sku = '${skuEsc}' OR 
+        sku = '${targetSkuEsc}' OR 
+        LOWER(TRIM(itemName)) = LOWER('${nameEsc}')
+      )`
     ).catch(() => []);
 
     let targetItemId;
@@ -379,11 +447,10 @@ export const distributeInventory = async (req, res, next) => {
         }
       });
       targetItemId = createdTarget.id;
-      const targetSku = `${sourceItem.sku || 'SKU'}-F${targetFranchiseId}`;
       await prisma.$executeRawUnsafe(`
         UPDATE Inventory 
         SET category = '${(sourceItem.category || 'General').replace(/'/g, "''")}', 
-            sku = '${targetSku}', 
+            sku = '${targetSkuEsc}', 
             minimumStock = ${Number(sourceItem.minimumStock || 10)}, 
             unitPrice = ${Number(sourceItem.unitPrice || sourceItem.price || 0)}, 
             status = 'ACTIVE', 
