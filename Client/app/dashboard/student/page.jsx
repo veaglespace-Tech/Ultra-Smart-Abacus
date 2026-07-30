@@ -56,6 +56,10 @@ export default function StudentDashboardOverview() {
     );
   }
 
+  const displayName = profile.name
+    ? profile.name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+    : "Student";
+
   const stats = [
     {
       title: "Current Level",
@@ -63,7 +67,7 @@ export default function StudentDashboardOverview() {
       subtext: "Beginner Arithmetic",
       icon: GraduationCap,
       color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream",
-      trend: "Active"
+      trend: null
     },
     {
       title: "Learning Progress",
@@ -71,7 +75,7 @@ export default function StudentDashboardOverview() {
       subtext: `${profile.classesAttended || 0}/${profile.totalClasses || 0} Classes`,
       icon: BarChart3,
       color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
-      trend: "+5%"
+      trend: null
     },
     {
       title: "Classes Attended",
@@ -79,7 +83,7 @@ export default function StudentDashboardOverview() {
       subtext: "Next class: Sat 10:00 AM",
       icon: Calendar,
       color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
-      trend: "Synced"
+      trend: null
     },
     {
       title: "Assignments Due",
@@ -87,7 +91,7 @@ export default function StudentDashboardOverview() {
       subtext: `${profile.assignmentsDone || 0} Completed`,
       icon: BookOpen,
       color: "bg-rose-50 text-rose-650 dark:bg-rose-950/40 dark:text-rose-450",
-      trend: `${pendingAssignments.length} remaining`
+      trend: null
     }
   ];
 
@@ -98,7 +102,7 @@ export default function StudentDashboardOverview() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">
-            {getGreeting()}, <span className="gradient-text">{profile.name}</span>
+            {getGreeting()}, <span className="gradient-text">{displayName}</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-455 mt-0.5">Observe your learning metrics, assignments, and schedule queues below.</p>
         </div>
