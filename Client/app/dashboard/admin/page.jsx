@@ -78,7 +78,7 @@ export default function AdminOverview() {
       subtext: "+12% this month",
       icon: GraduationCap,
       color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream",
-      trend: "Verified"
+      trend: null
     },
     {
       title: "Active Franchises",
@@ -86,7 +86,7 @@ export default function AdminOverview() {
       subtext: `${franchises.length} total branches`,
       icon: Grid,
       color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
-      trend: "Online"
+      trend: null
     },
     {
       title: "Certified Instructors",
@@ -94,7 +94,7 @@ export default function AdminOverview() {
       subtext: `${users ? users.filter(u => u.role === "Teacher").length : 0} registered`,
       icon: Users,
       color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
-      trend: "Active"
+      trend: null
     },
     {
       title: "Low Stock Items",
@@ -102,7 +102,7 @@ export default function AdminOverview() {
       subtext: "Action required in inventory",
       icon: Box,
       color: "bg-rose-50 text-rose-650 dark:bg-rose-950/40 dark:text-rose-450",
-      trend: lowStockItemsCount > 0 ? "Warning" : "Synced"
+      trend: null
     }
   ];
 

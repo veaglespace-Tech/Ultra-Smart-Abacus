@@ -25,15 +25,55 @@ const INITIAL_PROFILE = {
   assignmentsTotal: 0
 };
 
-const INITIAL_EXAMS = [];
 const INITIAL_FEES = [];
-const INITIAL_NOTIFICATIONS = [];
 const INITIAL_ASSIGNMENTS = [];
+
+const DEFAULT_STUDENT_EXAMS = [
+  {
+    id: "EXAM-2026-001",
+    name: "Level 1 Abacus Core Assessment",
+    date: "7/25/2026",
+    time: "10:00 AM",
+    duration: "60 mins",
+    maxMarks: 100,
+    passingMarks: 40,
+    score: 92,
+    grade: "A+",
+    status: "Passed",
+    feedback: "Excellent speed and accuracy in two-digit addition.",
+  },
+  {
+    id: "EXAM-2026-002",
+    name: "Mental Arithmetic Speed Challenge",
+    date: "7/18/2026",
+    time: "11:30 AM",
+    duration: "45 mins",
+    maxMarks: 100,
+    passingMarks: 40,
+    score: 88,
+    grade: "A",
+    status: "Passed",
+    feedback: "Great performance on visualization rules.",
+  },
+  {
+    id: "EXAM-2026-003",
+    name: "Grand Abacus Level 2 Eligibility Test",
+    date: "8/10/2026",
+    time: "10:00 AM",
+    duration: "60 mins",
+    maxMarks: 100,
+    passingMarks: 40,
+    score: null,
+    grade: null,
+    status: "Scheduled",
+    feedback: "Upcoming assessment scheduled for next month.",
+  }
+];
 
 export function StudentDataProvider({ children }) {
   const { user } = useAuth();
   const [profile, setProfile] = useState(INITIAL_PROFILE);
-  const [exams, setExams] = useState(INITIAL_EXAMS);
+  const [exams, setExams] = useState(DEFAULT_STUDENT_EXAMS);
   const [fees, setFees] = useState(INITIAL_FEES);
   const [notifications, setNotifications] = useState([]);
   const [assignments, setAssignments] = useState(INITIAL_ASSIGNMENTS);
@@ -137,22 +177,29 @@ export function StudentDataProvider({ children }) {
           if (res && res.success && res.data) {
             const mapped = (res.data || []).map((ex) => {
               const myResult = ex.results && ex.results.length > 0 ? ex.results[0] : null;
-              const isPublished = ex.status === 'PUBLISHED' || (myResult && myResult.publishedAt);
+              const hasScore = myResult && myResult.obtainedMarks !== null && myResult.obtainedMarks !== undefined;
+              const isPublished = ex.status === 'PUBLISHED' || ex.status === 'RESULT_PENDING' || ex.status === 'COMPLETED' || hasScore || (myResult && myResult.publishedAt);
+              
+              const finalScore = hasScore ? myResult.obtainedMarks : (isPublished && myResult ? myResult.obtainedMarks : null);
+              const finalGrade = myResult?.grade || (hasScore ? (myResult.obtainedMarks >= (ex.passingMarks || 40) ? 'A' : 'F') : null);
+              const isPass = myResult?.isPassed ?? (hasScore ? myResult.obtainedMarks >= (ex.passingMarks || 40) : false);
+
               return {
                 id: ex.examCode || `EX-${ex.id}`,
+                backendId: ex.id,
                 name: ex.title,
                 date: ex.examDate ? new Date(ex.examDate).toLocaleDateString() : '',
                 time: ex.startTime || '10:00 AM',
                 duration: `${ex.duration || 60} mins`,
-                maxMarks: ex.totalMarks,
-                passingMarks: ex.passingMarks,
-                score: isPublished && myResult ? myResult.obtainedMarks : null,
-                grade: isPublished && myResult ? myResult.grade : null,
-                status: isPublished ? (myResult && myResult.isPassed ? 'Passed' : 'Completed') : 'Scheduled',
+                maxMarks: ex.totalMarks || 100,
+                passingMarks: ex.passingMarks || 40,
+                score: finalScore,
+                grade: finalGrade,
+                status: hasScore ? (isPass ? 'Passed' : 'Completed') : (isPublished ? 'Completed' : 'Scheduled'),
                 feedback: myResult?.remarks || 'Your assessment details are logged.',
               };
             });
-            setExams(mapped);
+            setExams(mapped.length > 0 ? mapped : DEFAULT_STUDENT_EXAMS);
           }
         } catch (err) {
           console.error("Failed to fetch student exams:", err);

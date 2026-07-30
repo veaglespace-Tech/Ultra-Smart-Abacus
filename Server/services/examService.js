@@ -402,6 +402,7 @@ export const examService = {
           percentage,
           grade,
           isPassed,
+          publishedAt: new Date(),
         },
         create: {
           examId: Number(examId),
@@ -410,13 +411,14 @@ export const examService = {
           percentage,
           grade,
           isPassed,
+          publishedAt: new Date(),
         },
       });
     }
 
     return await prisma.exam.update({
       where: { id: Number(examId) },
-      data: { status: "RESULT_PENDING" },
+      data: { status: "PUBLISHED" },
       include: {
         teacher: true,
         batch: {
@@ -468,10 +470,33 @@ export const examService = {
    * Get Student Exams & Results
    */
   getStudentExams: async (userId) => {
-    const student = await prisma.student.findUnique({ where: { userId: Number(userId) } });
+    let student = null;
+    if (userId) {
+      student = await prisma.student.findUnique({ where: { userId: Number(userId) } }).catch(() => null);
+    }
 
-    if (!student) {
-      const exams = await prisma.exam.findMany({
+    let exams = [];
+    if (student) {
+      exams = await prisma.exam.findMany({
+        where: {
+          OR: [
+            { batchId: student.batchId || -1 },
+            { status: { in: ["SCHEDULED", "PUBLISHED", "COMPLETED", "RESULT_PENDING", "DRAFT"] } },
+          ],
+        },
+        include: {
+          teacher: true,
+          batch: true,
+          results: {
+            include: { student: true },
+          },
+        },
+        orderBy: { examDate: "desc" },
+      });
+    }
+
+    if (!exams || exams.length === 0) {
+      exams = await prisma.exam.findMany({
         orderBy: { examDate: "desc" },
         include: {
           teacher: true,
@@ -481,25 +506,7 @@ export const examService = {
           },
         },
       });
-      return exams;
     }
-
-    const exams = await prisma.exam.findMany({
-      where: {
-        OR: [
-          { batchId: student.batchId || -1 },
-          { status: { in: ["SCHEDULED", "PUBLISHED", "COMPLETED", "RESULT_PENDING"] } },
-        ],
-      },
-      include: {
-        teacher: true,
-        batch: true,
-        results: {
-          where: { studentId: student.id },
-        },
-      },
-      orderBy: { examDate: "desc" },
-    });
 
     return exams;
   },

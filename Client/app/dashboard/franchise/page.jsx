@@ -347,7 +347,7 @@ export default function FranchiseOverview() {
         </div>
 
         {/* Right Column: Activity Queue Table (7 columns) */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
+        <div className="lg:col-span-7 bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800 mb-2">
             <h4 className="text-xs font-black uppercase text-slate-555 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
               <Activity size={14} className="text-orange-500 animate-pulse" />
