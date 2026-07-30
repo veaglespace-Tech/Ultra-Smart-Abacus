@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { 
-  DollarSign, Search, CreditCard, ArrowDownLeft, CheckCircle, 
+  IndianRupee, Search, CreditCard, ArrowDownLeft, CheckCircle, 
   Clock, AlertCircle, Filter, Download, Plus, X, Calendar, User, Edit, FileText
 } from "lucide-react";
 import { api } from "@/services/api";

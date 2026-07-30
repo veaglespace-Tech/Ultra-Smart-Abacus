@@ -44,7 +44,8 @@ export default function StudentExamsPage() {
       const resultStatus =
         exam.status === "Passed" ||
         exam.status === "Failed" ||
-        exam.status === "Completed"
+        exam.status === "Completed" ||
+        numericScore !== null
           ? "Completed"
           : "Upcoming";
 

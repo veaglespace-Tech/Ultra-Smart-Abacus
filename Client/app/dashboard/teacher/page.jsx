@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Users, Layers, Calendar, CheckSquare, 
-  GraduationCap, DollarSign, Play, CheckCircle, Loader2,
+  GraduationCap, IndianRupee, Play, CheckCircle, Loader2,
   Sparkles, Activity, TrendingUp, ArrowUpRight, Clock
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -146,7 +146,7 @@ export default function TeacherOverviewPage() {
     { title: "Today's Classes", value: `${Math.min(3, calculatedMetrics.totalBatches)} Scheduled`, subtext: "Across Rooms A & B", icon: Calendar, color: "bg-orange-50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400" },
     { title: "Attendance Percentage", value: `${calculatedMetrics.attendancePercent}%`, subtext: "Overall cohort rate", icon: CheckSquare, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400" },
     { title: "Upcoming Exams", value: "2 Pending", subtext: "Scheduled this week", icon: GraduationCap, color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400" },
-    { title: "Monthly Salary", value: calculatedMetrics.salaryString, subtext: calculatedMetrics.salarySubtext, icon: DollarSign, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400" },
+    { title: "Monthly Salary", value: calculatedMetrics.salaryString, subtext: calculatedMetrics.salarySubtext, icon: IndianRupee, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400" },
   ];
 
   // 2. Today's Schedule (Mapped from actual batches)

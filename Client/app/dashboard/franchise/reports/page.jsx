@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { 
-  TrendingUp, Users, DollarSign, Award, Download, Calendar, 
+  TrendingUp, Users, IndianRupee, Award, Download, Calendar, 
   BarChart3, PieChart, ArrowUpRight, FileSpreadsheet, RefreshCw 
 } from "lucide-react";
 
@@ -86,7 +86,7 @@ export default function ReportsAnalytics() {
       {/* Grid Summary Layout */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500 flex items-center gap-1 font-bold"><DollarSign size={12} /> Cumulative Revenue</div>
+          <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500 flex items-center gap-1 font-bold"><IndianRupee size={12} /> Cumulative Revenue</div>
           <div className="text-xl font-black text-slate-900 mt-1">₹{summaryMetrics.totalRevenue.toLocaleString()}</div>
           <div className="text-[10px] text-emerald-700 flex items-center gap-0.5 mt-1 font-mono font-bold"><ArrowUpRight size={10} /> +12.4% vs last Qtr</div>
         </div>

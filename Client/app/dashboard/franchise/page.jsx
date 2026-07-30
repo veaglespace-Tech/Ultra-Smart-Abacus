@@ -201,8 +201,7 @@ export default function FranchiseOverview() {
       subtext: "Active enrollments", 
       icon: GraduationCap, 
       color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream", 
-      trend: `+${metrics.newStudentsThisMonth} this month`,
-      trendType: "up",
+      trend: null,
       loading
     },
     { 
@@ -211,8 +210,7 @@ export default function FranchiseOverview() {
       subtext: "All active roster", 
       icon: Users, 
       color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400", 
-      trend: "Normal",
-      trendType: "neutral",
+      trend: null,
       loading
     },
     { 
@@ -221,8 +219,7 @@ export default function FranchiseOverview() {
       subtext: `${metrics.pendingTermsCount} terms pending`, 
       icon: IndianRupee, 
       color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", 
-      trend: metrics.pendingTermsCount > 0 ? "Alert" : "Clean",
-      trendType: metrics.pendingTermsCount > 0 ? "warning-amber" : "up",
+      trend: null,
       loading
     },
     { 
@@ -231,8 +228,7 @@ export default function FranchiseOverview() {
       subtext: metrics.isLowStock ? "Low stock warning" : "Stock optimal", 
       icon: Box, 
       color: "bg-rose-50 text-rose-650 dark:bg-rose-950/40 dark:text-rose-450", 
-      trend: metrics.isLowStock ? "Re-order" : "In Stock",
-      trendType: metrics.isLowStock ? "alert" : "up",
+      trend: null,
       loading
     }
   ];

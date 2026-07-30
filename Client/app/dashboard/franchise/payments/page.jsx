@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { 
-  DollarSign, Search, CreditCard, ArrowDownLeft, CheckCircle, 
+  IndianRupee, Search, CreditCard, ArrowDownLeft, CheckCircle, 
   Clock, AlertCircle, Filter, Download, Plus, X, Calendar, User
 } from "lucide-react";
 
@@ -238,7 +238,7 @@ export default function PaymentsManagement() {
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800 mt-2">
                 <button type="button" onClick={() => setIsRecordOpen(false)} className="px-4 py-2 rounded-xl bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors font-medium">Cancel</button>
-                <button type="submit" className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold cursor-pointer transition-all shadow-sm"><DollarSign size={14} /><span>Commit Transaction</span></button>
+                <button type="submit" className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold cursor-pointer transition-all shadow-sm"><IndianRupee size={14} /><span>Commit Transaction</span></button>
               </div>
             </form>
           </div>

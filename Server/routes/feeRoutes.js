@@ -40,7 +40,7 @@ router.get(
 router.get(
   "/me",
   authMiddleware,
-  authorize("STUDENT"),
+  authorize("STUDENT", "ADMIN", "FRANCHISE", "TEACHER"),
   getMyFees
 );
 

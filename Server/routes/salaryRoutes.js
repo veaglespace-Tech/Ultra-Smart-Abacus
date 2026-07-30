@@ -24,19 +24,19 @@ router.post(
     createSalary
 )
 
-// GET SALARY HISTORY (Franchise Admin or System Admin)
+// GET SALARY HISTORY (Franchise Admin, System Admin, or Teacher)
 router.get(
     "/history",
     authMiddleware,
-    authorize("ADMIN", "FRANCHISE"),
+    authorize("ADMIN", "FRANCHISE", "TEACHER"),
     getSalaryHistory
 )
 
-// GET OWN SALARY HISTORY (Teacher or Admin)
+// GET OWN SALARY HISTORY (Teacher, Admin, or Franchise)
 router.get(
     "/my-history",
     authMiddleware,
-    authorize("TEACHER", "ADMIN"),
+    authorize("TEACHER", "ADMIN", "FRANCHISE"),
     getTeacherSalaryHistory
 )
 
