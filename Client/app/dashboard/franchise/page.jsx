@@ -66,37 +66,33 @@ export default function FranchiseOverview() {
 
   // Dynamic Dashboard Metrics State
   const [metrics, setMetrics] = useState({
-    totalStudents: 148,
-    newStudentsThisMonth: 12,
-    activeTeachers: 6,
-    pendingFeesAmount: 24500,
-    pendingTermsCount: 8,
-    abacusStockKits: 32,
-    isLowStock: true,
+    totalStudents: 0,
+    newStudentsThisMonth: 0,
+    activeTeachers: 0,
+    pendingFeesAmount: 0,
+    pendingTermsCount: 0,
+    abacusStockKits: 0,
+    isLowStock: false,
   });
 
-  const [recentActivity, setRecentActivity] = useState([
-    { id: "REG-104", student: "Rohan Deshmukh", type: "New Admission", amount: "₹4,500", date: "2026-06-17", status: "Paid" },
-    { id: "INV-402", student: "Abacus Kit - Level 1", type: "Inventory Sale", amount: "₹600", date: "2026-06-16", status: "Paid" },
-    { id: "REG-103", student: "Isha Sharma", type: "Level 2 Renewal", amount: "₹3,500", date: "2026-06-15", status: "Pending" }
-  ]);
+  const [recentActivity, setRecentActivity] = useState([]);
 
   // Fetch dynamic metrics from backend APIs
   const fetchDashboardData = useCallback(async (showRefreshingSpinner = false) => {
     if (showRefreshingSpinner) setIsRefreshing(true);
     try {
       const [studentsRes, teachersRes, feesRes, inventoryRes] = await Promise.allSettled([
-        api.admin.getStudents(),
-        api.admin.getTeachers(),
+        api.franchise.getStudents(),
+        api.franchise.getTeachers(),
         api.franchise.getFees(),
-        api.admin.getInventory()
+        api.franchise.getInventory()
       ]);
 
-      let totalStudentsCount = 148;
-      let newStudentsCount = 12;
+      let totalStudentsCount = 0;
+      let newStudentsCount = 0;
       if (studentsRes.status === "fulfilled" && studentsRes.value) {
-        const studentList = studentsRes.value.data || studentsRes.value.students || [];
-        if (Array.isArray(studentList) && studentList.length > 0) {
+        const studentList = studentsRes.value.data || studentsRes.value.students || (Array.isArray(studentsRes.value) ? studentsRes.value : []);
+        if (Array.isArray(studentList)) {
           totalStudentsCount = studentList.length;
           const currentMonth = new Date().getMonth();
           const currentYear = new Date().getFullYear();
@@ -108,25 +104,25 @@ export default function FranchiseOverview() {
         }
       }
 
-      let activeTeachersCount = 6;
+      let activeTeachersCount = 0;
       if (teachersRes.status === "fulfilled" && teachersRes.value) {
-        const teacherList = teachersRes.value.teachers || teachersRes.value.data || [];
-        if (Array.isArray(teacherList) && teacherList.length > 0) {
+        const teacherList = teachersRes.value.teachers || teachersRes.value.data || (Array.isArray(teachersRes.value) ? teachersRes.value : []);
+        if (Array.isArray(teacherList)) {
           activeTeachersCount = teacherList.length;
         }
       }
 
-      let pendingAmount = 24500;
-      let pendingTerms = 8;
+      let pendingAmount = 0;
+      let pendingTerms = 0;
       let dynamicActivities = [];
       if (feesRes.status === "fulfilled" && feesRes.value) {
-        const feeList = feesRes.value.fees || feesRes.value.data || [];
-        if (Array.isArray(feeList) && feeList.length > 0) {
+        const feeList = feesRes.value.fees || feesRes.value.data || (Array.isArray(feesRes.value) ? feesRes.value : []);
+        if (Array.isArray(feeList)) {
           const pendingFees = feeList.filter(f => f.status === "PENDING" || f.status === "OVERDUE" || (f.amountDue && f.amountDue > 0));
           pendingTerms = pendingFees.length;
           pendingAmount = feeList.reduce((sum, f) => {
             if (f.status === "PENDING" || f.status === "OVERDUE") {
-              return sum + (Number(f.amount) || Number(f.amountDue) || 0);
+              return sum + (Number(f.amount) || Number(f.dueAmount) || 0);
             }
             return sum;
           }, 0);
@@ -135,17 +131,17 @@ export default function FranchiseOverview() {
             id: `FEE-${fee.id || idx + 100}`,
             student: fee.studentName || fee.student?.name || `Student #${fee.studentId || idx + 1}`,
             type: fee.type || "Tuition Fee",
-            amount: `₹${(fee.amount || fee.amountPaid || 0).toLocaleString('en-IN')}`,
-            date: fee.dueDate ? fee.dueDate.split("T")[0] : (fee.createdAt ? fee.createdAt.split("T")[0] : "2026-06-17"),
+            amount: `₹${(fee.amount || fee.amountPaid || fee.dueAmount || 0).toLocaleString('en-IN')}`,
+            date: fee.dueDate ? fee.dueDate.split("T")[0] : (fee.createdAt ? fee.createdAt.split("T")[0] : "—"),
             status: fee.status === "PAID" ? "Paid" : "Pending"
           }));
         }
       }
 
-      let stockKits = 32;
-      let lowStockAlert = true;
+      let stockKits = 0;
+      let lowStockAlert = false;
       if (inventoryRes.status === "fulfilled" && inventoryRes.value) {
-        const invList = inventoryRes.value.inventories || inventoryRes.value.data || [];
+        const invList = inventoryRes.value.inventories || inventoryRes.value.data || (Array.isArray(inventoryRes.value) ? inventoryRes.value : []);
         if (Array.isArray(invList) && invList.length > 0) {
           stockKits = invList.reduce((acc, item) => acc + (Number(item.quantity) || 0), 0);
           lowStockAlert = invList.some(item => (Number(item.quantity) || 0) <= 10);
@@ -162,9 +158,7 @@ export default function FranchiseOverview() {
         isLowStock: lowStockAlert,
       });
 
-      if (dynamicActivities.length > 0) {
-        setRecentActivity(dynamicActivities);
-      }
+      setRecentActivity(dynamicActivities);
 
     } catch (err) {
       console.error("Failed to load franchise dynamic metrics:", err);
@@ -201,7 +195,8 @@ export default function FranchiseOverview() {
       subtext: "Active enrollments", 
       icon: GraduationCap, 
       color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream", 
-      trend: null,
+      trend: `+${metrics.newStudentsThisMonth} this month`,
+      trendType: "up",
       loading
     },
     { 
@@ -210,7 +205,8 @@ export default function FranchiseOverview() {
       subtext: "All active roster", 
       icon: Users, 
       color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400", 
-      trend: null,
+      trend: "Normal",
+      trendType: "neutral",
       loading
     },
     { 
@@ -219,7 +215,8 @@ export default function FranchiseOverview() {
       subtext: `${metrics.pendingTermsCount} terms pending`, 
       icon: IndianRupee, 
       color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", 
-      trend: null,
+      trend: metrics.pendingTermsCount > 0 ? "Alert" : "Clean",
+      trendType: metrics.pendingTermsCount > 0 ? "warning-amber" : "up",
       loading
     },
     { 
@@ -228,7 +225,8 @@ export default function FranchiseOverview() {
       subtext: metrics.isLowStock ? "Low stock warning" : "Stock optimal", 
       icon: Box, 
       color: "bg-rose-50 text-rose-650 dark:bg-rose-950/40 dark:text-rose-450", 
-      trend: null,
+      trend: metrics.isLowStock ? "Re-order" : "In Stock",
+      trendType: metrics.isLowStock ? "alert" : "up",
       loading
     }
   ];
@@ -349,7 +347,7 @@ export default function FranchiseOverview() {
         </div>
 
         {/* Right Column: Activity Queue Table (7 columns) */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
+        <div className="lg:col-span-7 bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800 mb-2">
             <h4 className="text-xs font-black uppercase text-slate-555 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
               <Activity size={14} className="text-orange-500 animate-pulse" />
@@ -402,4 +400,4 @@ export default function FranchiseOverview() {
 
     </div>
   );
-}
+}

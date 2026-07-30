@@ -36,7 +36,7 @@ createInventory
 router.get(
 "/",
 authMiddleware,
-authorize("ADMIN","FRANCHISE"),
+authorize("ADMIN","FRANCHISE","TEACHER","STUDENT"),
 getInventories
 )
 
@@ -45,7 +45,7 @@ getInventories
 router.get(
 "/:id",
 authMiddleware,
-authorize("ADMIN","FRANCHISE"),
+authorize("ADMIN","FRANCHISE","TEACHER","STUDENT"),
 getInventoryById
 )
 
@@ -63,7 +63,7 @@ updateInventory
 router.delete(
 "/:id",
 authMiddleware,
-authorize("ADMIN"),
+authorize("ADMIN", "FRANCHISE"),
 deleteInventory
 )
 

@@ -28,19 +28,19 @@ router.post(
   createFee
 );
 
-// GET ALL FEES WITH FILTERS (Admin & Franchise only)
+// GET ALL FEES WITH FILTERS (Admin, Franchise, Teacher & Student)
 router.get(
   "/",
   authMiddleware,
-  authorize("ADMIN", "FRANCHISE"),
+  authorize("ADMIN", "FRANCHISE", "TEACHER", "STUDENT"),
   getFees
 );
 
-// STUDENT: Get own fees
+// STUDENT / USER: Get own fees
 router.get(
   "/me",
   authMiddleware,
-  authorize("STUDENT", "ADMIN", "FRANCHISE", "TEACHER"),
+  authorize("ADMIN", "FRANCHISE", "TEACHER", "STUDENT"),
   getMyFees
 );
 
@@ -52,11 +52,11 @@ router.post(
   createDemoFee
 );
 
-// GET FEE BY ID (Admin, Franchise & Student)
+// GET FEE BY ID (Admin, Franchise, Teacher & Student)
 router.get(
   "/:id",
   authMiddleware,
-  authorize("ADMIN", "FRANCHISE", "STUDENT"),
+  authorize("ADMIN", "FRANCHISE", "TEACHER", "STUDENT"),
   getFeeById
 );
 
@@ -79,19 +79,19 @@ router.post(
   recordPayment
 );
 
-// GET FEE RECEIPT (Admin, Franchise & Student)
+// GET FEE RECEIPT (Admin, Franchise, Teacher & Student)
 router.get(
   "/:id/receipt",
   authMiddleware,
-  authorize("ADMIN", "FRANCHISE", "STUDENT"),
+  authorize("ADMIN", "FRANCHISE", "TEACHER", "STUDENT"),
   getFeeReceipt
 );
 
-// GET STUDENT FEES SUMMARY & HISTORY (Admin, Franchise & Student)
+// GET STUDENT FEES SUMMARY & HISTORY (Admin, Franchise, Teacher & Student)
 router.get(
   "/student/:studentId",
   authMiddleware,
-  authorize("ADMIN", "FRANCHISE", "STUDENT"),
+  authorize("ADMIN", "FRANCHISE", "TEACHER", "STUDENT"),
   getStudentFeesSummary
 );
 

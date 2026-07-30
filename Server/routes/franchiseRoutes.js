@@ -5,7 +5,8 @@ registerFranchise,
 getFranchiseProfile,
 getFranchises,
 updateFranchise,
-deleteFranchise
+deleteFranchise,
+getFranchiseMetrics
 }
 from "../controllers/franchiseController.js"
 
@@ -19,10 +20,18 @@ import validationMiddleware from "../middleware/validation.middleware.js"
 const router = express.Router()
 
 
+router.get(
+    "/metrics",
+    authMiddleware,
+    authorize("FRANCHISE"),
+    getFranchiseMetrics
+)
+
+
 router.post(
     "/register",
     authMiddleware,
-    authorize("ADMIN"),
+    authorize("ADMIN", "FRANCHISE"),
     franchiseValidation,
     validationMiddleware,
     registerFranchise
@@ -32,7 +41,7 @@ router.post(
 router.get(
     "/profile",
     authMiddleware,
-    authorize("FRANCHISE"),
+    authorize("FRANCHISE", "ADMIN"),
     getFranchiseProfile
 )
 
@@ -40,7 +49,7 @@ router.get(
 router.get(
     "/",
     authMiddleware,
-    authorize("ADMIN"),
+    authorize("ADMIN", "FRANCHISE"),
     getFranchises
 )
 
@@ -48,7 +57,7 @@ router.get(
 router.put(
     "/:id",
     authMiddleware,
-    authorize("ADMIN"),
+    authorize("ADMIN", "FRANCHISE"),
     franchiseValidation,
     validationMiddleware,
     updateFranchise
@@ -58,7 +67,7 @@ router.put(
 router.delete(
     "/:id",
     authMiddleware,
-    authorize("ADMIN"),
+    authorize("ADMIN", "FRANCHISE"),
     deleteFranchise
 )
 

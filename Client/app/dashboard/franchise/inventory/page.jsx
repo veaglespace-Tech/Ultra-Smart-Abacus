@@ -1,18 +1,36 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { 
   Package, Search, Plus, Minus, AlertTriangle, CheckCircle, 
   Layers, ShoppingBag, ArrowDownUp, RefreshCw, X, Save, Download 
 } from "lucide-react";
+import { api } from "@/services/api";
 
 export default function InventoryManagement() {
-  const [inventory, setInventory] = useState([
-    { id: "INV-KIT-01", name: "Abacus Starter Kit (Level 1)", category: "Kits", stock: 45, minRequired: 15, unitPrice: 350 },
-    { id: "INV-BKP-02", name: "Level 2 Advanced Practice Book", category: "Books", stock: 8, minRequired: 20, unitPrice: 120 }, // Low Stock
-    { id: "INV-CRT-03", name: "Official Graduation Certificates", category: "Stationery", stock: 120, minRequired: 30, unitPrice: 40 },
-    { id: "INV-KIT-04", name: "Master Metal Abacus Tool", category: "Kits", stock: 3, minRequired: 5, unitPrice: 650 }, // Low Stock
-  ]);
+  const [inventory, setInventory] = useState([]);
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const res = await api.franchise.getInventory();
+        if (res && res.inventories) {
+          const mapped = (res.inventories || []).map(item => ({
+            id: `SKU-${item.id}`,
+            rawId: item.id,
+            name: item.itemName || item.name,
+            category: item.category || "Study Material",
+            stock: item.quantity || item.stock || 0,
+            minRequired: item.minQuantity || item.minRequired || 5
+          }));
+          setInventory(mapped);
+        }
+      } catch (err) {
+        console.error("Failed fetching inventory:", err);
+      }
+    };
+    fetchInventory();
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");

@@ -31,15 +31,16 @@ export default function TeacherBatchesPage() {
                 room: dbBatch.description || "Room A"
               };
             }
+            const count = dbBatch.studentCount !== undefined ? dbBatch.studentCount : (Array.isArray(dbBatch.students) ? dbBatch.students.length : (dbBatch._count?.students || 0));
             return {
               id: dbBatch.id,
               name: dbBatch.name || `Batch - ${dbBatch.code}`,
               level: dbBatch.level || "Level 1",
-              students: dbBatch.students?.length || 0,
+              students: count,
               timing: extra.slot || "Saturday 09:00 AM - 10:30 AM",
               room: extra.room || "Room A",
               teacher: extra.teacher || "TBD",
-              status: (dbBatch.students?.length || 0) >= (dbBatch.maxStudents || 15) ? "Full" : "Active"
+              status: count >= (dbBatch.maxStudents || 15) ? "Full" : "Active"
             };
           });
         }
@@ -66,8 +67,7 @@ export default function TeacherBatchesPage() {
   const filteredBatches = batches.filter(batch => {
     const matchesSearch = batch.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           batch.level.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTeacher = user && user.name ? batch.teacher.toLowerCase() === user.name.toLowerCase() : true;
-    return matchesSearch && matchesTeacher;
+    return matchesSearch;
   });
 
   return (

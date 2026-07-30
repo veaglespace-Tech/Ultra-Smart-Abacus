@@ -1,3 +1,7 @@
+BigInt.prototype.toJSON = function () {
+  return Number(this);
+};
+
 import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
@@ -23,6 +27,39 @@ const app = express()
 
 app.use(cors())
 app.use(express.json())
+
+function sanitizeBigInt(obj) {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === 'bigint') return Number(obj);
+  if (typeof obj !== 'object') return obj;
+
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeBigInt);
+  }
+
+  const cleaned = {};
+  for (const key of Object.keys(obj)) {
+    const value = obj[key];
+    if (typeof value === 'bigint') {
+      cleaned[key] = Number(value);
+    } else if (value !== null && typeof value === 'object') {
+      cleaned[key] = sanitizeBigInt(value);
+    } else {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
+
+// Global BigInt JSON serialization middleware
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function (data) {
+    const cleanData = sanitizeBigInt(data);
+    return originalJson.call(this, cleanData);
+  };
+  next();
+});
 
 app.use("/api/auth", authRoutes)
 app.use("/api/teachers", teacherRoutes)
@@ -79,5 +116,5 @@ const PORT = process.env.PORT || 5000
 app.listen(PORT,()=>{
  console.log(`Server running at http://localhost:${PORT}`)
 })
-// Server restart trigger v2
+// Server restart trigger v45
 

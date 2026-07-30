@@ -33,7 +33,24 @@ export const createFee = asyncHandler(async (req, res) => {
 
 // Get all fee records with search and filter
 export const getFees = asyncHandler(async (req, res) => {
-  const result = await feeService.getFees(req.query);
+  console.log(`[AUTH CHECK] User: ${req.user?.id} | Role: ${req.user?.role} | FranchiseID: ${req.user?.franchiseId}`);
+
+  let query = { ...req.query };
+  if (req.user && req.user.role === "FRANCHISE") {
+    const franchiseId = req.user?.franchiseId ? Number(req.user.franchiseId) : null;
+    if (!franchiseId || isNaN(franchiseId)) {
+      console.warn(`[SECURITY WARN] Access blocked: User ${req.user?.id} has no valid franchiseId.`);
+      return res.status(200).json({
+        success: true,
+        data: [],
+        pagination: { total: 0, page: 1, limit: 10, totalPages: 0 }
+      });
+    }
+
+    query.franchiseId = franchiseId;
+  }
+
+  const result = await feeService.getFees(query);
   res.status(200).json({
     success: true,
     data: result.fees,
@@ -98,14 +115,18 @@ export const recordPayment = asyncHandler(async (req, res) => {
 export const getMyFees = asyncHandler(async (req, res) => {
   const student = await getStudentFromUser(req.user);
   if (!student) {
-    throw new CustomError("Student profile not found", 404);
+    return res.status(200).json({
+      success: true,
+      data: [],
+      summary: { totalFees: 0, totalPaid: 0, totalDue: 0 },
+    });
   }
 
   const result = await feeService.getStudentFeesSummary(student.id);
   res.status(200).json({
     success: true,
-    data: result.fees,
-    summary: result.summary,
+    data: result.fees || [],
+    summary: result.summary || { totalFees: 0, totalPaid: 0, totalDue: 0 },
   });
 });
 

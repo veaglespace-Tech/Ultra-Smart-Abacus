@@ -71,10 +71,11 @@ export default function SalariesManagement() {
     setTeachersLoading(true);
     try {
       const res = await api.admin.getTeachers();
-      setTeachers(res.teachers || []);
+      const list = res.teachers || res.data || [];
+      setTeachers(list);
     } catch (err) {
-      console.error(err);
-      setErrorMessage("Failed to load teachers list.");
+      console.warn("Failed to load teachers list:", err.message);
+      setTeachers([]);
     } finally {
       setTeachersLoading(false);
     }

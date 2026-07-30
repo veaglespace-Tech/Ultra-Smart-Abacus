@@ -50,6 +50,11 @@ export const api = {
     sendReminder: (id) => Promise.resolve({ success: true, message: "Reminder simulated successfully" }),
     getStudentById: (id) => apiHelper.get(`/students/${id}`),
     getProfile: () => apiHelper.get('/franchise/profile'),
+    getDashboardMetrics: () => apiHelper.get('/franchise/metrics'),
+    getStudents: () => apiHelper.get('/students'),
+    getTeachers: () => apiHelper.get('/teachers'),
+    getBatches: () => apiHelper.get('/batches'),
+    getInventory: () => apiHelper.get('/inventory'),
   },
   admin: {
     getTeachers: () => apiHelper.get('/teachers'),
@@ -76,6 +81,18 @@ export const api = {
     
     createNotification: (data) => apiHelper.post('/notifications', data),
     deleteNotification: (id) => apiHelper.delete(`/notifications/${id}`),
+  },
+  notifications: {
+    getAll: () => apiHelper.get('/notifications'),
+    getForRole: (role) => {
+      if (role === 'ADMIN') return apiHelper.get('/notifications');
+      if (role === 'FRANCHISE') return apiHelper.get('/notifications/franchise');
+      if (role === 'TEACHER') return apiHelper.get('/notifications/teacher');
+      if (role === 'STUDENT') return apiHelper.get('/notifications/student/me');
+      return apiHelper.get('/notifications');
+    },
+    markRead: (id) => apiHelper.patch(`/notifications/${id}/read`),
+    markAllRead: () => apiHelper.patch('/notifications/read-all'),
   },
   batches: {
     getAll: () => apiHelper.get('/batches'),

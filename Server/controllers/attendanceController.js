@@ -195,9 +195,22 @@ asyncHandler(async (req, res) => {
 
 export const getAllAttendance =
 asyncHandler(async (req, res) => {
+    console.log(`[AUTH CHECK] User: ${req.user?.id} | Role: ${req.user?.role} | FranchiseID: ${req.user?.franchiseId}`);
+
+    if (req.user && req.user.role === "FRANCHISE") {
+        const franchiseId = req.user?.franchiseId ? Number(req.user.franchiseId) : null;
+        if (!franchiseId || isNaN(franchiseId)) {
+            console.warn(`[SECURITY WARN] Access blocked: User ${req.user?.id} has no valid franchiseId.`);
+            return res.status(200).json({ success: true, count: 0, attendance: [] });
+        }
+    }
+
     const { batchId, date } = req.query;
 
     const where = {};
+    if (req.user && req.user.role === "FRANCHISE") {
+        where.student = { franchiseId: Number(req.user.franchiseId) };
+    }
     if (batchId) {
         where.batchId = Number(batchId);
     }

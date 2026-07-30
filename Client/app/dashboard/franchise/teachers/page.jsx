@@ -32,22 +32,24 @@ export default function FranchiseTeachers() {
   const fetchTeachers = async () => {
     setLoading(true);
     try {
-      const res = await api.admin.getTeachers();
-      const mapped = (res.teachers || []).map(t => ({
+      const res = await api.franchise.getTeachers();
+      const rawArr = (res && res.teachers) || (res && res.data) || (Array.isArray(res) ? res : []);
+      const mapped = rawArr.map(t => ({
         id: `TCH-${t.id}`,
         rawId: t.id,
         name: t.name,
         role: t.specialization || "Senior Trainer",
         status: "Active",
-        experience: `${t.experience} Years`,
+        experience: `${t.experience || 1} Years`,
         batches: t.batches || [],
         phone: t.phone || "",
         payrollStatus: "Processed",
-        email: t.user?.email || ""
+        email: t.user?.email || t.email || ""
       }));
       setTeachers(mapped);
     } catch (err) {
-      console.error("Failed fetching teachers:", err);
+      console.warn("Failed fetching teachers:", err.message);
+      setTeachers([]);
     } finally {
       setLoading(false);
     }

@@ -169,8 +169,9 @@ export default function FranchiseStudents() {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const res = await api.admin.getStudents();
-      const list = (res.data || res || []).map(s => ({
+      const res = await api.franchise.getStudents();
+      const rawList = (res && res.data) || (res && res.students) || (Array.isArray(res) ? res : []);
+      const list = rawList.map(s => ({
         id: `STU-${s.id}`,
         rawId: s.id,
         name: s.name,
@@ -184,7 +185,8 @@ export default function FranchiseStudents() {
       }));
       setStudents(list);
     } catch (err) {
-      console.error('Failed to fetch students:', err);
+      console.warn('Failed to fetch students:', err.message);
+      setStudents([]);
     } finally {
       setLoading(false);
     }

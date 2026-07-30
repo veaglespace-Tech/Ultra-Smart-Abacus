@@ -16,8 +16,59 @@ function UserManagementContent() {
   const searchParams = useSearchParams();
   const shouldAdd = searchParams.get("add");
 
-  // Search filter state
+  // Search & Select filter states
   const [userSearch, setUserSearch] = useState("");
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+
+  // Filter users based on search
+  const filteredUsers = users.filter(user => {
+    const q = userSearch.toLowerCase();
+    return user.name.toLowerCase().includes(q) || 
+           user.email.toLowerCase().includes(q) || 
+           user.role.toLowerCase().includes(q) ||
+           user.location.toLowerCase().includes(q);
+  });
+
+  // Select all logic
+  const isAllSelected = filteredUsers.length > 0 && selectedUserIds.length === filteredUsers.length;
+  const isSomeSelected = selectedUserIds.length > 0 && !isAllSelected;
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedUserIds(filteredUsers.map(u => u.id));
+    } else {
+      setSelectedUserIds([]);
+    }
+  };
+
+  const handleSelectUser = (id) => {
+    setSelectedUserIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkToggleStatus = (targetStatus) => {
+    selectedUserIds.forEach(id => {
+      const user = users.find(u => u.id === id);
+      if (user && user.status !== targetStatus) {
+        toggleUserStatus(id);
+      }
+    });
+    setUserSuccess(`Updated status for ${selectedUserIds.length} user(s) to "${targetStatus}".`);
+    setTimeout(() => setUserSuccess(""), 4000);
+    setSelectedUserIds([]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (confirm(`Are you sure you want to delete ${selectedUserIds.length} selected user(s)?`)) {
+      for (const id of selectedUserIds) {
+        await handleDeleteUser(id);
+      }
+      setUserSuccess(`Successfully deleted ${selectedUserIds.length} user(s).`);
+      setTimeout(() => setUserSuccess(""), 4000);
+      setSelectedUserIds([]);
+    }
+  };
 
   // New User Form States
   const [newUserName, setNewUserName] = useState("");
@@ -133,15 +184,6 @@ function UserManagementContent() {
     }
   };
 
-  // Filter users based on search
-  const filteredUsers = users.filter(user => {
-    const q = userSearch.toLowerCase();
-    return user.name.toLowerCase().includes(q) || 
-           user.email.toLowerCase().includes(q) || 
-           user.role.toLowerCase().includes(q) ||
-           user.location.toLowerCase().includes(q);
-  });
-
   return (
     <div className="space-y-6">
       
@@ -193,13 +235,61 @@ function UserManagementContent() {
         </button>
       </div>
 
+      {/* Bulk Action Controls Bar */}
+      {selectedUserIds.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/50 p-3.5 rounded-2xl text-xs">
+          <div className="flex items-center gap-2 font-bold text-orange-900 dark:text-orange-300">
+            <span className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-[10px] font-black">
+              {selectedUserIds.length}
+            </span>
+            <span>User(s) Selected</span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => handleBulkToggleStatus("Active")}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all text-[11px] cursor-pointer"
+            >
+              Mark Active
+            </button>
+            <button
+              onClick={() => handleBulkToggleStatus("Suspended")}
+              className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition-all text-[11px] cursor-pointer"
+            >
+              Suspend Selected
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition-all text-[11px] cursor-pointer"
+            >
+              Delete Selected
+            </button>
+            <button
+              onClick={() => setSelectedUserIds([])}
+              className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold transition-all text-[11px] cursor-pointer"
+            >
+              Deselect All
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* USERS LIST TABLE */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] font-bold">
-                <th className="px-6 py-4">User Details</th>
+                <th className="pl-6 pr-2 py-4 w-10">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    ref={input => { if (input) input.indeterminate = isSomeSelected; }}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-orange-600 focus:ring-orange-500 cursor-pointer"
+                    title="Select All Users"
+                  />
+                </th>
+                <th className="px-4 py-4">User Details</th>
                 <th className="px-6 py-4">Email</th>
                 <th className="px-6 py-4">System Role</th>
                 <th className="px-6 py-4">Linked Branch / Center</th>
@@ -216,9 +306,19 @@ function UserManagementContent() {
                   else if (user.role === "Teacher") roleBadgeColor = "bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20";
                   else if (user.role === "Student") roleBadgeColor = "bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20";
 
+                  const isRowSelected = selectedUserIds.includes(user.id);
+
                   return (
-                    <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="px-6 py-4">
+                    <tr key={user.id} className={`transition-colors ${isRowSelected ? 'bg-orange-50/40 dark:bg-orange-950/20' : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'}`}>
+                      <td className="pl-6 pr-2 py-4 w-10">
+                        <input
+                          type="checkbox"
+                          checked={isRowSelected}
+                          onChange={() => handleSelectUser(user.id)}
+                          className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-orange-600 focus:ring-orange-500 cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[10px]">
                             {user.name.charAt(0)}

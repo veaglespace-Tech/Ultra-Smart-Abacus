@@ -1,0 +1,129 @@
+--- NOTIFICATIONS (2) ---
+[
+  {
+    "id": 24,
+    "title": "Shree Swami Samarth",
+    "message": "namaste",
+    "type": "GENERAL",
+    "recipientType": "ALL",
+    "batchId": null,
+    "studentId": null,
+    "createdBy": 1,
+    "createdAt": "2026-07-30T08:17:52.027Z",
+    "updatedAt": "2026-07-30T08:17:52.027Z",
+    "isRead": 0
+  },
+  {
+    "id": 25,
+    "title": "Radhe Krishna",
+    "message": "Radhe",
+    "type": "GENERAL",
+    "recipientType": "ALL",
+    "batchId": null,
+    "studentId": null,
+    "createdBy": 1,
+    "createdAt": "2026-07-30T08:24:48.887Z",
+    "updatedAt": "2026-07-30T08:24:48.887Z",
+    "isRead": 0
+  }
+]
+
+--- NOTIFICATION READS (16) ---
+[
+  {
+    "id": 1,
+    "notificationId": 20,
+    "userId": 24,
+    "readAt": "2026-07-30T12:40:46.000Z"
+  },
+  {
+    "id": 2,
+    "notificationId": 21,
+    "userId": 24,
+    "readAt": "2026-07-30T12:40:46.000Z"
+  },
+  {
+    "id": 3,
+    "notificationId": 22,
+    "userId": 24,
+    "readAt": "2026-07-30T12:40:46.000Z"
+  },
+  {
+    "id": 5,
+    "notificationId": 20,
+    "userId": 54,
+    "readAt": "2026-07-30T12:41:56.000Z"
+  },
+  {
+    "id": 6,
+    "notificationId": 21,
+    "userId": 54,
+    "readAt": "2026-07-30T12:41:56.000Z"
+  },
+  {
+    "id": 7,
+    "notificationId": 22,
+    "userId": 54,
+    "readAt": "2026-07-30T12:41:56.000Z"
+  },
+  {
+    "id": 10,
+    "notificationId": 22,
+    "userId": 1,
+    "readAt": "2026-07-30T13:41:08.000Z"
+  },
+  {
+    "id": 11,
+    "notificationId": 20,
+    "userId": 9,
+    "readAt": "2026-07-30T13:41:42.000Z"
+  },
+  {
+    "id": 12,
+    "notificationId": 21,
+    "userId": 9,
+    "readAt": "2026-07-30T13:41:42.000Z"
+  },
+  {
+    "id": 13,
+    "notificationId": 22,
+    "userId": 9,
+    "readAt": "2026-07-30T13:41:42.000Z"
+  },
+  {
+    "id": 14,
+    "notificationId": 23,
+    "userId": 9,
+    "readAt": "2026-07-30T13:41:42.000Z"
+  },
+  {
+    "id": 19,
+    "notificationId": 24,
+    "userId": 1,
+    "readAt": "2026-07-30T13:48:01.000Z"
+  },
+  {
+    "id": 20,
+    "notificationId": 24,
+    "userId": 24,
+    "readAt": "2026-07-30T13:48:33.000Z"
+  },
+  {
+    "id": 23,
+    "notificationId": 24,
+    "userId": 9,
+    "readAt": "2026-07-30T13:52:58.000Z"
+  },
+  {
+    "id": 24,
+    "notificationId": 24,
+    "userId": 26,
+    "readAt": "2026-07-30T13:53:28.000Z"
+  },
+  {
+    "id": 25,
+    "notificationId": 25,
+    "userId": 9,
+    "readAt": "2026-07-30T13:55:07.000Z"
+  }
+]

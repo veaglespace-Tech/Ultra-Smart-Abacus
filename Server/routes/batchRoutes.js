@@ -11,11 +11,11 @@ import authorize from "../middleware/roleMiddleware.js"
 
 const router = express.Router()
 
-router.post("/", authMiddleware, authorize("FRANCHISE","TEACHER"), createBatchValidation, validate,  createBatch)   
-router.get("/", getAllBatches)
+router.post("/", authMiddleware, authorize("ADMIN", "FRANCHISE", "TEACHER"), createBatchValidation, validate,  createBatch)   
+router.get("/", authMiddleware, getAllBatches)
 router.get("/:id", getBatchById)
-router.put("/:id", authMiddleware, authorize("FRANCHISE","TEACHER"), updateBatch)
-router.delete("/:id", authMiddleware, authorize("FRANCHISE","TEACHER"), deleteBatch)
+router.put("/:id", authMiddleware, authorize("ADMIN", "FRANCHISE", "TEACHER"), updateBatch)
+router.delete("/:id", authMiddleware, authorize("ADMIN", "FRANCHISE", "TEACHER"), deleteBatch)
 router.get("/course/:courseId", getBatchesByCourseId)
 
 export default router

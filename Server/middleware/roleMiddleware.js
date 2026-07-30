@@ -6,8 +6,13 @@ const authorize = (...roles) => {
       });
     }
 
+    // ADMIN always bypasses role checks
+    if (req.user.role === "ADMIN") {
+      return next();
+    }
+
     if (!roles.includes(req.user.role)) {
-      console.warn(`Access Denied: User role "${req.user.role}" is not in authorized list [${roles.join(", ")}] for route ${req.originalUrl}`);
+      console.warn(`[Role Auth Denied] User: "${req.user.name || req.user.email}" (${req.user.role}) attempted ${req.method} ${req.originalUrl}. Allowed: [${roles.join(", ")}]`);
       return res.status(403).json({
         message: `Access denied. Role "${req.user.role}" not authorized.`,
       });

@@ -30,25 +30,12 @@ export default function AttendanceProgress() {
       try {
         const res = await api.batches.getAll().catch(() => null);
         let mappedBatches = [];
-        if (res && res.data && Array.isArray(res.data)) {
-          mappedBatches = res.data.map(b => ({
-            id: b.id.toString(),
-            name: `${b.name} (${b.code || 'Batch'})`,
+        const rawList = (res && res.data) || (res && res.batches) || (Array.isArray(res) ? res : []);
+        if (Array.isArray(rawList)) {
+          mappedBatches = rawList.map(b => ({
+            id: String(b.id),
+            name: b.code ? `${b.name} (${b.code})` : b.name,
           }));
-        } else if (res && Array.isArray(res)) {
-          mappedBatches = res.map(b => ({
-            id: b.id.toString(),
-            name: `${b.name} (${b.code || 'Batch'})`,
-          }));
-        }
-
-        if (mappedBatches.length === 0) {
-          mappedBatches = [
-            { id: "1", name: "Batch Alpha (ALPHA-01)" },
-            { id: "2", name: "Batch Beta (BETA-02)" },
-            { id: "3", name: "Batch Gamma (GAMMA-03)" },
-            { id: "4", name: "Batch Delta (DELTA-04)" },
-          ];
         }
 
         setBatches(mappedBatches);
@@ -56,7 +43,8 @@ export default function AttendanceProgress() {
           setSelectedBatch(mappedBatches[0].id);
         }
       } catch (err) {
-        console.error("Failed to fetch batches:", err);
+        console.warn("Failed to fetch batches:", err.message);
+        setBatches([]);
       }
     };
     fetchBatches();
@@ -71,20 +59,20 @@ export default function AttendanceProgress() {
         setLoading(true);
         setError(null);
         // Get the roster of students in the batch
-        const batchRes = await api.batches.getById(Number(selectedBatch));
-        if (batchRes && batchRes.success && batchRes.data) {
-          const batchStudents = batchRes.data.students || [];
+        const batchRes = await api.batches.getById(Number(selectedBatch)).catch(() => null);
+        if (batchRes && (batchRes.success || batchRes.data)) {
+          const batchData = batchRes.data || batchRes;
+          const batchStudents = batchData.students || [];
 
           // Get existing attendance for this batch on this date
           let existingRecords = [];
           try {
-            const attRes = await api.attendance.getByBatchAndDate(Number(selectedBatch), selectedDate);
+            const attRes = await api.attendance.getByBatchAndDate(Number(selectedBatch), selectedDate).catch(() => null);
             if (attRes && attRes.success && attRes.attendance) {
               existingRecords = attRes.attendance;
             }
           } catch (e) {
-            console.error("No existing attendance records found for this date", e);
-            setError("Failed to fetch existing records: " + e.message);
+            console.warn("No existing attendance records found for this date", e);
           }
 
           const mappedStudents = batchStudents.map(student => {
@@ -99,11 +87,11 @@ export default function AttendanceProgress() {
             };
           });
           setStudents(mappedStudents);
+        } else {
+          setStudents([]);
         }
       } catch (err) {
-        console.error("Failed to load roster or attendance records:", err);
-        setError("Failed to load roster: " + err.message);
-        setStudents([]);
+        console.warn("Failed to load roster or attendance records:", err);
       } finally {
         setLoading(false);
       }

@@ -58,8 +58,14 @@ export const registerUser = asyncHandler(async (req, res) => {
         welcomeEmail(fullName)
     );
 
+    let franchiseId = req.body.franchiseId ? Number(req.body.franchiseId) : null;
+    if (!franchiseId && req.user && req.user.role === "FRANCHISE") {
+        const franchise = await prisma.franchise.findFirst({ where: { userId: Number(req.user.id) } });
+        if (franchise) franchiseId = franchise.id;
+    }
+
     if (role === "STUDENT") {
-        await prisma.student.create({
+        const student = await prisma.student.create({
             data: {
                 name: fullName,
                 email,
@@ -75,8 +81,11 @@ export const registerUser = asyncHandler(async (req, res) => {
                 userId: user.id,
             },
         });
+        if (franchiseId) {
+            await prisma.$executeRawUnsafe(`UPDATE Student SET franchiseId = ${franchiseId} WHERE id = ${student.id}`).catch(() => {});
+        }
     } else if (role === "TEACHER") {
-        await prisma.teacher.create({
+        const teacher = await prisma.teacher.create({
             data: {
                 name: fullName,
                 qualification: "Abacus Certified Instructor",
@@ -85,6 +94,9 @@ export const registerUser = asyncHandler(async (req, res) => {
                 userId: user.id,
             },
         });
+        if (franchiseId) {
+            await prisma.$executeRawUnsafe(`UPDATE Teacher SET franchiseId = ${franchiseId} WHERE id = ${teacher.id}`).catch(() => {});
+        }
     } else if (role === "FRANCHISE") {
         await prisma.franchise.create({
             data: {
@@ -132,8 +144,41 @@ export const loginUser = asyncHandler(async (req, res) => {
         throw new CustomError("Invalid credentials", 401);
     }
 
-    const token = generateToken(user);
+    let franchiseId = user.franchise?.id || user.student?.franchiseId || user.teacher?.franchiseId || null;
+    if (user.role === "FRANCHISE") {
+        let franchise = await prisma.franchise.findFirst({
+            where: {
+                OR: [
+                    { userId: Number(user.id) },
+                    { email: user.email }
+                ]
+            }
+        });
+
+        if (!franchise) {
+            franchise = await prisma.franchise.create({
+                data: {
+                    name: user.name || "Franchise Center",
+                    email: user.email,
+                    phone: user.phone || "",
+                    address: user.address || "",
+                    userId: user.id
+                }
+            }).catch(() => null);
+        }
+
+        if (franchise) {
+            franchiseId = franchise.id;
+            if (!franchise.userId) {
+                await prisma.franchise.update({ where: { id: franchise.id }, data: { userId: user.id } }).catch(() => {});
+            }
+        }
+        console.log("Logged In Franchise User:", { id: user.id, email: user.email, role: user.role, franchiseId });
+    }
+
+    const token = generateToken(user, franchiseId);
     const { password: userPassword, ...safeUser } = user;
+    safeUser.franchiseId = franchiseId;
     if (safeUser.student && safeUser.student.profilePhoto) {
         safeUser.profilePhoto = safeUser.student.profilePhoto;
     } else if (safeUser.teacher && safeUser.teacher.profilePhoto) {
@@ -144,6 +189,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         message: "Login successful",
         token,
         user: safeUser,
+        franchiseId,
     });
 });
 

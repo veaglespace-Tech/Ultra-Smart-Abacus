@@ -48,7 +48,7 @@ export const createSalary = asyncHandler(async (req, res) => {
     let franchiseId = null;
     if (req.user.role === "FRANCHISE") {
         const franchise = await prisma.franchise.findUnique({
-            where: { userId: req.user.id }
+            where: { userId: Number(req.user.id) }
         });
         if (franchise) {
             franchiseId = franchise.id;
@@ -205,37 +205,61 @@ export const markSalaryAsPaid = asyncHandler(async (req, res) => {
 export const getSalaryHistory = asyncHandler(async (req, res) => {
     const { teacherId } = req.query;
 
-    const where = {};
-    if (teacherId) {
-        where.teacherId = parseInt(teacherId);
-    }
-
-    // Filter by Franchise if Franchise Admin
-    if (req.user.role === "FRANCHISE") {
-        const franchise = await prisma.franchise.findUnique({
-            where: { userId: req.user.id }
+    let franchise = null;
+    if (req.user && req.user.role === "FRANCHISE") {
+        franchise = await prisma.franchise.findFirst({
+            where: { userId: Number(req.user.id) }
         });
-        if (franchise) {
-            where.franchiseId = franchise.id;
+        if (!franchise) {
+            const u = await prisma.user.findUnique({ where: { id: Number(req.user.id) } });
+            if (u) {
+                franchise = await prisma.franchise.findFirst({ where: { email: u.email } });
+            }
         }
     }
 
-    const salaries = await prisma.salary.findMany({
-        where,
-        include: {
-            teacher: true,
-            franchise: true
-        },
-        orderBy: [
-            { year: "desc" },
-            { month: "desc" }
-        ]
-    });
+    try {
+        const salaries = await prisma.$queryRawUnsafe(`
+            SELECT s.*, t.name as teacherName, f.name as franchiseName
+            FROM Salary s
+            LEFT JOIN Teacher t ON s.teacherId = t.id
+            LEFT JOIN Franchise f ON s.franchiseId = f.id
+            ORDER BY s.year DESC, s.month DESC
+        `);
 
-    res.status(200).json({
-        success: true,
-        data: salaries
-    });
+        let formatted = (salaries || []).map(s => ({
+            ...s,
+            id: Number(s.id),
+            teacherId: s.teacherId ? Number(s.teacherId) : null,
+            franchiseId: s.franchiseId ? Number(s.franchiseId) : null,
+            teacher: s.teacherName ? { id: Number(s.teacherId), name: s.teacherName } : null,
+            franchise: s.franchiseName ? { id: Number(s.franchiseId), name: s.franchiseName } : null
+        }));
+
+        if (teacherId) {
+            formatted = formatted.filter(s => s.teacherId === Number(teacherId));
+        }
+
+        if (req.user && req.user.role === "FRANCHISE" && franchise) {
+            formatted = formatted.filter(s => !s.franchiseId || s.franchiseId === franchise.id);
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: formatted
+        });
+    } catch (err) {
+        console.error("Salary fetch error:", err.message);
+        const salaries = await prisma.salary.findMany({
+            include: {
+                teacher: true
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            data: salaries
+        });
+    }
 });
 
 // GET TEACHER SALARY HISTORY (Self View)
