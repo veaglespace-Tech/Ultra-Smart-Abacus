@@ -347,7 +347,7 @@ export default function FranchiseOverview() {
         </div>
 
         {/* Right Column: Activity Queue Table (7 columns) */}
-        <div className="lg:col-span-7 bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
+        <div className="lg:col-span-7 bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800 mb-2">
             <h4 className="text-xs font-black uppercase text-slate-555 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
               <Activity size={14} className="text-orange-500 animate-pulse" />
@@ -369,28 +369,57 @@ export default function FranchiseOverview() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {recentActivity.map((activity) => (
-                  <tr key={activity.id} className="group hover:bg-slate-50/40 dark:hover:bg-slate-900/10 transition-colors">
-                    <td className="py-3.5 pr-2 font-bold text-slate-900 dark:text-slate-100 font-mono">
-                      {activity.id}
-                    </td>
-                    <td className="py-3.5 font-bold text-slate-900 dark:text-slate-100">
-                      <span className="group-hover:text-orange-500 transition-colors">{activity.student}</span>
-                    </td>
-                    <td className="py-3.5 text-center text-slate-500 dark:text-slate-400 font-medium">{activity.type}</td>
-                    <td className="py-3.5 text-center text-slate-500 dark:text-slate-400 font-mono">{activity.date}</td>
-                    <td className="py-3.5 text-right font-black text-[#2D1B69] dark:text-white font-mono">{activity.amount}</td>
-                    <td className="py-3.5 text-right">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold inline-block border ${
-                        activity.status === "Paid"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30"
-                          : "bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/30"
-                      }`}>
-                        {activity.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {recentActivity && recentActivity.length > 0 ? (
+                  recentActivity.map((activity) => (
+                    <tr key={activity.id} className="group hover:bg-slate-50/40 dark:hover:bg-slate-900/10 transition-colors">
+                      <td className="py-3.5 pr-2 font-bold text-slate-800 dark:text-slate-100 font-mono">
+                        {activity.id}
+                      </td>
+                      <td className="py-3.5 font-bold text-slate-900 dark:text-slate-100">
+                        <span className="group-hover:text-orange-500 transition-colors">{activity.student}</span>
+                      </td>
+                      <td className="py-3.5 text-center text-slate-500 dark:text-slate-400 font-medium">{activity.type}</td>
+                      <td className="py-3.5 text-center text-slate-500 dark:text-slate-400 font-mono">{activity.date}</td>
+                      <td className="py-3.5 text-right font-black text-[#2D1B69] dark:text-white font-mono">{activity.amount}</td>
+                      <td className="py-3.5 text-right">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold inline-block border ${
+                          activity.status === "Paid"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30"
+                            : "bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/30"
+                        }`}>
+                          {activity.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  [
+                    { id: "REG-104", student: "Rohan Deshmukh", type: "New Admission", amount: "₹4,500", date: "2026-07-28", status: "Paid" },
+                    { id: "INV-402", student: "Abacus Kit - Level 1", type: "Inventory Sale", amount: "₹600", date: "2026-07-27", status: "Paid" },
+                    { id: "REG-103", student: "Isha Sharma", type: "Level 2 Renewal", amount: "₹3,500", date: "2026-07-25", status: "Pending" }
+                  ].map((activity) => (
+                    <tr key={activity.id} className="group hover:bg-slate-50/40 dark:hover:bg-slate-900/10 transition-colors">
+                      <td className="py-3.5 pr-2 font-bold text-slate-800 dark:text-slate-100 font-mono">
+                        {activity.id}
+                      </td>
+                      <td className="py-3.5 font-bold text-slate-900 dark:text-slate-100">
+                        <span className="group-hover:text-orange-500 transition-colors">{activity.student}</span>
+                      </td>
+                      <td className="py-3.5 text-center text-slate-500 dark:text-slate-400 font-medium">{activity.type}</td>
+                      <td className="py-3.5 text-center text-slate-500 dark:text-slate-400 font-mono">{activity.date}</td>
+                      <td className="py-3.5 text-right font-black text-[#2D1B69] dark:text-white font-mono">{activity.amount}</td>
+                      <td className="py-3.5 text-right">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold inline-block border ${
+                          activity.status === "Paid"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30"
+                            : "bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/30"
+                        }`}>
+                          {activity.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

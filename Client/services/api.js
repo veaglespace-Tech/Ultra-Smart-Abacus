@@ -2,6 +2,9 @@
 import { apiHelper } from './apiHelper';
 
 export const api = {
+  public: {
+    submitInquiry: (data) => apiHelper.post('/notifications/public-inquiry', data),
+  },
   auth: {
     login: (credentials) => apiHelper.post('/auth/login', credentials),
     getCurrentUser: () => apiHelper.get('/auth/me'),

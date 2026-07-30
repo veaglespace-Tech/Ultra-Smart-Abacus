@@ -66,7 +66,7 @@ export default function About() {
       </section>
 
       {/* ── About Content ── */}
-      <section className="py-20 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
+      <section className="pt-16 pb-6 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div className="relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[420px]">
@@ -120,7 +120,7 @@ export default function About() {
       </section>
 
       {/* ── Our Promise ── */}
-      <section className="py-20 px-6 bg-white">
+      <section className="pt-6 pb-16 px-6 bg-white dark:bg-[#0f0a1e] transition-colors duration-300">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div>
             <span className="badge-primary inline-flex items-center px-8 py-3 text-xl font-bold rounded-full">Our Commitment</span>

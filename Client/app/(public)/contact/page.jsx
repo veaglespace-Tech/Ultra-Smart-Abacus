@@ -5,6 +5,8 @@ import Footer from "../../../components/shared/Footer";
 import { Phone, Mail, Clock, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { api } from "@/services/api";
+
 const contactInfo = [
   {
     icon: Phone,
@@ -54,11 +56,7 @@ export default function ContactPage() {
     e.preventDefault();
     setSubmitted(true);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/notifications/public-inquiry`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
+      await api.public.submitInquiry(formData);
     } catch (err) {
       console.error("Public contact inquiry submission error:", err);
     }

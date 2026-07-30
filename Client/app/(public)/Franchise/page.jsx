@@ -3,6 +3,7 @@ import { useState } from "react";
 import Navbar from "../../../components/shared/Navbar";
 import Footer from "../../../components/shared/Footer";
 import { MapPin, Phone, Mail, CheckCircle2, TrendingUp, Users, Building, ArrowRight, Send } from "lucide-react";
+import { api } from "@/services/api";
 
 const branchList = [
   { name: "Pune Corporate Hub", address: "Kothrud, Near MIT College, Pune", contact: "+91 98765 43210", email: "pune@smartabacus.com", active: true },
@@ -22,13 +23,24 @@ export default function FranchisePage() {
   const [formData, setFormData] = useState({ name: "", phone: "", city: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
+    try {
+      await api.public.submitInquiry({
+        name: formData.name,
+        email: "franchise-applicant@abacus.com",
+        phone: formData.phone,
+        subject: `Franchise Application (${formData.city})`,
+        message: `Proposed City: ${formData.city}\nMessage: ${formData.message || 'N/A'}`
+      });
+    } catch (err) {
+      console.error("Franchise application submission error:", err);
+    }
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: "", phone: "", city: "", message: "" });
-    }, 3000);
+    }, 3500);
   };
 
   const inputClass = "w-full rounded-2xl border-2 border-slate-200 bg-slate-50 py-3.5 px-5 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:bg-white focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200";

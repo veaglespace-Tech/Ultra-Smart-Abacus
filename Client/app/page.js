@@ -500,7 +500,7 @@ export default function Home() {
       {/* ════════════════════════════════════════
           ABOUT SECTION
           ════════════════════════════════════════ */}
-      <section className="pt-20 pb-10 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
+      <section className="pt-16 pb-12 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
 <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-16 items-center">
             <div className="relative">
 <div className="relative rounded-3xl overflow-hidden shadow-2xl w-full max-w-[700px] h-[300px] sm:h-[400px] lg:h-[550px] mx-auto">              <img src="/images/banner.jpg" alt="Smart Abacus Academy" className="w-full h-full object-cover" />
