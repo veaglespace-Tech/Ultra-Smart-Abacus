@@ -214,3 +214,42 @@ export const resetPassword = asyncHandler(async (req, res) => {
         message: "Password reset successful",
     });
 });
+
+export const changePassword = asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword, email } = req.body;
+    const userId = req.user?.id;
+
+    if (!currentPassword || !newPassword) {
+        throw new CustomError("Current password and new password are required", 400);
+    }
+
+    let user;
+    if (userId) {
+        user = await prisma.user.findUnique({ where: { id: userId } });
+    } else if (email) {
+        user = await prisma.user.findUnique({ where: { email } });
+    }
+
+    if (!user) {
+        throw new CustomError("User not found", 404);
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+        throw new CustomError("Current password does not match", 400);
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            password: hashedPassword,
+        },
+    });
+
+    res.status(200).json({
+        success: true,
+        message: "Password changed successfully",
+    });
+});

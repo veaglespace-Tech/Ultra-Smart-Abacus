@@ -131,18 +131,51 @@ export default function TeacherProfilePage() {
     }, 600);
   };
 
-  const handleUpdatePassword = (e) => {
+  const handleUpdatePassword = async (e) => {
     e.preventDefault();
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       alert("New passwords do not match.");
       return;
     }
+    if (passwordForm.newPassword.length < 4) {
+      alert("New password must be at least 4 characters long.");
+      return;
+    }
+
     setIsSavingPassword(true);
-    setTimeout(() => {
-      setIsSavingPassword(false);
+    try {
+      const token = storageService.getToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auth/change-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+          email: user?.email,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to update password");
+      }
+
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      alert("Password Security Credentials Updated.");
-    }, 1000);
+      confetti({
+        particleCount: 50,
+        spread: 30,
+        origin: { y: 0.8 }
+      });
+      alert("Password updated successfully! Please use your new password next time you log in.");
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Unable to update password. Please check your current password.");
+    } finally {
+      setIsSavingPassword(false);
+    }
   };
 
   return (
