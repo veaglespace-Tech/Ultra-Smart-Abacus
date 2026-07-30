@@ -8,6 +8,7 @@ import {createNotification,
     getTeacherNotifications,
     getMyStudentNotifications,
     getFranchiseNotifications,
+    submitPublicInquiry,
     markNotificationAsRead,
     markAllNotificationsAsRead} from "../controllers/notificationController.js";
 import { createNotificationValidation } from "../validation/notificationValidation.js";
@@ -16,6 +17,8 @@ import  authMiddleware from "../middleware/authMiddleware.js";
 import authorize from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
+
+router.post("/public-inquiry", submitPublicInquiry);
 
 router.post("/",authMiddleware,
 authorize("ADMIN","FRANCHISE","TEACHER","STUDENT"),

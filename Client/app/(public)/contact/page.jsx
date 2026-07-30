@@ -50,13 +50,22 @@ export default function ContactPage() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/notifications/public-inquiry`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+    } catch (err) {
+      console.error("Public contact inquiry submission error:", err);
+    }
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: "", email: "", phone: "", subject: "General Inquiry", message: "" });
-    }, 3000);
+    }, 3500);
   };
 
   const inputClass = "w-full rounded-2xl border-2 border-slate-200 bg-slate-50 py-3.5 px-5 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:bg-white focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200";

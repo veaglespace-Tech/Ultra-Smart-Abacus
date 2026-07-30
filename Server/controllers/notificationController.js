@@ -550,4 +550,43 @@ export const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
     });
 });
 
+export const submitPublicInquiry = asyncHandler(async (req, res) => {
+    const { name, email, phone, subject, message } = req.body;
+
+    if (!name || !email || !message) {
+        return res.status(400).json({
+            success: false,
+            message: "Name, Email, and Message are required."
+        });
+    }
+
+    const title = `New Contact Inquiry from ${name}`;
+    const fullMessage = `Name: ${name}\nEmail: ${email}\nPhone: ${phone || 'N/A'}\nSubject: ${subject || 'General Inquiry'}\n\nMessage: ${message}`;
+
+    const notification = await prisma.notification.create({
+        data: {
+            title,
+            message: fullMessage,
+            type: "ANNOUNCEMENT",
+            recipientType: "FRANCHISES",
+        }
+    });
+
+    try {
+        await sendEmail(
+            "gunjalsejal04@gmail.com",
+            `[Website Contact Form] ${title}`,
+            fullMessage
+        );
+    } catch (e) {
+        console.error("Email notification dispatch error:", e);
+    }
+
+    res.status(201).json({
+        success: true,
+        message: "Your inquiry has been submitted successfully and saved to Database.",
+        data: notification
+    });
+});
+
     
