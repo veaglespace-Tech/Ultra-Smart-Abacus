@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { api } from "@/services/api";
 import { 
   GraduationCap, Users, IndianRupee, Box, TrendingUp, 
   Share2, Copy, Check, Calendar, Activity, Sparkles, ChevronRight,
@@ -35,6 +36,48 @@ function MetricCard({ title, value, subtext, icon: Icon, color, trend }) {
 export default function FranchiseOverview() {
   const { user } = useAuth();
   const [copiedRole, setCopiedRole] = useState("");
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [totalTeachers, setTotalTeachers] = useState(0);
+  const [pendingFeesAmount, setPendingFeesAmount] = useState(0);
+
+  useEffect(() => {
+    const fetchOverviewMetrics = async () => {
+      try {
+        const metricsRes = await api.franchise.getDashboardMetrics();
+        if (metricsRes && metricsRes.success && metricsRes.data) {
+          const m = metricsRes.data;
+          setTotalStudents(m.totalStudents || 0);
+          setTotalTeachers(m.activeTeachers || 0);
+          setPendingFeesAmount(m.pendingFees || 0);
+        } else {
+          const [studentRes, teacherRes, feeRes] = await Promise.allSettled([
+            api.admin.getStudents(),
+            api.admin.getTeachers(),
+            api.franchise.getFees()
+          ]);
+
+          if (studentRes.status === "fulfilled") {
+            const list = studentRes.value.students || studentRes.value.data || studentRes.value || [];
+            setTotalStudents(Array.isArray(list) ? list.length : 0);
+          }
+          if (teacherRes.status === "fulfilled") {
+            const list = teacherRes.value.teachers || teacherRes.value.data || teacherRes.value || [];
+            setTotalTeachers(Array.isArray(list) ? list.length : 0);
+          }
+          if (feeRes.status === "fulfilled") {
+            const list = feeRes.value.data || feeRes.value || [];
+            if (Array.isArray(list)) {
+              const pendingTotal = list.reduce((acc, f) => acc + (f.dueAmount || 0), 0);
+              setPendingFeesAmount(pendingTotal);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed loading franchise overview metrics:", err);
+      }
+    };
+    fetchOverviewMetrics();
+  }, []);
 
   const copyInviteLink = (role) => {
     const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3001";
@@ -52,17 +95,13 @@ export default function FranchiseOverview() {
   };
 
   const stats = [
-    { title: "Total Students", value: "148", subtext: "Active enrollments", icon: GraduationCap, color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream", trend: "+12 this month" },
-    { title: "Active Teachers", value: "6", subtext: "All active roster", icon: Users, color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400", trend: "Normal" },
-    { title: "Pending Fees", value: "₹24,500", subtext: "8 terms pending", icon: IndianRupee, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400", trend: "Alert" },
-    { title: "Abacus Stock", value: "32 Kits", subtext: "Low stock warning", icon: Box, color: "bg-rose-50 text-rose-650 dark:bg-rose-950/40 dark:text-rose-450", trend: "Re-order" }
+    { title: "Total Students", value: String(totalStudents), subtext: "Active enrollments", icon: GraduationCap, color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream" },
+    { title: "Active Teachers", value: String(totalTeachers), subtext: "All active roster", icon: Users, color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400" },
+    { title: "Pending Fees", value: `₹${pendingFeesAmount.toLocaleString()}`, subtext: "Terms pending", icon: IndianRupee, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400" },
+    { title: "Abacus Stock", value: "0 Kits", subtext: "Center inventory", icon: Box, color: "bg-rose-50 text-rose-650 dark:bg-rose-950/40 dark:text-rose-450" }
   ];
 
-  const recentActivity = [
-    { id: "REG-104", student: "Rohan Deshmukh", type: "New Admission", amount: "₹4,500", date: "2026-06-17", status: "Paid" },
-    { id: "INV-402", student: "Abacus Kit - Level 1", type: "Inventory Sale", amount: "₹600", date: "2026-06-16", status: "Paid" },
-    { id: "REG-103", student: "Isha Sharma", type: "Level 2 Renewal", amount: "₹3,500", date: "2026-06-15", status: "Pending" }
-  ];
+  const recentActivity = [];
 
   return (
     <div className="space-y-6">

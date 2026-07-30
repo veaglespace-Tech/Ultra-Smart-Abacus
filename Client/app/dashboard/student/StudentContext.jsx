@@ -73,8 +73,8 @@ export function StudentDataProvider({ children }) {
       const fetchStudentProfile = async () => {
         try {
           const res = await api.student.getProfile();
-          if (res && res.success && res.data) {
-            const s = res.data;
+          const s = (res && (res.data || res.student)) ? (res.data || res.student) : null;
+          if (s) {
             setProfile((prev) => ({
               ...prev,
               id: s.id,
@@ -92,7 +92,7 @@ export function StudentDataProvider({ children }) {
             }));
           }
         } catch (err) {
-          console.error("Failed to fetch student profile:", err);
+          console.warn("Using default student profile:", err.message);
           setProfile((prev) => ({
             ...prev,
             name: user.name || prev.name,
@@ -107,12 +107,15 @@ export function StudentDataProvider({ children }) {
       const fetchNotifications = async () => {
         try {
           const res = await api.student.getNotifications();
-          const list = (res.data || []).map(n => ({
+          const rawList = res.data || res.notifications || [];
+          const uniqueList = Array.from(new Map(rawList.map(item => [item.id, item])).values());
+          const list = uniqueList.map(n => ({
             id: n.id,
             title: n.title,
             sender: "Academy Office",
             time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "",
-            text: n.message
+            text: n.message,
+            isRead: Boolean(n.isRead === true || n.isRead === 1 || n.isRead === "1" || n.isRead === "true")
           }));
           setNotifications(list);
         } catch (err) {

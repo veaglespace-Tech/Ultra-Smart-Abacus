@@ -15,7 +15,7 @@ const router = express.Router();
 router.post(
   "/create",
   authMiddleware,
-  roleMiddleware("FRANCHISE"),
+  roleMiddleware("FRANCHISE", "STUDENT", "TEACHER", "ADMIN"),
   createReferralValidation,
   createReferral
 );

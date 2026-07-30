@@ -69,12 +69,12 @@ router.get(
 
 /**
  * SUBMIT MARKS FOR EXAM
- * Access: Admin & Teacher
+ * Access: Admin, Teacher & Student
  */
 router.post(
   "/:id/marks",
   authMiddleware,
-  authorize("ADMIN", "TEACHER"),
+  authorize("ADMIN", "TEACHER", "STUDENT"),
   submitMarks
 );
 

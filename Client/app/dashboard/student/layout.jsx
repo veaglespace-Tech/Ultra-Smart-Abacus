@@ -12,19 +12,39 @@ import {
   CreditCard, Bell, User, LogOut, Menu, X, Search
 } from "lucide-react";
 
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchNotifications, 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead,
+  markReadOptimistic,
+  markAllReadOptimistic
+} from '@/store/notificationSlice';
+
 function StudentLayoutInner({ children }) {
   const pathname = usePathname();
   const router = useRouter();
+  const dispatch = useDispatch();
   const { theme, toggleTheme, mounted } = useTheme();
   const { logout, user } = useAuth();
-  const { profile, notifications } = useStudentData();
+  const { profile } = useStudentData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [isClientMounted, setIsClientMounted] = useState(false);
 
+  const { notifications, unreadCount } = useSelector((state) => state.notification);
+
   useEffect(() => {
     setIsClientMounted(true);
-  }, []);
+    dispatch(fetchNotifications('STUDENT'));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (notificationOpen && unreadCount > 0) {
+      dispatch(markAllReadOptimistic());
+      dispatch(markAllNotificationsAsRead());
+    }
+  }, [notificationOpen, unreadCount, dispatch]);
 
   const handleLogout = () => {
     if (logout) {
@@ -43,7 +63,7 @@ function StudentLayoutInner({ children }) {
     { name: 'My Profile', href: '/dashboard/student/profile', icon: User }
   ];
 
-  const unreadNotificationsCount = notifications ? notifications.length : 0;
+  const unreadNotificationsCount = notifications ? notifications.filter(n => !n.isRead && !n.read).length : 0;
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
@@ -111,9 +131,9 @@ function StudentLayoutInner({ children }) {
                     <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
                     <span>{item.name}</span>
                   </div>
-                  {item.name === 'Notifications' && unreadNotificationsCount > 0 && (
+                  {item.name === 'Notifications' && unreadCount > 0 && (
                     <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black leading-none ${isActive ? 'bg-white text-orange-600' : 'bg-[#FF6B2B] text-white'}`}>
-                      {unreadNotificationsCount}
+                      {unreadCount}
                     </span>
                   )}
                 </Link>
@@ -230,9 +250,9 @@ function StudentLayoutInner({ children }) {
                             <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
                             <span>{item.name}</span>
                           </div>
-                          {item.name === 'Notifications' && unreadNotificationsCount > 0 && (
+                          {item.name === 'Notifications' && unreadCount > 0 && (
                             <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-[#FF6B2B] text-white">
-                              {unreadNotificationsCount}
+                              {unreadCount}
                             </span>
                           )}
                         </Link>
@@ -297,8 +317,8 @@ function StudentLayoutInner({ children }) {
                 className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-905/30 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors relative cursor-pointer"
               >
                 <Bell size={15} />
-                {unreadNotificationsCount > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-orange-600 dark:bg-orange-500 rounded-full animate-pulse"></span>
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse"></span>
                 )}
               </button>
 
@@ -309,30 +329,58 @@ function StudentLayoutInner({ children }) {
                   <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1a1035] border border-slate-200 dark:border-[#3d2a88]/40 rounded-2xl p-4 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100 dark:border-[#3d2a88]/30">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Recent Alerts</h4>
-                      <Link
-                        href="/dashboard/student/notifications"
-                        onClick={() => setNotificationOpen(false)}
-                        className="text-[10px] text-accent dark:text-accent hover:underline font-bold"
-                      >
-                        View All
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={() => {
+                              dispatch(markAllReadOptimistic());
+                              dispatch(markAllNotificationsAsRead());
+                            }}
+                            className="text-[10px] text-orange-600 dark:text-orange-400 hover:underline font-bold"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                        <Link
+                          href="/dashboard/student/notifications"
+                          onClick={() => setNotificationOpen(false)}
+                          className="text-[10px] text-accent dark:text-accent hover:underline font-bold"
+                        >
+                          View All
+                        </Link>
+                      </div>
                     </div>
                     <div className="space-y-3 max-h-60 overflow-y-auto">
                       {notifications && notifications.length > 0 ? (
-                        notifications.slice(0, 4).map((notif) => (
+                        notifications.slice(0, 5).map((notif) => (
                           <Link
                             key={notif.id}
                             href="/dashboard/student/notifications"
-                            onClick={() => setNotificationOpen(false)}
-                            className="block text-xs border-b border-slate-100 dark:border-[#3d2a88]/20 pb-2 last:border-0 last:pb-0 hover:bg-orange-50/50 dark:hover:bg-[#2D1B69]/40 p-1.5 rounded-lg transition-colors cursor-pointer"
+                            onClick={() => {
+                              if (!notif.isRead) {
+                                dispatch(markReadOptimistic(notif.id));
+                                dispatch(markNotificationAsRead(notif.id));
+                              }
+                              setNotificationOpen(false);
+                            }}
+                            className={`block text-xs border-b border-slate-100 dark:border-[#3d2a88]/20 pb-2 last:border-0 last:pb-0 p-1.5 rounded-lg transition-colors cursor-pointer ${
+                              !notif.isRead ? "bg-orange-50/80 dark:bg-orange-950/30 font-bold" : "hover:bg-slate-50 dark:hover:bg-[#2D1B69]/40"
+                            }`}
                           >
-                            <p className="text-slate-700 dark:text-slate-350 font-bold">{notif.title}</p>
-                            <p className="text-slate-650 dark:text-slate-400 font-medium mt-0.5 line-clamp-2">{notif.text}</p>
-                            <span className="text-[9px] text-slate-400 font-semibold">{notif.time}</span>
+                            <div className="flex justify-between items-start">
+                              <p className="text-slate-900 dark:text-slate-100">{notif.title || notif.message}</p>
+                              {!notif.isRead && (
+                                <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 mt-1"></span>
+                              )}
+                            </div>
+                            {notif.message && notif.title && notif.message !== notif.title && (
+                              <p className="text-slate-600 dark:text-slate-400 font-medium mt-0.5 line-clamp-2">{notif.message}</p>
+                            )}
+                            <span className="text-[9px] text-slate-400 font-semibold">{notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : "Recent"}</span>
                           </Link>
                         ))
                       ) : (
-                        <p className="text-xs text-slate-455 text-center py-4 font-semibold">No recent announcements</p>
+                        <p className="text-xs text-slate-455 text-center py-4 font-semibold">No notifications</p>
                       )}
                     </div>
                   </div>

@@ -7,11 +7,7 @@ import {
 } from "lucide-react";
 
 export default function PaymentsManagement() {
-  const [payments, setPayments] = useState([
-    { id: "TXN-99201", studentName: "Rohan Joshi", invoiceId: "INV-2026-001", amount: 5310, mode: "UPI (GPay)", status: "Success", date: "2026-06-10" },
-    { id: "TXN-99202", studentName: "Ananya Nair", invoiceId: "INV-2026-002", amount: 5310, mode: "Cash", status: "Success", date: "2026-06-18" },
-    { id: "TXN-99203", studentName: "Aditya Patil", invoiceId: "INV-2026-003", amount: 5310, mode: "Cheque", status: "Pending", date: "2026-06-22" },
-  ]);
+  const [payments, setPayments] = useState([]);
 
   const [isRecordOpen, setIsRecordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");

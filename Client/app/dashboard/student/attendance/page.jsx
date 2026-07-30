@@ -25,6 +25,28 @@ const ATTENDANCE_RECORDS = [
   { id: 18, classNum: 18, date: "2026-08-09", time: "11:30 AM", topic: "Level 1 Final Assessment & Review", status: "Scheduled", checkIn: "-", teacherNotes: "Final assessment to clear Level 1." }
 ];
 
+function safeFormatDate(rawDate) {
+  if (!rawDate) return new Date().toISOString().split('T')[0];
+  try {
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return new Date().toISOString().split('T')[0];
+    return d.toISOString().split('T')[0];
+  } catch (e) {
+    return new Date().toISOString().split('T')[0];
+  }
+}
+
+function safeFormatTime(rawDate) {
+  if (!rawDate) return "10:00 AM";
+  try {
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return "10:00 AM";
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    return "10:00 AM";
+  }
+}
+
 export default function StudentAttendancePage() {
   const { profile } = useStudentData();
   const [filter, setFilter] = useState("All");
@@ -48,31 +70,32 @@ export default function StudentAttendancePage() {
         const res = await api.attendance.getByStudent(profile.id);
         if (res && res.success && res.attendance) {
           const mapped = res.attendance.map((att, index) => ({
-            id: att.id,
+            id: `real-att-${att.id}-${index}`,
             classNum: index + 1,
-            date: att.attendanceDate ? new Date(att.attendanceDate).toISOString().split('T')[0] : "",
-            time: att.attendanceDate ? new Date(att.attendanceDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "10:00 AM",
+            date: safeFormatDate(att.attendanceDate),
+            time: safeFormatTime(att.attendanceDate),
             topic: att.remarks || `Regular Batch Class - ${att.batch?.name || ''}`,
             status: att.status === 'PRESENT' ? 'Present' : att.status === 'ABSENT' ? 'Absent' : 'Leave',
-            checkIn: att.status === 'PRESENT' && att.attendanceDate ? new Date(att.attendanceDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-",
+            checkIn: att.status === 'PRESENT' ? safeFormatTime(att.attendanceDate) : "-",
             teacherNotes: att.remarks || "No comments from teacher."
           }));
           
           const totalScheduledToKeep = Math.max(0, 18 - mapped.length);
           const upcoming = ATTENDANCE_RECORDS.filter(r => r.status === "Scheduled").slice(0, totalScheduledToKeep).map((sc, i) => ({
             ...sc,
+            id: `sched-att-${sc.id}-${i}`,
             classNum: mapped.length + i + 1
           }));
           
           setRecords([...mapped, ...upcoming]);
         } else {
-          setRecords(ATTENDANCE_RECORDS);
+          setRecords(ATTENDANCE_RECORDS.map((r, i) => ({ ...r, id: `def-att-${r.id}-${i}` })));
         }
       } catch (err) {
         if (err.message !== "Attendance not found") {
           console.error("Failed to load student attendance:", err);
         }
-        setRecords(ATTENDANCE_RECORDS);
+        setRecords(ATTENDANCE_RECORDS.map((r, i) => ({ ...r, id: `def-att-${r.id}-${i}` })));
       } finally {
         setLoading(false);
       }
@@ -269,9 +292,9 @@ export default function StudentAttendancePage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredRecords.length > 0 ? (
-                    filteredRecords.map((record) => (
+                    filteredRecords.map((record, index) => (
                       <tr 
-                        key={record.id} 
+                        key={record.id || `att-row-${index}`} 
                         className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all"
                       >
                         <td className="py-3.5 pl-2 font-bold font-mono text-slate-400 dark:text-slate-500 w-10">

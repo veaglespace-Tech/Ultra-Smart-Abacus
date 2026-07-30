@@ -1,6 +1,64 @@
+BigInt.prototype.toJSON = function () {
+  return Number(this);
+};
+
+function safeFormatNotifications(list) {
+    if (!Array.isArray(list)) return [];
+    return list.map(n => {
+        const formatted = {};
+        for (const key in n) {
+            const val = n[key];
+            if (typeof val === 'bigint') {
+                formatted[key] = Number(val);
+            } else {
+                formatted[key] = val;
+            }
+        }
+        const isUserRead = formatted.userIsRead !== undefined ? formatted.userIsRead : n.userIsRead;
+        const isRead = Boolean(
+            isUserRead === 1 || 
+            isUserRead === true || 
+            isUserRead === "1" || 
+            Number(isUserRead) === 1 ||
+            formatted.isRead === 1 || 
+            formatted.isRead === true
+        );
+        return {
+            ...formatted,
+            id: Number(n.id),
+            isRead: isRead
+        };
+    });
+}
+
 import prisma from '../config/prisma.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import sendEmail from '../utils/sendEmail.js';
+import fs from "fs";
+
+const LOG_FILE = "d:/OnlineMusucalEventsMVC/Ultra-Smart-Abacus/Server/debug_noti.log";
+
+function logDebug(msg) {
+    try {
+        fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`);
+    } catch (e) {}
+}
+
+async function ensureNotificationReadTable() {
+    try {
+        await prisma.$executeRawUnsafe(`
+            CREATE TABLE IF NOT EXISTS NotificationRead (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                notificationId INT NOT NULL,
+                userId INT NOT NULL,
+                readAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY unique_user_notification (notificationId, userId)
+            )
+        `);
+    } catch (e) {
+        logDebug(`ensureNotificationReadTable error: ${e.message}`);
+    }
+}
 
 const buildNotificationEmailHtml = (title, message, recipientType) => `
   <div style="font-family:Arial,sans-serif;padding:20px">
@@ -166,28 +224,101 @@ export const createNotification = asyncHandler(async (req, res) => {
 
 
 export const getAllNotifications = asyncHandler(async (req, res) => {
+    await ensureNotificationReadTable();
+    const userId = Number(req.user?.id) || 0;
+    const notifications = await prisma.$queryRawUnsafe(`
+        SELECT n.*, 
+               CASE WHEN nr.id IS NOT NULL THEN 1 ELSE 0 END as userIsRead
+        FROM Notification n
+        LEFT JOIN NotificationRead nr ON n.id = nr.notificationId AND nr.userId = ${userId}
+        ORDER BY n.createdAt DESC
+    `);
 
-    const notifications = await prisma.notification.findMany({
-
-        include: {
-            batch: true,
-            student: true
-        },
-
-        orderBy: {
-            createdAt: "desc"
-        }
-
-    });
+    const formattedList = safeFormatNotifications(notifications);
+    const unreadCount = formattedList.filter(n => !n.isRead).length;
 
     res.status(200).json({
-
         success: true,
-        count: notifications.length,
-        data: notifications
-
+        notifications: formattedList,
+        unreadCount,
+        count: formattedList.length,
+        data: formattedList
     });
+});
 
+export const getTeacherNotifications = asyncHandler(async (req, res) => {
+    await ensureNotificationReadTable();
+    const userId = Number(req.user?.id) || 0;
+    const notifications = await prisma.$queryRawUnsafe(`
+        SELECT n.*, 
+               CASE WHEN nr.id IS NOT NULL THEN 1 ELSE 0 END as userIsRead
+        FROM Notification n
+        LEFT JOIN NotificationRead nr ON n.id = nr.notificationId AND nr.userId = ${userId}
+        WHERE n.recipientType IN ('ALL', 'TEACHERS') OR n.createdBy = ${userId}
+        ORDER BY n.createdAt DESC
+    `);
+
+    const formattedList = safeFormatNotifications(notifications);
+    const unreadCount = formattedList.filter(n => !n.isRead).length;
+
+    res.status(200).json({
+        success: true,
+        notifications: formattedList,
+        unreadCount,
+        count: formattedList.length,
+        data: formattedList
+    });
+});
+
+export const getMyStudentNotifications = asyncHandler(async (req, res) => {
+    await ensureNotificationReadTable();
+    const userId = Number(req.user?.id) || 0;
+
+    const notifications = await prisma.$queryRawUnsafe(`
+        SELECT n.*, 
+               CASE WHEN nr.id IS NOT NULL THEN 1 ELSE 0 END as userIsRead
+        FROM Notification n
+        LEFT JOIN NotificationRead nr ON n.id = nr.notificationId AND nr.userId = ${userId}
+        WHERE n.recipientType IN ('ALL', 'STUDENTS', 'STUDENT', 'BATCH')
+        ORDER BY n.createdAt DESC
+    `);
+
+    const formattedList = safeFormatNotifications(notifications);
+    const unreadCount = formattedList.filter(n => !n.isRead).length;
+
+    res.status(200).json({
+        success: true,
+        notifications: formattedList,
+        unreadCount,
+        count: formattedList.length,
+        data: formattedList
+    });
+});
+
+export const getFranchiseNotifications = asyncHandler(async (req, res) => {
+    await ensureNotificationReadTable();
+    const userId = Number(req.user?.id) || 0;
+    const notifications = await prisma.$queryRawUnsafe(`
+        SELECT n.*, 
+               CASE WHEN nr.id IS NOT NULL THEN 1 ELSE 0 END as userIsRead
+        FROM Notification n
+        LEFT JOIN NotificationRead nr ON n.id = nr.notificationId AND nr.userId = ${userId}
+        WHERE n.recipientType IN ('ALL', 'FRANCHISES') OR n.createdBy = ${userId}
+        ORDER BY n.createdAt DESC
+    `);
+
+    const formattedList = safeFormatNotifications(notifications);
+    const unreadCount = formattedList.filter(n => !n.isRead).length;
+
+    logDebug(`GET FRANCHISE NOTIFS: total=${formattedList.length}, unreadCount=${unreadCount}, user=${userId}`);
+
+    res.status(200).json({
+        success: true,
+        notifications: formattedList,
+        unreadCount,
+        count: formattedList.length,
+        data: formattedList
+    });
 });
 
 
@@ -297,7 +428,9 @@ export const deleteNotification = asyncHandler(async (req, res) => {
 });
 
 export const getStudentNotifications = asyncHandler(async (req, res) => {
+    await ensureNotificationReadTable();
     const { studentId } = req.params;
+    const userId = Number(req.user?.id) || 0;
 
     if (isNaN(studentId)) {
         return res.status(400).json({
@@ -313,191 +446,107 @@ export const getStudentNotifications = asyncHandler(async (req, res) => {
     });
 
     if (!student) {
-
         return res.status(404).json({
-
             success: false,
             message: "Student not found"
-
         });
-
     }
 
-    const notifications = await prisma.notification.findMany({
+    const batchIdFilter = student.batchId ? Number(student.batchId) : -1;
 
-        where: {
+    const notifications = await prisma.$queryRawUnsafe(`
+        SELECT n.*, 
+               CASE WHEN nr.id IS NOT NULL THEN 1 ELSE 0 END as userIsRead
+        FROM Notification n
+        LEFT JOIN NotificationRead nr ON n.id = nr.notificationId AND nr.userId = ${userId}
+        WHERE n.recipientType = 'ALL'
+           OR n.recipientType = 'STUDENTS'
+           OR (n.recipientType = 'STUDENT' AND n.studentId = ${Number(studentId)})
+           OR (n.recipientType = 'BATCH' AND n.batchId = ${batchIdFilter})
+        ORDER BY n.createdAt DESC
+    `);
 
-            OR: [
-
-                {
-                    recipientType: "ALL"
-                },
-
-                {
-                    recipientType: "STUDENTS"
-                },
-
-                {
-                    recipientType: "STUDENT",
-                    studentId: Number(studentId)
-                },
-
-                {
-                    recipientType: "BATCH",
-                    batchId: student.batchId
-                }
-
-            ]
-
-        },
-
-        orderBy: {
-
-            createdAt: "desc"
-
-        }
-
-    });
-
-    res.status(200).json({
-
-        success: true,
-        count: notifications.length,
-        data: notifications
-
-    });
-
-});
-
-export const getTeacherNotifications = asyncHandler(async (req, res) => {
-    const notifications = await prisma.notification.findMany({
-        where: {
-            OR: [
-                {
-                    recipientType: "ALL"
-                },
-                {
-                    recipientType: "TEACHERS"
-                },
-                {
-                    createdBy: req.user.id
-                }
-            ]
-        },
-        orderBy: {
-            createdAt: "desc"
-        }
-    });
+    const formattedList = safeFormatNotifications(notifications);
+    const unreadCount = formattedList.filter(n => !n.isRead).length;
 
     res.status(200).json({
         success: true,
-        count: notifications.length,
-        data: notifications
+        count: formattedList.length,
+        notifications: formattedList,
+        unreadCount,
+        data: formattedList
     });
 });
 
-export const getMyStudentNotifications = asyncHandler(async (req, res) => {
-    let student = await prisma.student.findFirst({
-        where: {
-            userId: req.user.id
-        }
-    });
+export const markNotificationAsRead = asyncHandler(async (req, res) => {
+    await ensureNotificationReadTable();
+    const { id } = req.params;
+    const userId = Number(req.user?.id) || 0;
 
-    if (!student) {
-        const user = await prisma.user.findUnique({
-            where: { id: req.user.id }
-        });
-
-        if (user) {
-            student = await prisma.student.findFirst({
-                where: { email: user.email }
-            });
-
-            // Auto-link student record with user record if not linked
-            if (student && !student.userId) {
-                student = await prisma.student.update({
-                    where: { id: student.id },
-                    data: { userId: user.id }
-                });
-            }
-
-            // Fallback: If no student record exists for this student user, create one on the fly
-            if (!student) {
-                student = await prisma.student.create({
-                    data: {
-                        name: user.name,
-                        email: user.email,
-                        rollNo: `ST-${user.id}-${Math.floor(100 + Math.random() * 900)}`,
-                        userId: user.id
-                    }
-                });
-            }
-        }
-    }
-
-    if (!student) {
-        console.error(`Student profile not found for user ID: ${req.user.id}, Role: ${req.user.role}`);
-        return res.status(404).json({
+    if (isNaN(id)) {
+        return res.status(400).json({
             success: false,
-            message: `Student profile not found for user ID ${req.user.id} (Role: ${req.user.role})`
+            message: "Invalid notification ID format"
         });
     }
 
-    const notifications = await prisma.notification.findMany({
-        where: {
-            OR: [
-                {
-                    recipientType: "ALL"
+    const numId = Number(id);
+    logDebug(`MARK NOTIFICATION ${numId} READ FOR USER ${userId}`);
+
+    try {
+        if (prisma.notificationRead) {
+            await prisma.notificationRead.upsert({
+                where: {
+                    notificationId_userId: {
+                        notificationId: numId,
+                        userId: userId
+                    }
                 },
-                {
-                    recipientType: "STUDENTS"
-                },
-                {
-                    recipientType: "STUDENT",
-                    studentId: student.id
-                },
-                {
-                    recipientType: "BATCH",
-                    batchId: student.batchId || -1
+                update: {},
+                create: {
+                    notificationId: numId,
+                    userId: userId
                 }
-            ]
-        },
-        orderBy: {
-            createdAt: "desc"
+            });
+        } else {
+            await prisma.$executeRawUnsafe(`
+                INSERT IGNORE INTO NotificationRead (notificationId, userId) VALUES (${numId}, ${userId})
+            `);
         }
-    });
+    } catch (e) {
+        logDebug(`Error inserting NotificationRead: ${e.message}`);
+        await prisma.$executeRawUnsafe(`
+            INSERT IGNORE INTO NotificationRead (notificationId, userId) VALUES (${numId}, ${userId})
+        `).catch(() => {});
+    }
 
     res.status(200).json({
         success: true,
-        count: notifications.length,
-        data: notifications
+        message: "Notification marked as read",
+        id: numId,
+        isRead: true
     });
 });
 
-export const getFranchiseNotifications = asyncHandler(async (req, res) => {
-    const notifications = await prisma.notification.findMany({
-        where: {
-            OR: [
-                {
-                    recipientType: "ALL"
-                },
-                {
-                    recipientType: "FRANCHISES"
-                },
-                {
-                    createdBy: req.user.id
-                }
-            ]
-        },
-        orderBy: {
-            createdAt: "desc"
-        }
-    });
+export const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
+    await ensureNotificationReadTable();
+    const userId = Number(req.user?.id) || 0;
+    logDebug(`MARK ALL READ REQUEST RECEIVED FOR USER ${userId}`);
+
+    try {
+        await prisma.$executeRawUnsafe(`
+            INSERT IGNORE INTO NotificationRead (notificationId, userId)
+            SELECT id, ${userId} FROM Notification
+        `);
+    } catch (e) {
+        logDebug(`Error inserting markAllRead: ${e.message}`);
+    }
+
+    logDebug(`MARK ALL READ EXECUTED SUCCESSFULLY FOR USER ${userId}`);
 
     res.status(200).json({
         success: true,
-        count: notifications.length,
-        data: notifications
+        message: "All notifications marked as read"
     });
 });
 

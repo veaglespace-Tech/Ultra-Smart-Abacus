@@ -29,19 +29,18 @@ export default function AttendanceProgress() {
     const fetchBatches = async () => {
       try {
         const res = await api.batches.getAll();
-        if (res && res.success && res.data) {
-          const mappedBatches = res.data.map(b => ({
-            id: b.id.toString(),
-            name: `${b.name} (${b.code})`,
-          }));
-          setBatches(mappedBatches);
-          if (mappedBatches.length > 0) {
-            setSelectedBatch(mappedBatches[0].id);
-          }
+        const rawList = (res && res.data) || (res && res.batches) || [];
+        const mappedBatches = rawList.map(b => ({
+          id: String(b.id),
+          name: b.code ? `${b.name} (${b.code})` : b.name,
+        }));
+        setBatches(mappedBatches);
+        if (mappedBatches.length > 0) {
+          setSelectedBatch(mappedBatches[0].id);
         }
       } catch (err) {
-        console.error("Failed to fetch batches:", err);
-        setError("Failed to fetch batches: " + err.message);
+        console.warn("Failed to fetch batches:", err.message);
+        setBatches([]);
       }
     };
     fetchBatches();

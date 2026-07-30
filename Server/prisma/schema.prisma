@@ -45,6 +45,8 @@ model User {
 
   student Student?
 
+  notificationReads NotificationRead[]
+
   createdAt DateTime @default(now())
 }
 
@@ -69,6 +71,9 @@ model Teacher {
 
   user User @relation(fields: [userId], references: [id])
 
+  franchiseId Int?
+  franchise   Franchise? @relation(fields: [franchiseId], references: [id])
+
   attendances Attendance[]
   exams       Exam[]
   salaries    Salary[]
@@ -90,6 +95,9 @@ model Franchise {
   user User @relation(fields: [userId], references: [id])
   salaries Salary[]
   fees     Fee[]
+  teachers Teacher[]
+  students Student[]
+  batches  Batch[]
 }
 
 
@@ -138,6 +146,9 @@ model Student {
 
   batch Batch? @relation(fields: [batchId], references: [id])
 
+  franchiseId Int?
+  franchise   Franchise? @relation(fields: [franchiseId], references: [id])
+
   notifications Notification[]
 
   attendances Attendance[]
@@ -178,6 +189,9 @@ model Batch {
   courseId Int?
 
   course Course? @relation(fields: [courseId], references: [id])
+
+  franchiseId Int?
+  franchise   Franchise? @relation(fields: [franchiseId], references: [id])
 
   code String @unique
 
@@ -239,8 +253,24 @@ model Notification {
 
   createdBy Int?
 
+  isRead Boolean @default(false)
+
+  reads NotificationRead[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model NotificationRead {
+  id             Int          @id @default(autoincrement())
+  notificationId Int
+  userId         Int
+  readAt         DateTime     @default(now())
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
 }
 
 model Fee {

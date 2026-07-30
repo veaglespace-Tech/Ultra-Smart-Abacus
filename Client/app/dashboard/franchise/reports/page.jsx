@@ -9,22 +9,8 @@ import {
 export default function ReportsAnalytics() {
   const [reportRange, setReportRange] = useState("2026");
 
-  // Mock Financial & Enrollment Database Arrays
-  const monthlyRevenue = [
-    { month: "Jan", revenue: 45000, enrollments: 12 },
-    { month: "Feb", revenue: 52000, enrollments: 15 },
-    { month: "Mar", revenue: 61000, enrollments: 18 },
-    { month: "Apr", revenue: 58000, enrollments: 10 },
-    { month: "May", revenue: 72000, enrollments: 22 },
-    { month: "Jun", revenue: 85000, enrollments: 25 }, // Current Month
-  ];
-
-  const levelDistribution = [
-    { level: "Level 1", students: 35, percentage: 40, color: "bg-[#4a5d4e]" },
-    { level: "Level 2", students: 25, percentage: 28, color: "bg-blue-600" },
-    { level: "Level 3", students: 18, percentage: 20, color: "bg-purple-600" },
-    { level: "Level 4", students: 10, percentage: 12, color: "bg-amber-600" },
-  ];
+  const monthlyRevenue = [];
+  const levelDistribution = [];
 
   // Live Aggregate Computations
   const summaryMetrics = useMemo(() => {
@@ -32,9 +18,9 @@ export default function ReportsAnalytics() {
     const totalNewStudents = monthlyRevenue.reduce((acc, curr) => acc + curr.enrollments, 0);
     return {
       totalRevenue: totalRev,
-      averageMonthly: Math.round(totalRev / monthlyRevenue.length),
+      averageMonthly: monthlyRevenue.length ? Math.round(totalRev / monthlyRevenue.length) : 0,
       totalEnrollments: totalNewStudents,
-      retentionRate: "94.2%"
+      retentionRate: "0%"
     };
   }, [monthlyRevenue]);
 

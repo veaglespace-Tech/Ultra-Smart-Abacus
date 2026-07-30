@@ -12,7 +12,9 @@ export default function TeacherNotificationsPage() {
   const fetchNotifications = async () => {
     try {
       const res = await api.teacher.getNotifications();
-      const list = (res.data || []).map(n => {
+      const rawList = res.data || res.notifications || [];
+      const uniqueList = Array.from(new Map(rawList.map(item => [item.id, item])).values());
+      const list = uniqueList.map(n => {
         let typeIcon = Bell;
         let typeColor = "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400";
         if (n.type === "EXAM") {

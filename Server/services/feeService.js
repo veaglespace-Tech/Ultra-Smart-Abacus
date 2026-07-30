@@ -18,9 +18,9 @@ export const feeService = {
 
     // Verify relations
     const [student, franchise, batch] = await Promise.all([
-      prisma.student.findUnique({ where: { id: studentId } }),
-      prisma.franchise.findUnique({ where: { id: franchiseId } }),
-      prisma.batch.findUnique({ where: { id: batchId } }),
+      prisma.student.findUnique({ where: { id: Number(studentId) } }),
+      prisma.franchise.findUnique({ where: { id: Number(franchiseId) } }),
+      prisma.batch.findUnique({ where: { id: Number(batchId) } }),
     ]);
 
     if (!student) throw new CustomError("Student does not exist", 404);
@@ -61,12 +61,16 @@ export const feeService = {
    * Get filtered fee records
    */
   getFees: async (query) => {
-    const { studentName, batchId, status, page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = query;
+    const { studentName, batchId, franchiseId, status, page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = query;
 
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
 
     const where = { isActive: true };
+
+    if (franchiseId) {
+      where.franchiseId = Number(franchiseId);
+    }
 
     if (batchId) {
       where.batchId = Number(batchId);

@@ -28,7 +28,7 @@ export default function FranchiseBatches() {
   const fetchBatches = async () => {
     try {
       setLoading(true);
-      const res = await api.batches.getAll();
+      const res = await api.franchise.getBatches();
       if (res && res.success) {
         const mapped = res.data.map(dbBatch => {
           let extra = {};
@@ -42,6 +42,7 @@ export default function FranchiseBatches() {
               room: dbBatch.description || "Room A"
             };
           }
+          const studentCount = dbBatch.studentCount !== undefined ? dbBatch.studentCount : (Array.isArray(dbBatch.students) ? dbBatch.students.length : (dbBatch._count?.students || 0));
           return {
             id: dbBatch.id,
             dbId: dbBatch.id,
@@ -49,12 +50,12 @@ export default function FranchiseBatches() {
             name: dbBatch.name,
             level: dbBatch.level || "Level 1",
             maxCapacity: dbBatch.maxStudents || 15,
-            totalStudents: dbBatch.students?.length || 0,
+            totalStudents: studentCount,
             slot: extra.slot || "Sat | 04:00 PM",
             teacher: extra.teacher || "Aman Sharma",
             mode: extra.mode || "Offline",
             room: extra.room || "Lab A",
-            status: (dbBatch.students?.length || 0) >= (dbBatch.maxStudents || 15) ? "Full" : "Active"
+            status: studentCount >= (dbBatch.maxStudents || 15) ? "Full" : "Active"
           };
         });
         setBatches(mapped);

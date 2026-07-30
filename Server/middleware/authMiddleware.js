@@ -42,10 +42,48 @@ if (!userExists) {
   });
 }
 
-req.user = decoded
+req.user = {
+  ...decoded,
+  id: userExists.id,
+  email: userExists.email,
+  name: userExists.name,
+  role: userExists.role
+};
 
+if (req.user.role === "FRANCHISE") {
+  let franchise = await prisma.franchise.findFirst({
+    where: {
+      OR: [
+        { userId: Number(req.user.id) },
+        { email: req.user.email }
+      ]
+    }
+  });
 
-next()
+  if (!franchise && req.user.email) {
+    franchise = await prisma.franchise.create({
+      data: {
+        name: req.user.name || "Franchise Center",
+        email: req.user.email,
+        phone: "",
+        address: "",
+        userId: Number(req.user.id)
+      }
+    }).catch(() => null);
+  }
+
+  if (franchise) {
+    req.user.franchiseId = franchise.id;
+    if (!franchise.userId) {
+      await prisma.franchise.update({ where: { id: franchise.id }, data: { userId: Number(req.user.id) } }).catch(() => {});
+    }
+  } else {
+    req.user.franchiseId = decoded.franchiseId || null;
+  }
+}
+
+console.log(`[AUTH CHECK] User: ${req.user?.id} | Role: ${req.user?.role} | FranchiseID: ${req.user?.franchiseId}`);
+next();
 
 
 }

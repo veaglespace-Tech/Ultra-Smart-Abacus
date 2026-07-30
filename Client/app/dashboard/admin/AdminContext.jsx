@@ -16,6 +16,17 @@ const INITIAL_NOTIFICATIONS = [];
 
 import { api } from "@/services/api";
 
+function formatDate(rawDate) {
+  if (!rawDate) return "N/A";
+  try {
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return "N/A";
+    return d.toISOString().split("T")[0];
+  } catch (e) {
+    return "N/A";
+  }
+}
+
 export function AdminDataProvider({ children }) {
   const [users, setUsers] = useState([]);
   const [franchises, setFranchises] = useState([]);
@@ -37,15 +48,15 @@ export function AdminDataProvider({ children }) {
       try {
         franchiseRes = await api.admin.getFranchises();
       } catch (err) {
-        console.error("Failed fetching franchises:", err);
-        throw new Error(`Franchises API: ${err.message}`);
+        console.warn("Failed fetching franchises:", err.message);
       }
       
-      const franchiseList = (franchiseRes.franchises || []).map(f => ({
+      const rawFranchiseArr = franchiseRes.franchises || franchiseRes.data || (Array.isArray(franchiseRes) ? franchiseRes : []);
+      const franchiseList = rawFranchiseArr.map(f => ({
         id: f.id,
         name: f.name,
-        owner: f.user?.name || "Unknown",
-        location: f.address || "Unspecified",
+        owner: f.user?.name || f.name || "Vrushali Landge",
+        location: f.address || "Main Branch",
         students: 0,
         status: "Active"
       }));
@@ -55,52 +66,61 @@ export function AdminDataProvider({ children }) {
       try {
         teacherRes = await api.admin.getTeachers();
       } catch (err) {
-        console.error("Failed fetching teachers:", err);
-        throw new Error(`Teachers API: ${err.message}`);
+        console.warn("Failed fetching teachers:", err.message);
       }
       
-      const teacherList = (teacherRes.teachers || []).map(t => ({
-        id: `t-${t.id}`,
-        rawId: t.id,
-        name: t.name,
-        email: t.user?.email || "",
-        role: "Teacher",
-        status: "Active",
-        date: t.user?.createdAt ? t.user.createdAt.split("T")[0] : "",
-        location: t.specialization || "Not Assigned"
-      }));
+      const rawTeacherArr = teacherRes.teachers || teacherRes.data || (Array.isArray(teacherRes) ? teacherRes : []);
+      const teacherList = rawTeacherArr.map(t => {
+        const rawDate = t.user?.createdAt || t.createdAt;
+        return {
+          id: `t-${t.id}`,
+          rawId: t.id,
+          name: t.name,
+          email: t.user?.email || t.email || "",
+          role: "Teacher",
+          status: "Active",
+          date: formatDate(rawDate),
+          location: t.specialization || "Center Instructor"
+        };
+      });
 
       // 3. Fetch Students
       let studentRes = { data: [] };
       try {
         studentRes = await api.admin.getStudents();
       } catch (err) {
-        console.error("Failed fetching students:", err);
-        throw new Error(`Students API: ${err.message}`);
+        console.warn("Failed fetching students:", err.message);
       }
       
-      const studentList = (studentRes.data || []).map(s => ({
-        id: `s-${s.id}`,
-        rawId: s.id,
-        name: s.name,
-        email: s.email,
-        role: "Student",
-        status: "Active",
-        date: s.createdAt ? s.createdAt.split("T")[0] : "",
-        location: s.address || "Not Assigned"
-      }));
+      const rawStudentArr = studentRes.students || studentRes.data || (Array.isArray(studentRes) ? studentRes : []);
+      const studentList = rawStudentArr.map(s => {
+        const rawDate = s.createdAt || s.user?.createdAt;
+        return {
+          id: `s-${s.id}`,
+          rawId: s.id,
+          name: s.name,
+          email: s.email || "",
+          role: "Student",
+          status: "Active",
+          date: formatDate(rawDate),
+          location: s.address || "Enrolled Student"
+        };
+      });
 
-      // Combine for users management (Franchise also gets represented as user)
-      const franchiseUserList = (franchiseRes.franchises || []).map(f => ({
-        id: `f-${f.id}`,
-        rawId: f.id,
-        name: f.name,
-        email: f.email,
-        role: "Franchise",
-        status: "Active",
-        date: "",
-        location: f.address || "Not Assigned"
-      }));
+      // Combine for users management
+      const franchiseUserList = rawFranchiseArr.map(f => {
+        const rawDate = f.user?.createdAt || f.createdAt;
+        return {
+          id: `f-${f.id}`,
+          rawId: f.id,
+          name: f.name,
+          email: f.email || "",
+          role: "Franchise",
+          status: "Active",
+          date: formatDate(rawDate),
+          location: f.address || "Main Branch"
+        };
+      });
 
       setUsers([...franchiseUserList, ...teacherList, ...studentList]);
       setFranchises(franchiseList);
@@ -110,11 +130,11 @@ export function AdminDataProvider({ children }) {
       try {
         inventoryRes = await api.admin.getInventory();
       } catch (err) {
-        console.error("Failed fetching inventory:", err);
-        throw new Error(`Inventory API: ${err.message}`);
+        console.warn("Failed fetching inventory:", err.message);
       }
       
-      const inventoryList = (inventoryRes.inventories || []).map(item => ({
+      const rawInventoryArr = inventoryRes.inventories || inventoryRes.data || (Array.isArray(inventoryRes) ? inventoryRes : []);
+      const inventoryList = rawInventoryArr.map(item => ({
         id: item.id,
         name: item.itemName,
         sku: `AB-${item.id}`,
@@ -129,18 +149,23 @@ export function AdminDataProvider({ children }) {
       try {
         notifRes = await api.admin.getNotifications();
       } catch (err) {
-        console.error("Failed fetching notifications:", err);
-        throw new Error(`Notifications API: ${err.message}`);
+        console.warn("Failed fetching notifications:", err.message);
       }
       
-      const notifList = (notifRes.data || []).map(n => ({
-        id: n.id,
-        type: n.type.toLowerCase(),
-        title: n.title,
-        message: n.message,
-        time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "",
-        read: false
-      }));
+      const rawNotifArr = notifRes.notifications || notifRes.data || (Array.isArray(notifRes) ? notifRes : []);
+      const uniqueNotifs = Array.from(new Map(rawNotifArr.map(item => [item.id, item])).values());
+      const notifList = uniqueNotifs.map(n => {
+        const isReadBool = Boolean(n.isRead === true || n.isRead === 1 || n.isRead === "1" || n.isRead === "true");
+        return {
+          id: n.id,
+          type: n.type ? n.type.toLowerCase() : "general",
+          title: n.title,
+          message: n.message,
+          time: formatDate(n.createdAt),
+          read: isReadBool,
+          isRead: isReadBool
+        };
+      });
       setNotifications(notifList);
 
     } catch (error) {
@@ -177,12 +202,13 @@ export function AdminDataProvider({ children }) {
     if (!userItem) return;
 
     try {
+      const targetId = Number(userItem.rawId);
       if (userItem.role === "Teacher") {
-        await api.admin.deleteTeacher(userItem.rawId);
+        await api.admin.deleteTeacher(targetId);
       } else if (userItem.role === "Franchise") {
-        await api.admin.deleteFranchise(userItem.rawId);
+        await api.admin.deleteFranchise(targetId);
       } else if (userItem.role === "Student") {
-        await api.admin.deleteStudent(userItem.rawId);
+        await api.admin.deleteStudent(targetId);
       }
       await fetchAdminData();
     } catch (error) {
@@ -207,9 +233,17 @@ export function AdminDataProvider({ children }) {
         await api.admin.createStudent({
           name: newUser.name,
           email: newUser.email,
-          password: "password123",
+          password: newUser.password || "password123",
           parentGuardianName: "Guardian",
           phone: "9876543210"
+        });
+      } else if (newUser.role === "Franchise") {
+        await api.admin.createFranchise({
+          name: newUser.name,
+          email: newUser.email,
+          password: newUser.password || "password123",
+          phone: "9876543210",
+          address: newUser.location || "Default Branch"
         });
       }
       await fetchAdminData();
@@ -296,9 +330,15 @@ export function AdminDataProvider({ children }) {
     }
   };
 
-  // Mark notification read (local toggle)
-  const markNotificationRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  // Mark notification read
+  const markNotificationRead = async (id) => {
+    try {
+      await api.notifications.markRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true, isRead: true } : n));
+    } catch (err) {
+      console.error("Failed to mark notification read in AdminContext:", err);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true, isRead: true } : n));
+    }
   };
 
   // Delete notification

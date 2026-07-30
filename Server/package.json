@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon --ignore 'scratch/*' --ignore '*.log' index.js"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",

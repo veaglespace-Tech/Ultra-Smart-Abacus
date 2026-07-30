@@ -1,3 +1,4 @@
+import prisma from "../config/prisma.js";
 import { examService } from "../services/examService.js";
 import asyncHandler from "../utils/asyncHandler.js";
 

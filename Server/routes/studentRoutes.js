@@ -17,13 +17,13 @@ const router = express.Router();
 
 
 router.post("/",authMiddleware,
-authorize("FRANCHISE","TEACHER"),
+authorize("ADMIN", "FRANCHISE", "TEACHER"),
 upload.single("profilePhoto"),
 createStudentValidation,
 validate,
 createStudent);
 
-router.get("/",getAllStudents);
+router.get("/", authMiddleware, getAllStudents);
 router.get("/profile/me", authMiddleware, getMyProfile);
 router.get("/:id",getStudentById);
 

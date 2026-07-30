@@ -56,8 +56,13 @@ export default function NotificationsPage() {
         </div>
         <div className="flex gap-2 w-full sm:w-auto self-start sm:self-center">
           <button
-            onClick={() => {
+            onClick={async () => {
               notifications.forEach(n => markNotificationRead(n.id));
+              try {
+                await api.notifications.markAllRead();
+              } catch (e) {
+                console.error("Failed to mark all as read:", e);
+              }
             }}
             className="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl border border-[#3d2a88]/30 hover:bg-[#FFF8F0]/30 dark:hover:bg-[#1e1445]/50 text-[11px] text-slate-700 dark:text-slate-300 font-semibold transition-all cursor-pointer"
           >

@@ -25,7 +25,8 @@ router.post(
     authorizeRoles(
         "ADMIN",
         "TEACHER",
-        "FRANCHISE"
+        "FRANCHISE",
+        "STUDENT"
     ),
     attendanceValidation,
     validate,
@@ -38,6 +39,7 @@ router.get(
     authorizeRoles(
         "ADMIN",
         "TEACHER",
+        "FRANCHISE",
         "STUDENT"
     ),
     getAttendanceByStudent
@@ -46,7 +48,7 @@ router.get(
 router.get(
     "/",
     authMiddleware,
-    authorizeRoles("ADMIN", "TEACHER", "FRANCHISE"),
+    authorizeRoles("ADMIN", "TEACHER", "FRANCHISE", "STUDENT"),
     getAllAttendance
 );
 
@@ -56,7 +58,8 @@ router.put(
     authorizeRoles(
         "ADMIN",
         "TEACHER",
-        "FRANCHISE"
+        "FRANCHISE",
+        "STUDENT"
     ),
     updateAttendance
 );
