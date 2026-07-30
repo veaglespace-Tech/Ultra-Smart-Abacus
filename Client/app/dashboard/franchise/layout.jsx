@@ -53,6 +53,15 @@ export default function FranchiseLayout({ children }) {
     router.push("/auth/login");
   };
 
+  const handleToggleNotifications = () => {
+    const nextState = !notificationOpen;
+    setNotificationOpen(nextState);
+    if (nextState && notifications && notifications.length > 0) {
+      dispatch(markAllReadOptimistic());
+      dispatch(markAllNotificationsAsRead());
+    }
+  };
+
   const sidebarItems = [
     { name: 'Overview', href: '/dashboard/franchise', icon: LayoutDashboard },
     { name: 'Students', href: '/dashboard/franchise/students', icon: GraduationCap },

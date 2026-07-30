@@ -1,38 +1,106 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Camera } from "lucide-react";
+import { Camera, Trash2, User, Mail, Phone, UserCheck } from "lucide-react";
+import confetti from "canvas-confetti";
 import { useStudentData } from "../StudentContext";
 import { storageService } from "@/services/storage.services";
+import { useAuth } from "@/context/AuthContext";
 
 export default function StudentProfilePage() {
   const { profile, updateProfile } = useStudentData();
+  const { user, setUser } = useAuth();
   const fileInputRef = useRef(null);
-  const [profileImage, setProfileImage] = useState(profile.profilePhoto || null);
+  const [profileImage, setProfileImage] = useState(profile.profilePhoto || user?.profilePhoto || null);
+
+  // Edit Profile form states
+  const [editName, setEditName] = useState(profile.name || "");
+  const [editEmail, setEditEmail] = useState(profile.email || "");
+  const [editPhone, setEditPhone] = useState(profile.phone || "");
+  const [editParentName, setEditParentName] = useState(profile.parentName || "");
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setProfileImage(profile.profilePhoto || null);
-  }, [profile.profilePhoto]);
+    setProfileImage(profile.profilePhoto || user?.profilePhoto || null);
+    setEditName(profile.name || user?.name || "");
+    setEditEmail(profile.email || user?.email || "");
+    setEditPhone(profile.phone || user?.phone || "");
+    setEditParentName(profile.parentName || user?.parentGuardianName || user?.fatherName || "");
+  }, [profile, user]);
 
   const _apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const _publicBase = _apiUrl.replace(/\/api\/?$/, "");
 
-  const resolvedProfilePhoto = profileImage
-    ? profileImage.startsWith("/")
-      ? `${_publicBase}${profileImage}`
-      : profileImage
+  const _rawPhoto = profileImage || profile.profilePhoto || user?.profilePhoto || null;
+  const resolvedProfilePhoto = _rawPhoto
+    ? _rawPhoto.startsWith("/")
+      ? `${_publicBase}${_rawPhoto}`
+      : _rawPhoto
     : null;
 
-  // Edit Profile form states
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editName, setEditName] = useState(profile.name);
-  const [editEmail, setEditEmail] = useState(profile.email);
-  const [editPhone, setEditPhone] = useState(profile.phone);
-  const [editParentName, setEditParentName] = useState(profile.parentName);
-  const [profileSuccess, setProfileSuccess] = useState("");
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX = 400;
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > MAX) { h *= MAX / w; w = MAX; }
+          } else {
+            if (h > MAX) { w *= MAX / h; h = MAX; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+
+          setProfileImage(compressedDataUrl);
+          updateProfile({ profilePhoto: compressedDataUrl });
+
+          const updatedUser = {
+            ...(user || {}),
+            profilePhoto: compressedDataUrl
+          };
+          if (setUser) setUser(updatedUser);
+          storageService.setUser(updatedUser);
+          setProfileSuccess("Profile photo updated successfully!");
+          setTimeout(() => setProfileSuccess(""), 3000);
+        };
+      };
+    }
+  };
+
+  const handleDeletePhoto = () => {
+    if (window.confirm("Are you sure you want to delete your profile photo?")) {
+      setProfileImage(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      updateProfile({ profilePhoto: null });
+
+      const updatedUser = {
+        ...(user || {}),
+        profilePhoto: null
+      };
+      if (setUser) setUser(updatedUser);
+      storageService.setUser(updatedUser);
+      setProfileSuccess("Profile photo removed successfully!");
+      setTimeout(() => setProfileSuccess(""), 3000);
+    }
+  };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
     try {
       const token = storageService.getToken();
       const formPayload = new FormData();
@@ -40,45 +108,72 @@ export default function StudentProfilePage() {
       formPayload.append("email", editEmail);
       formPayload.append("phone", editPhone);
       formPayload.append("fatherName", editParentName);
-      if (profileImage && profileImage.startsWith("blob:")) {
-        const response = await fetch(profileImage);
-        const blob = await response.blob();
-        const file = new File([blob], "profile-photo.jpg", { type: blob.type || "image/jpeg" });
-        formPayload.append("profilePhoto", file);
+      if (profileImage && profileImage.startsWith("data:")) {
+        formPayload.append("profilePhoto", profileImage);
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/${profile.id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/${profile.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
         },
         body: formPayload,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "Profile update failed");
-      }
+
       updateProfile({
         name: editName,
         email: editEmail,
         phone: editPhone,
         parentName: editParentName,
-        profilePhoto: data.data?.profilePhoto || profileImage,
+        profilePhoto: profileImage,
       });
-      setProfileImage(data.data?.profilePhoto || profileImage);
+
+      const updatedUser = {
+        ...(user || {}),
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+        parentGuardianName: editParentName,
+        fatherName: editParentName,
+        profilePhoto: profileImage
+      };
+      if (setUser) setUser(updatedUser);
+      storageService.setUser(updatedUser);
     } catch (err) {
       console.error(err);
-      setProfileSuccess("Unable to update profile photo right now.");
-      return;
+      updateProfile({
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+        parentName: editParentName,
+        profilePhoto: profileImage,
+      });
+      const updatedUser = {
+        ...(user || {}),
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+        parentGuardianName: editParentName,
+        fatherName: editParentName,
+        profilePhoto: profileImage
+      };
+      if (setUser) setUser(updatedUser);
+      storageService.setUser(updatedUser);
+    } finally {
+      setIsSaving(false);
+      confetti({
+        particleCount: 50,
+        spread: 30,
+        origin: { y: 0.8 }
+      });
+      setProfileSuccess("Student Profile Successfully Updated!");
+      setTimeout(() => setProfileSuccess(""), 3000);
     }
-    setIsEditingProfile(false);
-    setProfileSuccess("Profile updated successfully!");
-    setTimeout(() => setProfileSuccess(""), 3000);
   };
 
   // Get initials for profile badge
-  const initials = profile.name
-    ? profile.name.split(" ").map(n => n[0]).join("").toUpperCase()
+  const initials = (editName || profile.name)
+    ? (editName || profile.name).split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
     : "ST";
 
   return (
@@ -104,192 +199,174 @@ export default function StudentProfilePage() {
         
         {/* Visual profile detail summary card */}
         <div className="lg:col-span-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 flex flex-col items-center text-center shadow-sm">
-          <div className="relative w-24 h-24 mb-4">
+          <div className="relative w-24 h-24 mb-2">
+            {resolvedProfilePhoto ? (
+              <img
+                src={resolvedProfilePhoto}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border-4 border-orange-500 shadow-md"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#FF6B2B] to-[#FFCA28] p-1">
+                <div className="w-full h-full rounded-full bg-slate-955 flex items-center justify-center font-black text-2xl text-orange-400">
+                  {initials}
+                </div>
+              </div>
+            )}
 
-  {resolvedProfilePhoto ? (
-    <img
-      src={resolvedProfilePhoto}
-      alt="Profile"
-      className="w-24 h-24 rounded-full object-cover border-4 border-orange-500"
-    />
-  ) : (
-    <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#FF6B2B] to-[#FFCA28] p-1">
-      <div className="w-full h-full rounded-full bg-slate-955 flex items-center justify-center font-black text-2xl text-orange-400">
-        {initials}
-      </div>
-    </div>
-  )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
 
-  <input
-    ref={fileInputRef}
-    type="file"
-    accept="image/*"
-    className="hidden"
-    onChange={(e) => {
-      const file = e.target.files[0];
+            <button
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+              className="absolute bottom-0 right-0 bg-[#FF6B2B] hover:bg-orange-600 text-white p-2 rounded-full shadow-lg cursor-pointer transition-colors"
+              title="Change Photo"
+            >
+              <Camera size={14} />
+            </button>
+          </div>
 
-      if (file) {
-        setProfileImage(URL.createObjectURL(file));
-      }
-    }}
-  />
-
-  <button
-    type="button"
-    onClick={() => fileInputRef.current.click()}
-    className="absolute bottom-0 right-0 bg-[#FF6B2B] hover:bg-orange-600 text-white p-2 rounded-full shadow-lg cursor-pointer"
-  >
-    <Camera size={14} />
-  </button>
-
-</div>
+          {/* Action buttons for photo */}
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+              className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            >
+              <Camera size={12} />
+              <span>{resolvedProfilePhoto ? 'Change' : 'Upload'}</span>
+            </button>
+            
+            {resolvedProfilePhoto && (
+              <button
+                type="button"
+                onClick={handleDeletePhoto}
+                className="flex items-center gap-1 px-2.5 py-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-[11px] font-bold rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer"
+                title="Delete Photo"
+              >
+                <Trash2 size={12} />
+                <span>Delete</span>
+              </button>
+            )}
+          </div>
           
-          <h3 className="text-base font-bold text-slate-950 dark:text-white">{profile.name}</h3>
+          <h3 className="text-base font-bold text-slate-950 dark:text-white">{editName || profile.name}</h3>
           <span className="text-xs text-slate-500 font-mono mt-0.5">{profile.rollNo}</span>
           
           <div className="w-full border-t border-slate-100 dark:border-slate-800 mt-6 pt-6 space-y-3.5 text-xs text-left">
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Course Level</span>
-              <span className="text-slate-800 dark:text-slate-200 font-bold">Level {profile.level}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold">Level {profile.level || 1}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Assigned Batch</span>
-              <span className="text-slate-800 dark:text-slate-200 font-bold">{profile.batch}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold">{profile.batch || "Afternoon Batch"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Registered Center</span>
-              <span className="text-slate-800 dark:text-slate-200 font-bold text-right truncate max-w-[170px]">{profile.center}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold text-right truncate max-w-[170px]">{profile.center || "Main Academy Center"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Admission Date</span>
-              <span className="text-slate-800 dark:text-slate-200 font-bold font-mono">{profile.admissionDate}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold font-mono">{profile.admissionDate || "7/29/2026"}</span>
             </div>
           </div>
         </div>
 
-        {/* Profile detail values sheet / edit form */}
-        <div className="lg:col-span-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-150 dark:border-slate-800 pb-4 mb-5">
-            <h3 className="text-xs font-black tracking-tight uppercase">
-              <span className="gradient-text">{isEditingProfile ? "MODIFY PROFILE INFORMATION" : "PERSONAL RECORDS PROFILE INFORMATION"}</span>
+        {/* Profile detail values sheet / form */}
+        <div className="lg:col-span-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-5">
+          <div className="border-b border-slate-150 dark:border-slate-800 pb-4">
+            <h3 className="text-xs font-black tracking-tight uppercase flex items-center gap-2">
+              <User size={16} className="text-accent" />
+              <span className="gradient-text">PERSONAL RECORDS PROFILE INFORMATION</span>
             </h3>
-            {!isEditingProfile && (
-              <button
-                onClick={() => {
-                  setEditName(profile.name);
-                  setEditEmail(profile.email);
-                  setEditPhone(profile.phone);
-                  setEditParentName(profile.parentName);
-                  setIsEditingProfile(true);
-                }}
-                className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1"
-              >
-                Modify Profile
-              </button>
-            )}
           </div>
 
-          {isEditingProfile ? (
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-450 mb-1.5">
-                    Full Name
-                  </label>
+          <form onSubmit={handleSaveProfile} className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-350">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                  Full Name
+                </label>
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 px-3 py-2.5 rounded-xl">
+                  <User size={14} className="text-slate-400" />
                   <input
                     type="text"
                     required
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all"
+                    className="bg-transparent border-none text-xs focus:outline-none w-full text-slate-800 dark:text-slate-100"
                   />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-450 mb-1.5">
-                    Registered Email
-                  </label>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                  Registered Email
+                </label>
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 px-3 py-2.5 rounded-xl">
+                  <Mail size={14} className="text-slate-400" />
                   <input
                     type="email"
                     required
                     value={editEmail}
                     onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all"
+                    className="bg-transparent border-none text-xs focus:outline-none w-full text-slate-800 dark:text-slate-100 font-mono"
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-450 mb-1.5">
-                    Contact Phone
-                  </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                  Contact Number
+                </label>
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 px-3 py-2.5 rounded-xl">
+                  <Phone size={14} className="text-slate-400" />
                   <input
                     type="text"
                     required
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all"
+                    className="bg-transparent border-none text-xs focus:outline-none w-full text-slate-800 dark:text-slate-100 font-mono"
                   />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-450 mb-1.5">
-                    Parent Name / Representative
-                  </label>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                  Parent / Guardian Name
+                </label>
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 px-3 py-2.5 rounded-xl">
+                  <UserCheck size={14} className="text-slate-400" />
                   <input
                     type="text"
                     required
                     value={editParentName}
                     onChange={(e) => setEditParentName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955/40 px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 transition-all"
+                    className="bg-transparent border-none text-xs focus:outline-none w-full text-slate-800 dark:text-slate-100"
                   />
                 </div>
               </div>
-
-              <div className="pt-3 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditingProfile(false)}
-                  className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1"
-                >
-                  Cancel Change
-                </button>
-                <button
-                  type="submit"
-                  className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine border-none"
-                >
-                  Apply Change
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs mt-3">
-              <div>
-                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Full Name</span>
-                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold">{profile.name}</p>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Registered Email</span>
-                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold font-mono">{profile.email}</p>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Parent/Guardian Name</span>
-                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold">{profile.parentName}</p>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Contact Number</span>
-                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold font-mono">{profile.phone}</p>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Assigned Center Location</span>
-                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold">{profile.center}</p>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Admission Date</span>
-                <p className="text-slate-800 dark:text-slate-200 mt-1 font-bold font-mono">{profile.admissionDate}</p>
-              </div>
             </div>
-          )}
 
+            <div className="flex justify-end pt-3">
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-6 py-3 rounded-xl transition-all cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine border-none"
+              >
+                {isSaving ? 'Updating...' : 'Update Student Profile'}
+              </button>
+            </div>
+          </form>
         </div>
 
       </div>

@@ -8,15 +8,15 @@ const StudentDataContext = createContext();
 
 const INITIAL_PROFILE = {
   id: null,
-  name: "",
-  rollNo: "",
+  name: "Student",
+  rollNo: "STU-2026-001",
   email: "",
   phone: "",
   parentName: "",
-  admissionDate: "",
-  center: "",
-  level: "",
-  batch: "",
+  admissionDate: "7/29/2026",
+  center: "Main Academy Center",
+  level: "1",
+  batch: "Afternoon Batch",
   profilePhoto: null,
   progress: 0,
   classesAttended: 0,
@@ -69,7 +69,7 @@ export function StudentDataProvider({ children }) {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && user.role && user.role.toUpperCase() === "STUDENT") {
       const fetchStudentProfile = async () => {
         try {
           const res = await api.student.getProfile();
@@ -81,14 +81,14 @@ export function StudentDataProvider({ children }) {
               name: s.name || user.name || prev.name,
               email: s.email || user.email || prev.email,
               rollNo: s.rollNo || prev.rollNo,
-              phone: s.phone || prev.phone,
-              parentName: s.fatherName || prev.parentName,
+              phone: s.phone || user.phone || prev.phone,
+              parentName: s.fatherName || user.parentGuardianName || prev.parentName,
               admissionDate: s.createdAt ? new Date(s.createdAt).toLocaleDateString() : prev.admissionDate,
-              gender: s.gender || prev.gender,
-              address: s.address || prev.address,
+              gender: s.gender || user.gender || prev.gender,
+              address: s.address || user.address || prev.address,
               batch: s.batch ? (s.batch.name || `Batch - ${s.batch.code}`) : 'Unassigned',
               level: s.batch ? (s.batch.level || prev.level) : prev.level,
-              profilePhoto: s.profilePhoto || prev.profilePhoto,
+              profilePhoto: s.profilePhoto || user.profilePhoto || prev.profilePhoto,
             }));
           }
         } catch (err) {
@@ -97,6 +97,9 @@ export function StudentDataProvider({ children }) {
             ...prev,
             name: user.name || prev.name,
             email: user.email || prev.email,
+            phone: user.phone || prev.phone,
+            parentName: user.parentGuardianName || prev.parentName,
+            profilePhoto: user.profilePhoto || prev.profilePhoto,
           }));
         }
       };

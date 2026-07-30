@@ -32,11 +32,11 @@ router.get(
     getSalaryHistory
 )
 
-// GET OWN SALARY HISTORY (Teacher only)
+// GET OWN SALARY HISTORY (Teacher or Admin)
 router.get(
     "/my-history",
     authMiddleware,
-    authorize("TEACHER"),
+    authorize("TEACHER", "ADMIN"),
     getTeacherSalaryHistory
 )
 

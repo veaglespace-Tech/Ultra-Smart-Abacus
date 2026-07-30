@@ -30,7 +30,6 @@ function AdminLayoutInner({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [isClientMounted, setIsClientMounted] = useState(false);
-
   const { notifications, unreadCount } = useSelector((state) => state.notification);
 
   useEffect(() => {
@@ -50,6 +49,15 @@ function AdminLayoutInner({ children }) {
       logout();
     }
     router.push("/auth/login");
+  };
+
+  const handleToggleNotifications = () => {
+    const nextState = !notificationOpen;
+    setNotificationOpen(nextState);
+    if (nextState && notifications && notifications.length > 0) {
+      dispatch(markAllReadOptimistic());
+      dispatch(markAllNotificationsAsRead());
+    }
   };
 
   const sidebarItems = [

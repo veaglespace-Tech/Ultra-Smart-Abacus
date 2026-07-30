@@ -20,13 +20,38 @@ export const storageService = {
   // 2. User Metadata Profile Management
   getUser: () => {
     if (typeof window !== 'undefined') {
-      const user = localStorage.getItem(USER_KEY);
-      return user ? JSON.parse(user) : null;
+      const userStr = localStorage.getItem(USER_KEY);
+      if (!userStr) return null;
+      try {
+        const parsed = JSON.parse(userStr);
+        if (parsed && parsed.email) {
+          const savedAvatar = localStorage.getItem(`abacus_avatar_${parsed.email.toLowerCase()}`);
+          if (savedAvatar) {
+            parsed.profilePhoto = savedAvatar;
+          }
+        }
+        return parsed;
+      } catch (e) {
+        return null;
+      }
     }
     return null;
   },
   setUser: (user) => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && user) {
+      if (user.email) {
+        const emailKey = `abacus_avatar_${user.email.toLowerCase()}`;
+        if (user.profilePhoto) {
+          localStorage.setItem(emailKey, user.profilePhoto);
+        } else if (user.profilePhoto === null) {
+          localStorage.removeItem(emailKey);
+        } else {
+          const savedAvatar = localStorage.getItem(emailKey);
+          if (savedAvatar) {
+            user.profilePhoto = savedAvatar;
+          }
+        }
+      }
       localStorage.setItem(USER_KEY, JSON.stringify(user));
     }
   },
