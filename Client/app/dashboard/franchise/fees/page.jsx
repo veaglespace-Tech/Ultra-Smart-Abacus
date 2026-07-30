@@ -47,9 +47,15 @@ export default function FranchiseFees() {
         totalAmount: Number(fee.totalFee || 0),
         paidAmount: Number(fee.paidAmount || 0),
         pendingAmount: Number(fee.dueAmount || 0),
-        fineAmount: Number(fee.fineAmount || 0),
-        discountAmount: Number(fee.discountAmount || 0),
-        dueDate: fee.dueDate ? new Date(fee.dueDate).toISOString().split("T")[0] : "—",
+        dueDate: (() => {
+          if (!fee.dueDate) return "—";
+          try {
+            const d = new Date(fee.dueDate);
+            return isNaN(d.getTime()) ? "—" : d.toISOString().split("T")[0];
+          } catch (e) {
+            return "—";
+          }
+        })(),
         status: fee.status,
         receiptNumber: fee.receiptNumber,
         notes: fee.notes,

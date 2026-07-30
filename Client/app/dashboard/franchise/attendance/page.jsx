@@ -38,15 +38,6 @@ export default function AttendanceProgress() {
           }));
         }
 
-        if (mappedBatches.length === 0) {
-          mappedBatches = [
-            { id: "1", name: "Batch Alpha (ALPHA-01)" },
-            { id: "2", name: "Batch Beta (BETA-02)" },
-            { id: "3", name: "Batch Gamma (GAMMA-03)" },
-            { id: "4", name: "Batch Delta (DELTA-04)" },
-          ];
-        }
-
         setBatches(mappedBatches);
         if (mappedBatches.length > 0) {
           setSelectedBatch(mappedBatches[0].id);
@@ -97,12 +88,7 @@ export default function AttendanceProgress() {
           });
           setStudents(mappedStudents);
         } else {
-          setStudents([
-            { id: "101", rollNo: "STU-001", name: "Aarav Sharma", status: "Present", notes: "Active in class" },
-            { id: "102", rollNo: "STU-002", name: "Ananya Patel", status: "Present", notes: "" },
-            { id: "103", rollNo: "STU-003", name: "Devansh Verma", status: "Absent", notes: "Medical leave" },
-            { id: "104", rollNo: "STU-004", name: "Ishani Gupta", status: "Present", notes: "Abacus Level 2 clear" }
-          ]);
+          setStudents([]);
         }
       } catch (err) {
         console.warn("Failed to load roster or attendance records:", err);

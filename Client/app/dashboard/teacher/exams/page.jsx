@@ -33,6 +33,28 @@ export default function TeacherExamsPage() {
   const [activeMarksExam, setActiveMarksExam] = useState(null);
   const [tempMarks, setTempMarks] = useState({});
 
+function safeFormatDate(rawDate, fallback = "") {
+  if (!rawDate) return fallback;
+  try {
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return fallback;
+    return d.toISOString().split("T")[0];
+  } catch (e) {
+    return fallback;
+  }
+}
+
+function safeFormatISO(rawDate) {
+  if (!rawDate) return new Date().toISOString();
+  try {
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return new Date().toISOString();
+    return d.toISOString();
+  } catch (e) {
+    return new Date().toISOString();
+  }
+}
+
   const fetchExamsAndBatches = async () => {
     setLoading(true);
     try {
@@ -76,7 +98,7 @@ export default function TeacherExamsPage() {
             batch: ex.batch?.name || 'Batch',
             batchId: ex.batchId,
             level: ex.curriculumTrack || 'Level 1 Core',
-            date: ex.examDate ? new Date(ex.examDate).toISOString().split('T')[0] : '',
+            date: safeFormatDate(ex.examDate, ''),
             time: ex.startTime || '10:00 AM',
             maxMarks: ex.totalMarks,
             creator: ex.teacher?.name || 'Teacher',
@@ -141,7 +163,7 @@ export default function TeacherExamsPage() {
         }
       }
 
-      const formattedDate = formData.date ? new Date(formData.date).toISOString() : new Date().toISOString();
+      const formattedDate = safeFormatISO(formData.date);
       const payload = {
         title: formData.name,
         curriculumTrack: formData.level,
@@ -167,7 +189,7 @@ export default function TeacherExamsPage() {
             batch: createdObj.batch?.name || selectedBatchObj?.name || 'Batch',
             batchId: createdObj.batchId || selectedBatchId,
             level: createdObj.curriculumTrack || formData.level,
-            date: createdObj.examDate ? new Date(createdObj.examDate).toISOString().split('T')[0] : formData.date,
+            date: safeFormatDate(createdObj.examDate, formData.date || ''),
             time: createdObj.startTime || formData.time,
             maxMarks: createdObj.totalMarks || formData.maxMarks,
             creator: createdObj.teacher?.name || 'Teacher',
