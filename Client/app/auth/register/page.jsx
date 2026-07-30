@@ -51,21 +51,13 @@ const roles = [
     color: "#FFCA28",
     bg: "rgba(255,202,40,0.1)",
   },
-  {
-    value: "ADMIN",
-    label: "System Admin",
-    icon: ShieldCheck,
-    desc: "Super administrator access",
-    color: "#10B981",
-    bg: "rgba(16,185,129,0.08)",
-  },
 ];
 
 function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roleParam = searchParams.get("role");
-  const invitedRole = ["STUDENT", "TEACHER", "FRANCHISE", "ADMIN"].includes(roleParam?.toUpperCase())
+  const invitedRole = ["STUDENT", "TEACHER", "FRANCHISE"].includes(roleParam?.toUpperCase())
     ? roleParam.toUpperCase()
     : null;
 

@@ -27,6 +27,8 @@ export default function AdminInventoryManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [scopeFilter, setScopeFilter] = useState("All"); // All, Admin, Franchise
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Franchises list for distribution & filter
   const [franchises, setFranchises] = useState([]);
@@ -57,6 +59,11 @@ export default function AdminInventoryManagement() {
     quantity: 10,
     remarks: ""
   });
+
+  // Admin main stock items (excluding franchise assigned items)
+  const adminMainStockItems = useMemo(() => {
+    return items.filter(item => !item.franchiseId && !item.franchise);
+  }, [items]);
 
   // Load initial data
   useEffect(() => {
@@ -110,10 +117,13 @@ export default function AdminInventoryManagement() {
 
       const matchesCategory = categoryFilter === "All" || item.category === categoryFilter;
       const matchesStatus = statusFilter === "All" || item.status === statusFilter;
+      const matchesScope = scopeFilter === "All" ||
+        (scopeFilter === "Admin" && (!item.franchiseId && !item.franchise)) ||
+        (scopeFilter === "Franchise" && (item.franchiseId || item.franchise));
 
-      return matchesSearch && matchesCategory && matchesStatus;
+      return matchesSearch && matchesCategory && matchesStatus && matchesScope;
     });
-  }, [items, searchQuery, categoryFilter, statusFilter]);
+  }, [items, searchQuery, categoryFilter, statusFilter, scopeFilter]);
 
   // Handlers
   const handleOpenAddModal = () => {
@@ -151,7 +161,8 @@ export default function AdminInventoryManagement() {
   };
 
   const handleOpenDistributeModal = (item = null) => {
-    const targetItem = item || (items.length > 0 ? items[0] : null);
+    const mainItems = items.filter(i => !i.franchiseId && !i.franchise);
+    const targetItem = (item && !item.franchiseId && !item.franchise) ? item : (mainItems.length > 0 ? mainItems[0] : null);
     setSelectedDistributeItem(targetItem);
     setDistributeData({
       inventoryId: targetItem ? targetItem.id : "",
@@ -164,37 +175,51 @@ export default function AdminInventoryManagement() {
 
   const handleSubmitForm = async (e) => {
     e.preventDefault();
-    if (editingItem) {
-      await dispatch(updateInventory({ id: editingItem.id, data: formData }));
-    } else {
-      await dispatch(createInventory(formData));
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      if (editingItem) {
+        await dispatch(updateInventory({ id: editingItem.id, data: formData }));
+      } else {
+        await dispatch(createInventory(formData));
+      }
+      setIsAddModalOpen(false);
+      dispatch(fetchInventory());
+      dispatch(fetchLowStock());
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsAddModalOpen(false);
-    dispatch(fetchLowStock());
   };
 
   const handleDeleteItem = async (id, name) => {
     if (confirm(`Are you sure you want to delete '${name}'?`)) {
       await dispatch(deleteInventory(id));
+      dispatch(fetchInventory());
       dispatch(fetchLowStock());
     }
   };
 
   const handleSubmitDistribution = async (e) => {
     e.preventDefault();
-    const payload = {
-      inventoryId: Number(distributeData.inventoryId),
-      franchiseId: Number(distributeData.franchiseId),
-      quantity: Number(distributeData.quantity),
-      remarks: distributeData.remarks
-    };
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        inventoryId: Number(distributeData.inventoryId),
+        franchiseId: Number(distributeData.franchiseId),
+        quantity: Number(distributeData.quantity),
+        remarks: distributeData.remarks
+      };
 
-    const res = await dispatch(distributeInventory(payload));
-    if (!res.error) {
-      setIsDistributeModalOpen(false);
-      dispatch(fetchInventory());
-      dispatch(fetchLowStock());
-      dispatch(fetchHistory());
+      const res = await dispatch(distributeInventory(payload));
+      if (!res.error) {
+        setIsDistributeModalOpen(false);
+        dispatch(fetchInventory());
+        dispatch(fetchLowStock());
+        dispatch(fetchHistory());
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -392,9 +417,22 @@ export default function AdminInventoryManagement() {
               />
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
                 <Filter size={13} />
+                <span>Scope:</span>
+              </div>
+              <select
+                value={scopeFilter}
+                onChange={(e) => setScopeFilter(e.target.value)}
+                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs outline-none cursor-pointer font-bold text-purple-600 dark:text-purple-400"
+              >
+                <option value="All">All Stock Scopes</option>
+                <option value="Admin">Admin Main Stock Only</option>
+                <option value="Franchise">Franchise Stock Only</option>
+              </select>
+
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold ml-1">
                 <span>Category:</span>
               </div>
               <select
@@ -770,9 +808,10 @@ export default function AdminInventoryManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold cursor-pointer transition-all shadow-md shadow-orange-500/20"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold cursor-pointer transition-all shadow-md shadow-orange-500/20"
                 >
-                  {editingItem ? "Save Changes" : "Create Item"}
+                  {isSubmitting ? "Saving..." : (editingItem ? "Save Changes" : "Create Item")}
                 </button>
               </div>
             </form>
@@ -799,7 +838,7 @@ export default function AdminInventoryManagement() {
 
             <form onSubmit={handleSubmitDistribution} className="space-y-3 text-xs">
               <div>
-                <label className="block text-[10px] font-mono uppercase text-slate-500 font-bold mb-1">Select Inventory Item *</label>
+                <label className="block text-[10px] font-mono uppercase text-slate-500 font-bold mb-1">Select Admin Inventory Item *</label>
                 <select
                   required
                   value={distributeData.inventoryId}
@@ -810,10 +849,10 @@ export default function AdminInventoryManagement() {
                   }}
                   className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 outline-none cursor-pointer font-bold"
                 >
-                  <option value="">-- Choose Stock Item --</option>
-                  {items.map(item => (
+                  <option value="">-- Choose Central Admin Stock Item --</option>
+                  {adminMainStockItems.map(item => (
                     <option key={item.id} value={item.id}>
-                      {item.itemName} (Available: {item.quantity} units)
+                      {item.itemName} (Available Admin Stock: {item.quantity} units)
                     </option>
                   ))}
                 </select>
@@ -879,9 +918,10 @@ export default function AdminInventoryManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold cursor-pointer transition-all shadow-md shadow-purple-600/20"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold cursor-pointer transition-all shadow-md shadow-purple-600/20"
                 >
-                  Dispatch Stock
+                  {isSubmitting ? "Dispatching..." : "Dispatch Stock"}
                 </button>
               </div>
             </form>
