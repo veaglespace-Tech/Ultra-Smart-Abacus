@@ -132,7 +132,16 @@ export default function FranchiseOverview() {
             student: fee.studentName || fee.student?.name || `Student #${fee.studentId || idx + 1}`,
             type: fee.type || "Tuition Fee",
             amount: `₹${(fee.amount || fee.amountPaid || fee.dueAmount || 0).toLocaleString('en-IN')}`,
-            date: fee.dueDate ? fee.dueDate.split("T")[0] : (fee.createdAt ? fee.createdAt.split("T")[0] : "—"),
+            date: (() => {
+              const rawDate = fee.dueDate || fee.createdAt;
+              if (!rawDate) return "—";
+              try {
+                const d = new Date(rawDate);
+                return isNaN(d.getTime()) ? "—" : d.toISOString().split("T")[0];
+              } catch (e) {
+                return "—";
+              }
+            })(),
             status: fee.status === "PAID" ? "Paid" : "Pending"
           }));
         }

@@ -33,7 +33,7 @@ router.get(
 router.patch(
   "/distribute",
   authMiddleware,
-  authorize("ADMIN"),
+  authorize("ADMIN", "FRANCHISE"),
   distributeInventory
 );
 
@@ -69,7 +69,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  authorize("ADMIN"),
+  authorize("ADMIN", "FRANCHISE"),
   deleteInventory
 );
 

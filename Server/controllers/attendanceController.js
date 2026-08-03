@@ -8,7 +8,6 @@ import CustomError from "../utils/customError.js";
 
 
 export const markAttendance = asyncHandler(async (req, res) => {
-
     const {
         studentId,
         teacherId,
@@ -17,123 +16,107 @@ export const markAttendance = asyncHandler(async (req, res) => {
         remarks
     } = req.body;
 
-    // Check Student
-
     const student = await prisma.student.findUnique({
-
-        where: {
-            id: Number(studentId)
-        }
+        where: { id: Number(studentId) }
     });
-
     if (!student) {
-
-        throw new CustomError(
-            "Student not found",
-            404
-        );
+        throw new CustomError("Student not found", 404);
     }
-
-    // Check Teacher
-
-    const teacher = await prisma.teacher.findUnique({
-
-        where: {
-            id: Number(teacherId)
-        }
-    });
-
-    if (!teacher) {
-
-        throw new CustomError(
-            "Teacher not found",
-            404
-        );
-    }
-
-    // Check Batch
 
     const batch = await prisma.batch.findUnique({
-
-        where: {
-            id: Number(batchId)
-        }
+        where: { id: Number(batchId) }
     });
-
     if (!batch) {
-
-        throw new CustomError(
-            "Batch not found",
-            404
-        );
+        throw new CustomError("Batch not found", 404);
     }
 
-    // Duplicate Attendance Check
+    // Resolve teacherId dynamically
+    let validTeacherId = teacherId ? Number(teacherId) : null;
+    if (validTeacherId) {
+        const teacherExists = await prisma.teacher.findUnique({ where: { id: validTeacherId } });
+        if (!teacherExists) validTeacherId = null;
+    }
+
+    if (!validTeacherId && req.user) {
+        if (req.user.role === "TEACHER") {
+            const t = await prisma.teacher.findFirst({
+                where: { OR: [{ userId: Number(req.user.id) }, { email: req.user.email }] }
+            });
+            if (t) validTeacherId = t.id;
+        }
+    }
+
+    if (!validTeacherId && batch.teacherId) {
+        validTeacherId = batch.teacherId;
+    }
+
+    if (!validTeacherId) {
+        const anyTeacher = await prisma.teacher.findFirst();
+        if (anyTeacher) {
+            validTeacherId = anyTeacher.id;
+        } else {
+            throw new CustomError("No active teacher found to record attendance under", 404);
+        }
+    }
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setUTCDate(today.getUTCDate() + 1);
 
-    const alreadyMarked =
-        await prisma.attendance.findFirst({
-
-            where: {
-
-                studentId: Number(studentId),
-
-                attendanceDate: {
-
-                    gte: today,
-
-                    lt: tomorrow
-                }
+    const alreadyMarked = await prisma.attendance.findFirst({
+        where: {
+            studentId: Number(studentId),
+            attendanceDate: {
+                gte: today,
+                lt: tomorrow
             }
-        });
+        }
+    });
 
     if (alreadyMarked) {
-
-        throw new CustomError(
-            "Attendance already marked for this student today",
-            400
-        );
-    }
-
-    const attendance =
-        await prisma.attendance.create({
-
+        const updated = await prisma.attendance.update({
+            where: { id: alreadyMarked.id },
             data: {
-
-                studentId: Number(studentId),
-
-                teacherId: Number(teacherId),
-
-                batchId: Number(batchId),
-
                 status,
-
-                remarks
+                remarks: remarks || "",
+                teacherId: validTeacherId,
+                batchId: Number(batchId)
             },
-
             include: {
-
                 student: true,
-
                 teacher: true,
-
                 batch: true
             }
         });
 
-    res.status(201).json({
+        return res.status(200).json({
+            success: true,
+            message: "Attendance updated successfully",
+            attendance: updated
+        });
+    }
 
-        success: true,
-
-        message: "Attendance marked successfully",
-
-        attendance
+    const attendance = await prisma.attendance.create({
+        data: {
+            studentId: Number(studentId),
+            teacherId: validTeacherId,
+            batchId: Number(batchId),
+            status,
+            remarks: remarks || ""
+        },
+        include: {
+            student: true,
+            teacher: true,
+            batch: true
+        }
     });
 
+    res.status(201).json({
+        success: true,
+        message: "Attendance marked successfully",
+        attendance
+    });
 });
 
 

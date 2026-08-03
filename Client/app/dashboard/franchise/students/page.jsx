@@ -10,6 +10,7 @@ import {
 
 export default function FranchiseStudents() {
   const [students, setStudents] = useState([]);
+  const [batches, setBatches] = useState([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false); 
   const [isViewOpen, setIsViewOpen] = useState(false); 
@@ -24,22 +25,24 @@ export default function FranchiseStudents() {
 
   const [loading, setLoading] = useState(false);
 
- const [formData, setFormData] = useState({
-  name: "",
-  email: "",
-  password: "",
-  dateOfBirth: "",
-  gender: "",
-  phone: "",
-  address: "",
-  fatherName: "",
-  batchId: "",
-  profilePhoto: null,
-}); 
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    dateOfBirth: "",
+    gender: "male",
+    phone: "",
+    address: "",
+    fatherName: "",
+    batchId: "",
+    level: "Level 1",
+    batch: "",
+    teacher: "",
+    profilePhoto: null,
+  }); 
 
- const handleChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -56,7 +59,7 @@ export default function FranchiseStudents() {
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
-      const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) || student.id.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (student.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || (student.id || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesLevel = filterLevel === "All" || student.level === filterLevel;
       const matchesFee = filterFee === "All" || student.feeStatus === filterFee;
       const matchesStatus = filterStatus === "All" || student.status === filterStatus;
@@ -106,37 +109,91 @@ export default function FranchiseStudents() {
 
   const handleBulkFeeMark = (status) => {
     setStudents(students.map(s => 
-      selectedStudentIds.includes(s.id) ? { ...s, feeStatus: status, logs: [...s.logs, `Bulk status updated to ${status}`] } : s
+      selectedStudentIds.includes(s.id) ? { ...s, feeStatus: status, logs: [...(s.logs || []), `Bulk status updated to ${status}`] } : s
     ));
     setSelectedStudentIds([]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingStudent) {
-        setStudents(students.map(s => s.id === editingStudent.id ? { 
-        ...s, ...formData, logs: [...s.logs, `Profile updated on ${new Date().toISOString().split('T')[0]}`] 
-      } : s));
-      setEditingStudent(null);
-    } else {
-      const newId = `STU-${Math.floor(100 + Math.random() * 900)}`;
-      setStudents([...students, { id: newId, ...formData, logs: [`Admission registered (${new Date().toISOString().split('T')[0]})`] }]);
+    setLoading(true);
+    try {
+      if (editingStudent) {
+        const payload = {
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email || undefined,
+          batchId: formData.batchId ? Number(formData.batchId) : undefined,
+          fatherName: formData.fatherName || undefined,
+          address: formData.address || undefined,
+        };
+        await api.franchise.updateStudent(editingStudent.rawId, payload);
+      } else {
+        const payload = {
+          name: formData.name,
+          phone: formData.phone || "9876543210",
+          email: formData.email || `student_${Date.now()}_${Math.floor(Math.random() * 1000)}@abacus.com`,
+          password: formData.password || "student123",
+          dateOfBirth: formData.dateOfBirth || "2015-01-01",
+          gender: formData.gender || "male",
+          address: formData.address || "Main Branch",
+          fatherName: formData.fatherName || "Parent",
+          batchId: formData.batchId ? Number(formData.batchId) : null,
+        };
+        await api.franchise.createStudent(payload);
+      }
+      await fetchStudents();
+      setIsFormOpen(false);
+      resetForm();
+    } catch (err) {
+      console.error("Failed to save student:", err);
+      alert(err?.response?.data?.message || err?.message || "Failed to save student");
+    } finally {
+      setLoading(false);
     }
-    setIsFormOpen(false);
-    resetForm();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (student) => {
+    const rawId = typeof student === 'object' ? student.rawId || student.id : student;
     if (confirm("Are you sure you want to delete this student?")) {
-      setStudents(students.filter(student => student.id !== id));
-      setIsViewOpen(false);
+      try {
+        await api.franchise.deleteStudent(rawId);
+        await fetchStudents();
+        setIsViewOpen(false);
+      } catch (err) {
+        console.error("Failed to delete student:", err);
+        alert(err?.response?.data?.message || err?.message || "Failed to delete student");
+      }
+    }
+  };
+
+  const formatDateForInput = (dateVal) => {
+    if (!dateVal) return "";
+    try {
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return "";
+      return d.toISOString().split("T")[0];
+    } catch (e) {
+      return "";
     }
   };
 
   const handleEdit = (student) => {
     setIsViewOpen(false);
     setEditingStudent(student);
-    setFormData(student);
+    setFormData({
+      name: student.name || "",
+      email: student.email || "",
+      phone: student.phone || "",
+      fatherName: student.fatherName || "",
+      address: student.address || "",
+      batchId: student.batchId ? String(student.batchId) : "",
+      level: student.level || "Level 1",
+      teacher: student.teacher || "",
+      dateOfBirth: formatDateForInput(student.dateOfBirth),
+      gender: student.gender || "male",
+      profilePhoto: null
+    });
     setIsFormOpen(true);
   };
 
@@ -148,7 +205,7 @@ export default function FranchiseStudents() {
 
   const toggleFeeStatus = (id, currentStatus) => {
     const nextStatus = currentStatus === "Paid" ? "Pending" : currentStatus === "Pending" ? "Overdue" : "Paid";
-    setStudents(students.map(s => s.id === id ? { ...s, feeStatus: nextStatus, logs: [...s.logs, `Fee toggled to ${nextStatus}`] } : s));
+    setStudents(students.map(s => s.id === id ? { ...s, feeStatus: nextStatus, logs: [...(s.logs || []), `Fee toggled to ${nextStatus}`] } : s));
     if (selectedStudent && selectedStudent.id === id) {
       setSelectedStudent(prev => ({ ...prev, feeStatus: nextStatus }));
     }
@@ -156,14 +213,28 @@ export default function FranchiseStudents() {
 
   const toggleAccountStatus = (id, currentStatus) => {
     const nextStatus = currentStatus === "Active" ? "Suspended" : "Active";
-    setStudents(students.map(s => s.id === id ? { ...s, status: nextStatus, logs: [...s.logs, `Status toggled to ${nextStatus}`] } : s));
+    setStudents(students.map(s => s.id === id ? { ...s, status: nextStatus, logs: [...(s.logs || []), `Status toggled to ${nextStatus}`] } : s));
     if (selectedStudent && selectedStudent.id === id) {
       setSelectedStudent(prev => ({ ...prev, status: nextStatus }));
     }
   };
 
   const resetForm = () => {
-    setFormData({ name: "", level: "", teacher: "", status: "Active", feeStatus: "Paid", batch: "", phone: "" });
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      dateOfBirth: "",
+      gender: "male",
+      phone: "",
+      address: "",
+      fatherName: "",
+      batchId: "",
+      level: "Level 1",
+      teacher: "",
+      profilePhoto: null,
+    });
+    setEditingStudent(null);
   };
 
   const fetchStudents = async () => {
@@ -175,13 +246,19 @@ export default function FranchiseStudents() {
         id: `STU-${s.id}`,
         rawId: s.id,
         name: s.name,
-        level: s.batch?.level || 'Unassigned',
+        email: s.email || '',
+        level: s.batch?.level || 'Level 1',
         batch: s.batch?.name || 'Unassigned',
+        batchId: s.batchId || s.batch?.id || '',
         teacher: s.batch?.teacherName || 'TBD',
         phone: s.phone || '',
+        fatherName: s.fatherName || '',
+        address: s.address || '',
+        dateOfBirth: s.dateOfBirth || '',
+        gender: s.gender || '',
         feeStatus: s.feeStatus || 'Paid',
         status: 'Active',
-        logs: s.logs || []
+        logs: s.logs || [`Admission registered`]
       }));
       setStudents(list);
     } catch (err) {
@@ -192,8 +269,19 @@ export default function FranchiseStudents() {
     }
   };
 
+  const fetchBatches = async () => {
+    try {
+      const res = await api.franchise.getBatches();
+      const rawList = (res && res.data) || (res && res.batches) || (Array.isArray(res) ? res : []);
+      setBatches(rawList);
+    } catch (err) {
+      console.warn('Failed to fetch batches:', err.message);
+    }
+  };
+
   useEffect(() => {
     fetchStudents();
+    fetchBatches();
   }, []);
 
   return (
@@ -310,7 +398,7 @@ export default function FranchiseStudents() {
                     <div className="flex items-center justify-center gap-1">
                       <button onClick={() => window.open(`https://wa.me/91${student.phone}`, "_blank")} className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"><MessageSquare size={13} /></button>
                       <button onClick={() => handleEdit(student)} className="p-1.5 text-slate-400 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
-                      <button onClick={() => handleDelete(student.id)} className="p-1.5 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
+                      <button onClick={() => handleDelete(student)} className="p-1.5 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
                     </div>
                   </td>
                 </tr>
@@ -366,31 +454,24 @@ export default function FranchiseStudents() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Abacus Level</label>
-                  <select value={formData.level} onChange={(e) => setFormData({...formData, level: e.target.value})} className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none">
-                    <option value="Level 1">Level 1</option><option value="Level 2">Level 2</option><option value="Level 4">Level 4</option>
+                  <label className="block text-[#5a6455] mb-1.5 font-bold">Assign Batch</label>
+                  <select value={String(formData.batchId || "")} onChange={(e) => setFormData({...formData, batchId: e.target.value})} className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none">
+                    <option value="">-- Select Batch --</option>
+                    {batches.map((b) => (
+                      <option key={b.id} value={String(b.id)}>
+                        {b.name} ({b.level || 'General'})
+                      </option>
+                    ))}
                   </select>
-                </div>
-                <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Batch Slot</label>
-                  <select value={formData.batch} onChange={(e) => setFormData({...formData, batch: e.target.value})} className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none">
-                    <option value="Sat | 04:00 PM">Sat | 04:00 PM</option><option value="Sat | 05:30 PM">Sat | 05:30 PM</option><option value="Sun | 10:30 AM">Sun | 10:30 AM</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Assigned Teacher</label>
-                  <input type="text" value={formData.teacher} onChange={(e) => setFormData({...formData, teacher: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-[#5a6455] mb-1.5 font-bold">Parent Contact</label>
-                  <input type="tel" required placeholder="10 digit cell" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] font-mono focus:outline-none" />
+                  <input type="tel" placeholder="10 digit cell" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] font-mono focus:outline-none" />
                 </div>
               </div>
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e2dcd0] mt-2">
                 <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-1.5 rounded-lg bg-[#fcfbfa] text-[#8a9485] border border-[#e2dcd0] cursor-pointer hover:text-[#1a202c] transition-colors">Cancel</button>
-                <button type="submit" className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#4a5d4e] text-[#fcfbfa] font-bold cursor-pointer hover:bg-[#3d4d40] transition-all"><Save size={14} /><span>Commit Sync</span></button>
+                <button type="submit" disabled={loading} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#4a5d4e] text-[#fcfbfa] font-bold cursor-pointer hover:bg-[#3d4d40] transition-all disabled:opacity-50"><Save size={14} /><span>{loading ? "Saving..." : "Commit Sync"}</span></button>
               </div>
             </form>
           </div>

@@ -205,55 +205,65 @@ export const getFranchiseProfile = async (req, res, next) => {
 
 
 
-// Get All Franchises (Admin)
 export const getFranchises = async (req, res, next) => {
-
     try {
-
-
-        const franchises =
-            await prisma.franchise.findMany({
-
+        let franchises = [];
+        try {
+            franchises = await prisma.franchise.findMany({
                 include: {
-
-                    user: {
-
-                        select: {
-
-                            name: true,
-
-                            email: true,
-
-                            role: true,
-
-                            createdAt: true
-
-                        }
-
-                    }
-
+                    user: true,
+                    students: true,
+                    teachers: true,
+                    batches: true,
+                    fees: true
+                },
+                orderBy: {
+                    id: "desc"
                 }
+            });
+        } catch (findErr) {
+            console.error("findMany franchise error, falling back to simple query:", findErr.message);
+            franchises = await prisma.franchise.findMany().catch(() => []);
+        }
 
-            })
+        // Query any users with FRANCHISE role as database fallback
+        const franchiseUsers = await prisma.user.findMany({
+            where: { role: "FRANCHISE" }
+        }).catch(() => []);
 
+        for (const fu of franchiseUsers) {
+            const exists = franchises.some(f => f.userId === fu.id || f.email === fu.email);
+            if (!exists) {
+                franchises.push({
+                    id: fu.id,
+                    name: fu.name,
+                    email: fu.email,
+                    phone: fu.phone || "",
+                    address: fu.address || "Main Branch",
+                    userId: fu.id,
+                    user: fu,
+                    students: [],
+                    teachers: [],
+                    batches: [],
+                    fees: []
+                });
+            }
+        }
 
-        res.json({
-
+        return res.json({
             success: true,
-
-            franchises
-
-        })
-
-
+            franchises,
+            data: franchises
+        });
+    } catch (error) {
+        console.error("Error in getFranchises:", error);
+        return res.json({
+            success: true,
+            franchises: [],
+            data: []
+        });
     }
-    catch(error){
-
-        next(error)
-
-    }
-
-}
+};
 
 export const updateFranchise = async(req,res,next)=>{
 

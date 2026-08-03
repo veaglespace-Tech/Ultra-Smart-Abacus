@@ -95,11 +95,11 @@ router.get(
   getStudentFeesSummary
 );
 
-// DELETE FEE (Admin only)
+// DELETE FEE (Admin & Franchise)
 router.delete(
   "/:id",
   authMiddleware,
-  authorize("ADMIN"),
+  authorize("ADMIN", "FRANCHISE"),
   deleteFee
 );
 

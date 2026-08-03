@@ -27,11 +27,11 @@ router.get("/", authMiddleware, getAllStudents);
 router.get("/profile/me", authMiddleware, getMyProfile);
 router.get("/:id",getStudentById);
 
-router.put("/:id", upload.single("profilePhoto"),
+router.put("/:id", authMiddleware, upload.single("profilePhoto"),
  updateStudentValidation, 
  validate,
   updateStudent);
   
-router.delete("/:id",deleteStudent);
+router.delete("/:id", authMiddleware, deleteStudent);
 
 export default router;

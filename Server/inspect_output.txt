@@ -1,4 +1,4 @@
---- NOTIFICATIONS (2) ---
+--- NOTIFICATIONS (3) ---
 [
   {
     "id": 24,
@@ -25,10 +25,23 @@
     "createdAt": "2026-07-30T08:24:48.887Z",
     "updatedAt": "2026-07-30T08:24:48.887Z",
     "isRead": 0
+  },
+  {
+    "id": 26,
+    "title": "New Inventory Stock Received",
+    "message": "Your franchise received 10 units of 'Workbook12' from Central Admin.",
+    "type": "ANNOUNCEMENT",
+    "recipientType": "FRANCHISES",
+    "batchId": null,
+    "studentId": null,
+    "createdBy": 1,
+    "createdAt": "2026-07-30T11:33:42.081Z",
+    "updatedAt": "2026-07-30T11:33:42.081Z",
+    "isRead": 0
   }
 ]
 
---- NOTIFICATION READS (25) ---
+--- NOTIFICATION READS (43) ---
 [
   {
     "id": 1,
@@ -179,5 +192,113 @@
     "notificationId": 25,
     "userId": 55,
     "readAt": "2026-07-30T16:52:07.000Z"
+  },
+  {
+    "id": 38,
+    "notificationId": 24,
+    "userId": 29,
+    "readAt": "2026-07-30T17:06:37.000Z"
+  },
+  {
+    "id": 39,
+    "notificationId": 25,
+    "userId": 29,
+    "readAt": "2026-07-30T17:06:37.000Z"
+  },
+  {
+    "id": 40,
+    "notificationId": 26,
+    "userId": 29,
+    "readAt": "2026-07-30T17:06:37.000Z"
+  },
+  {
+    "id": 41,
+    "notificationId": 26,
+    "userId": 1,
+    "readAt": "2026-07-30T17:37:25.000Z"
+  },
+  {
+    "id": 42,
+    "notificationId": 27,
+    "userId": 1,
+    "readAt": "2026-07-30T17:37:25.000Z"
+  },
+  {
+    "id": 43,
+    "notificationId": 28,
+    "userId": 1,
+    "readAt": "2026-07-30T17:37:25.000Z"
+  },
+  {
+    "id": 47,
+    "notificationId": 29,
+    "userId": 1,
+    "readAt": "2026-08-03T10:20:49.000Z"
+  },
+  {
+    "id": 48,
+    "notificationId": 26,
+    "userId": 24,
+    "readAt": "2026-08-03T11:00:33.000Z"
+  },
+  {
+    "id": 49,
+    "notificationId": 27,
+    "userId": 24,
+    "readAt": "2026-08-03T11:00:33.000Z"
+  },
+  {
+    "id": 50,
+    "notificationId": 28,
+    "userId": 24,
+    "readAt": "2026-08-03T11:00:33.000Z"
+  },
+  {
+    "id": 51,
+    "notificationId": 29,
+    "userId": 24,
+    "readAt": "2026-08-03T11:00:33.000Z"
+  },
+  {
+    "id": 55,
+    "notificationId": 26,
+    "userId": 55,
+    "readAt": "2026-08-03T11:00:56.000Z"
+  },
+  {
+    "id": 56,
+    "notificationId": 27,
+    "userId": 55,
+    "readAt": "2026-08-03T11:00:56.000Z"
+  },
+  {
+    "id": 57,
+    "notificationId": 28,
+    "userId": 55,
+    "readAt": "2026-08-03T11:00:56.000Z"
+  },
+  {
+    "id": 58,
+    "notificationId": 29,
+    "userId": 55,
+    "readAt": "2026-08-03T11:00:56.000Z"
+  },
+  {
+    "id": 62,
+    "notificationId": 24,
+    "userId": 49,
+    "readAt": "2026-08-03T13:47:40.000Z"
+  },
+  {
+    "id": 63,
+    "notificationId": 25,
+    "userId": 49,
+    "readAt": "2026-08-03T13:47:40.000Z"
+  },
+  {
+    "id": 64,
+    "notificationId": 26,
+    "userId": 49,
+    "readAt": "2026-08-03T13:47:40.000Z"
   }
 ]

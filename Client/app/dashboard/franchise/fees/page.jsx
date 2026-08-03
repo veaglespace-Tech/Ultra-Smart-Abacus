@@ -48,9 +48,10 @@ export default function FranchiseFees() {
         paidAmount: Number(fee.paidAmount || 0),
         pendingAmount: Number(fee.dueAmount || 0),
         dueDate: (() => {
-          if (!fee.dueDate) return "—";
+          const rawDate = fee.dueDate || fee.createdAt;
+          if (!rawDate) return "—";
           try {
-            const d = new Date(fee.dueDate);
+            const d = new Date(rawDate);
             return isNaN(d.getTime()) ? "—" : d.toISOString().split("T")[0];
           } catch (e) {
             return "—";
@@ -136,6 +137,7 @@ export default function FranchiseFees() {
         batchId: Number(batchId),
         totalFee: Number(formData.totalAmount),
         paidAmount: Number(formData.paidAmount || 0),
+        dueDate: formData.dueDate || new Date().toISOString().split('T')[0],
       });
 
       setIsAddModalOpen(false);
@@ -153,9 +155,8 @@ export default function FranchiseFees() {
       studentId: selectedRow.studentId,
       totalAmount: selectedRow.totalAmount,
       paidAmount: selectedRow.paidAmount,
-      fineAmount: selectedRow.fineAmount,
-      discountAmount: selectedRow.discountAmount,
-      dueDate: selectedRow.dueDate !== "—" ? selectedRow.dueDate : "",
+      dueDate: selectedRow.dueDate !== "—" ? selectedRow.dueDate : new Date().toISOString().split('T')[0],
+      status: selectedRow.status || "PENDING",
       notes: selectedRow.notes || "",
     });
     setIsActionModalOpen(false);
@@ -167,6 +168,9 @@ export default function FranchiseFees() {
     try {
       await api.franchise.updateFee(selectedRow.id, {
         totalFee: Number(formData.totalAmount),
+        paidAmount: Number(formData.paidAmount || 0),
+        dueDate: formData.dueDate,
+        status: formData.status,
       });
       setIsEditModalOpen(false);
       setSelectedRow(null);
@@ -385,15 +389,72 @@ export default function FranchiseFees() {
 
       {isEditModalOpen && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl p-5 shadow-xl relative text-slate-800 dark:text-slate-200">
-            <button type="button" onClick={() => setIsEditModalOpen(false)} className="absolute top-4 right-4 text-slate-400 dark:text-slate-400 cursor-pointer"><X size={16} /></button>
-            <h3 className="text-slate-900 dark:text-white font-bold mb-4 font-mono uppercase text-xs">Edit Fee Record</h3>
-            <form onSubmit={handleEditSubmit} className="space-y-3">
-              <div>
-                <label className="text-[10px] text-slate-450 dark:text-slate-400 uppercase font-bold block mb-1">Total Fee (₹)</label>
-                <input type="number" required value={formData.totalAmount} onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })} className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-600" />
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-xl relative text-slate-800 dark:text-slate-200">
+            <button type="button" onClick={() => setIsEditModalOpen(false)} className="absolute top-4 right-4 text-slate-400 dark:text-slate-400 cursor-pointer hover:text-slate-900 dark:hover:text-white"><X size={16} /></button>
+            <h3 className="text-slate-900 dark:text-white font-bold mb-4 font-mono uppercase text-xs tracking-wider border-b border-slate-100 dark:border-slate-800 pb-3">Edit Fee Record #{selectedRow?.id}</h3>
+            
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block mb-1">Total Fee Amount (₹) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.totalAmount}
+                    onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-mono focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block mb-1">Paid Amount (₹)</label>
+                  <input
+                    type="number"
+                    value={formData.paidAmount}
+                    onChange={(e) => setFormData({ ...formData, paidAmount: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-mono focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
               </div>
-              <button type="submit" className="w-full py-2.5 rounded-xl bg-emerald-600 dark:bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-700 text-white font-bold cursor-pointer text-xs">Save Changes</button>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block mb-1">Payment Due Date</label>
+                  <input
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-mono focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block mb-1">Payment Status</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-bold focus:outline-none focus:border-emerald-600"
+                  >
+                    <option value="PAID">PAID</option>
+                    <option value="PARTIAL">PARTIAL</option>
+                    <option value="PENDING">PENDING</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 text-xs transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer text-xs transition-all shadow-md shadow-emerald-600/20"
+                >
+                  Save Changes
+                </button>
+              </div>
             </form>
           </div>
         </div>

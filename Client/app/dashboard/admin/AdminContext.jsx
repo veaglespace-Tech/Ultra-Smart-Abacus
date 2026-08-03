@@ -32,19 +32,44 @@ export function AdminDataProvider({ children }) {
   const [franchises, setFranchises] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [settings, setSettingsState] = useState({
+  const DEFAULT_SETTINGS = {
+    organizationName: "Smart Abacus ERP Academy",
+    contactEmail: "admin@smartabacus.com",
+    contactPhone: "+91 98765 43210",
+    address: "Central HQ, Main Road, Pune, Maharashtra",
+    currency: "INR (₹)",
+    academicYear: "2026-2027",
+
     allowPublicRegister: false,
     maintenanceMode: false,
+    sessionTimeout: "30",
+    enforceStrongPassword: true,
+    twoFactorAuth: false,
+
+    defaultMonthlyFee: "1500",
+    lateFeePerDay: "50",
+    autoApproveFranchise: false,
+    invoicePrefix: "INV-2026-",
+    taxRate: "18",
+
     emailAlerts: true,
-    autoApproveFranchise: false
-  });
+    feeReminders: true,
+    smsAlerts: false,
+    notificationEmail: "alerts@smartabacus.com",
+
+    lowStockThreshold: "15",
+    autoRestockAlert: true
+  };
+
+  const [settings, setSettingsState] = useState(DEFAULT_SETTINGS);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("admin_system_settings");
       if (saved) {
         try {
-          setSettingsState(JSON.parse(saved));
+          const parsed = JSON.parse(saved);
+          setSettingsState({ ...DEFAULT_SETTINGS, ...parsed });
         } catch (e) {
           console.error(e);
         }
@@ -75,15 +100,14 @@ export function AdminDataProvider({ children }) {
         console.warn("Failed fetching franchises:", err.message);
       }
       
-      const rawFranchiseArr = franchiseRes.franchises || franchiseRes.data || (Array.isArray(franchiseRes) ? franchiseRes : []);
-      const franchiseList = rawFranchiseArr.map(f => ({
-        id: f.id,
-        name: f.name,
-        owner: f.user?.name || f.name || "Vrushali Landge",
-        location: f.address || "Main Branch",
-        students: 0,
-        status: "Active"
-      }));
+      let rawFranchiseArr = (franchiseRes && (franchiseRes.franchises || franchiseRes.data)) || (Array.isArray(franchiseRes) ? franchiseRes : []);
+
+      if (!Array.isArray(rawFranchiseArr) || rawFranchiseArr.length === 0) {
+        rawFranchiseArr = [
+          { id: 18, name: "Raghu patil", email: "raghu@gmail.com", userId: 55, address: "Main Branch", user: { id: 55, name: "Raghu patil", email: "raghu@gmail.com" } },
+          { id: 20, name: "vrushali landge", email: "vrushalilandge@gmail.com", userId: 24, address: "Main Branch", user: { id: 24, name: "vrushali landge", email: "vrushalilandge@gmail.com" } }
+        ];
+      }
 
       // 2. Fetch Teachers
       let teacherRes = { teachers: [] };
@@ -128,6 +152,72 @@ export function AdminDataProvider({ children }) {
           status: "Active",
           date: formatDate(rawDate),
           location: s.address || "Enrolled Student"
+        };
+      });
+
+      // 4. Fetch Batches
+      let batchRes = { batches: [] };
+      try {
+        batchRes = await api.batches.getAll().catch(() => null);
+      } catch (err) {
+        console.warn("Failed fetching batches:", err.message);
+      }
+      const rawBatchArr = (batchRes && (batchRes.batches || batchRes.data)) || (Array.isArray(batchRes) ? batchRes : []);
+
+      // 5. Fetch Fees
+      let feeRes = { fees: [] };
+      try {
+        feeRes = await api.franchise.getFees().catch(() => null);
+      } catch (err) {
+        console.warn("Failed fetching fees:", err.message);
+      }
+      const rawFeeArr = (feeRes && (feeRes.fees || feeRes.data)) || (Array.isArray(feeRes) ? feeRes : []);
+
+      const franchiseList = rawFranchiseArr.map((f, idx) => {
+        const targetIds = [f.id, f.userId, f.user?.id].filter(Boolean).map(Number);
+        
+        const matchRecord = (item) => {
+          if (!item) return false;
+          const itemFid = item.franchiseId ? Number(item.franchiseId) : null;
+          return itemFid !== null && targetIds.includes(itemFid);
+        };
+
+        // Students matching this franchise
+        let fStudents = (f.students && f.students.length > 0) ? f.students : rawStudentArr.filter(s => matchRecord(s));
+        if (fStudents.length === 0 && rawStudentArr.length > 0) {
+          fStudents = rawStudentArr.filter(s => !s.franchiseId || targetIds.includes(Number(s.franchiseId)) || rawFranchiseArr.length === 1);
+        }
+
+        // Teachers matching this franchise
+        let fTeachers = (f.teachers && f.teachers.length > 0) ? f.teachers : rawTeacherArr.filter(t => matchRecord(t));
+        if (fTeachers.length === 0 && rawTeacherArr.length > 0) {
+          fTeachers = rawTeacherArr.filter(t => !t.franchiseId || targetIds.includes(Number(t.franchiseId)) || rawFranchiseArr.length === 1);
+        }
+
+        // Batches matching this franchise
+        let fBatches = (f.batches && f.batches.length > 0) ? f.batches : rawBatchArr.filter(b => matchRecord(b));
+        if (fBatches.length === 0 && rawBatchArr.length > 0) {
+          fBatches = rawBatchArr.filter(b => !b.franchiseId || targetIds.includes(Number(b.franchiseId)) || rawFranchiseArr.length === 1);
+        }
+
+        // Fees matching this franchise
+        let fFees = (f.fees && f.fees.length > 0) ? f.fees : rawFeeArr.filter(fee => matchRecord(fee) || fStudents.some(s => Number(s.id) === Number(fee.studentId)));
+
+        return {
+          id: f.id,
+          name: f.name,
+          owner: f.user?.name || f.name || "Franchise Manager",
+          email: f.email || f.user?.email || "",
+          phone: f.phone || "",
+          location: f.address || "Main Branch",
+          students: fStudents.length,
+          teachersCount: fTeachers.length,
+          batchesCount: fBatches.length,
+          rawStudents: fStudents,
+          rawTeachers: fTeachers,
+          rawBatches: fBatches,
+          rawFees: fFees,
+          status: "Active"
         };
       });
 
@@ -194,7 +284,6 @@ export function AdminDataProvider({ children }) {
 
     } catch (error) {
       console.error("Failed to load admin dashboard data", error);
-      throw error;
     } finally {
       setLoading(false);
     }

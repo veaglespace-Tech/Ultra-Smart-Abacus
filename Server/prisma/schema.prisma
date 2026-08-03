@@ -325,6 +325,7 @@ model Fee {
   totalFee     Float
   paidAmount   Float        @default(0)
   dueAmount    Float
+  dueDate      DateTime?
   status       FeeStatus    @default(PENDING)
   isActive     Boolean      @default(true)
   payments     FeePayment[]

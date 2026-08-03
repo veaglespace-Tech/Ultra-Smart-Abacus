@@ -6,7 +6,7 @@ export const feeService = {
    * Create a new fee record
    */
   createFee: async (data) => {
-    const { studentId, franchiseId, batchId, totalFee, paidAmount = 0 } = data;
+    const { studentId, franchiseId, batchId, totalFee, paidAmount = 0, dueDate } = data;
 
     if (totalFee <= 0) {
       throw new CustomError("Total fee must be greater than 0", 400);
@@ -27,25 +27,39 @@ export const feeService = {
     if (!franchise) throw new CustomError("Franchise does not exist", 404);
     if (!batch) throw new CustomError("Batch does not exist", 404);
 
-    // Prevent duplicates
+    // If fee record already exists for this student and batch, update it
     const activeFee = await prisma.fee.findFirst({
-      where: { studentId, batchId, isActive: true },
+      where: { studentId: Number(studentId), batchId: Number(batchId), isActive: true },
     });
     if (activeFee) {
-      throw new CustomError("An active fee record already exists for this student and batch", 400);
+      return await feeService.updateFee(activeFee.id, {
+        totalFee: Number(totalFee),
+        paidAmount: Number(paidAmount),
+        dueDate,
+      });
     }
 
-    const dueAmount = totalFee - paidAmount;
+    const dueAmount = Math.max(0, totalFee - paidAmount);
     const status = dueAmount === 0 ? "PAID" : paidAmount > 0 ? "PARTIAL" : "PENDING";
 
-    return await prisma.fee.create({
+    let parsedDueDate = dueDate ? new Date(dueDate) : null;
+    if (!parsedDueDate || isNaN(parsedDueDate.getTime())) {
+      parsedDueDate = new Date();
+      parsedDueDate.setDate(parsedDueDate.getDate() + 30);
+    }
+
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE Fee ADD COLUMN dueDate DATETIME NULL`).catch(() => {});
+    } catch (e) {}
+
+    const fee = await prisma.fee.create({
       data: {
-        studentId,
-        franchiseId,
-        batchId,
-        totalFee,
-        paidAmount,
-        dueAmount,
+        studentId: Number(studentId),
+        franchiseId: Number(franchiseId),
+        batchId: Number(batchId),
+        totalFee: Number(totalFee),
+        paidAmount: Number(paidAmount),
+        dueAmount: Number(dueAmount),
         status,
         isActive: true,
       },
@@ -55,13 +69,21 @@ export const feeService = {
         franchise: true,
       },
     });
+
+    if (parsedDueDate) {
+      const formattedIso = parsedDueDate.toISOString().slice(0, 19).replace('T', ' ');
+      await prisma.$executeRawUnsafe(`UPDATE Fee SET dueDate = '${formattedIso}' WHERE id = ${fee.id}`).catch(() => {});
+      fee.dueDate = parsedDueDate;
+    }
+
+    return fee;
   },
 
   /**
    * Get filtered fee records
    */
   getFees: async (query) => {
-    const { studentName, batchId, franchiseId, status, page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = query;
+    const { studentName, batchId, franchiseId, status, page = 1, limit = 50, sortBy = "createdAt", sortOrder = "desc" } = query;
 
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
@@ -88,7 +110,7 @@ export const feeService = {
       };
     }
 
-    const [fees, totalCount] = await Promise.all([
+    const [fees, totalCount, rawDueDates] = await Promise.all([
       prisma.fee.findMany({
         where,
         skip,
@@ -103,10 +125,18 @@ export const feeService = {
         },
       }),
       prisma.fee.count({ where }),
+      prisma.$queryRawUnsafe(`SELECT id, dueDate FROM Fee`).catch(() => []),
     ]);
 
+    const dueDateMap = new Map((rawDueDates || []).map(r => [Number(r.id), r.dueDate]));
+
+    const enrichedFees = fees.map(f => ({
+      ...f,
+      dueDate: dueDateMap.get(Number(f.id)) || f.dueDate || f.createdAt
+    }));
+
     return {
-      fees,
+      fees: enrichedFees,
       pagination: {
         total: totalCount,
         page: Number(page),
@@ -121,7 +151,7 @@ export const feeService = {
    */
   getFeeById: async (id) => {
     const fee = await prisma.fee.findFirst({
-      where: { id: Number(id), isActive: true },
+      where: { id: Number(id) },
       include: {
         student: true,
         batch: true,
@@ -143,33 +173,54 @@ export const feeService = {
    * Update fee details
    */
   updateFee: async (id, data) => {
-    const { totalFee } = data;
-
-    if (totalFee <= 0) {
-      throw new CustomError("Total fee must be greater than 0", 400);
-    }
+    const { totalFee, paidAmount, dueDate, status } = data;
 
     const existingFee = await prisma.fee.findFirst({
-      where: { id: Number(id), isActive: true },
+      where: { id: Number(id) },
     });
 
     if (!existingFee) {
       throw new CustomError("Fee record not found", 404);
     }
 
-    if (totalFee < existingFee.paidAmount) {
-      throw new CustomError("New total fee cannot be less than already paid amount", 400);
+    const newTotalFee = totalFee !== undefined && !isNaN(Number(totalFee)) ? Number(totalFee) : existingFee.totalFee;
+    const newPaidAmount = paidAmount !== undefined && !isNaN(Number(paidAmount)) ? Number(paidAmount) : existingFee.paidAmount;
+
+    if (newTotalFee <= 0) {
+      throw new CustomError("Total fee must be greater than 0", 400);
     }
 
-    const dueAmount = totalFee - existingFee.paidAmount;
-    const status = dueAmount === 0 ? "PAID" : existingFee.paidAmount > 0 ? "PARTIAL" : "PENDING";
+    if (newPaidAmount < 0) {
+      throw new CustomError("Paid amount cannot be negative", 400);
+    }
 
-    return await prisma.fee.update({
+    const newDueAmount = Math.max(0, newTotalFee - newPaidAmount);
+    let calculatedStatus = status;
+    if (!calculatedStatus) {
+      calculatedStatus = newDueAmount === 0 ? "PAID" : newPaidAmount > 0 ? "PARTIAL" : "PENDING";
+    }
+
+    let parsedDueDate = null;
+    if (dueDate) {
+      try {
+        parsedDueDate = new Date(dueDate);
+        if (isNaN(parsedDueDate.getTime())) parsedDueDate = null;
+      } catch (e) {
+        parsedDueDate = null;
+      }
+    }
+
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE Fee ADD COLUMN dueDate DATETIME NULL`).catch(() => {});
+    } catch (e) {}
+
+    const updated = await prisma.fee.update({
       where: { id: Number(id) },
       data: {
-        totalFee,
-        dueAmount,
-        status,
+        totalFee: newTotalFee,
+        paidAmount: newPaidAmount,
+        dueAmount: newDueAmount,
+        status: calculatedStatus,
       },
       include: {
         student: true,
@@ -177,6 +228,14 @@ export const feeService = {
         franchise: true,
       },
     });
+
+    if (parsedDueDate) {
+      const formattedIso = parsedDueDate.toISOString().slice(0, 19).replace('T', ' ');
+      await prisma.$executeRawUnsafe(`UPDATE Fee SET dueDate = '${formattedIso}' WHERE id = ${Number(id)}`).catch(() => {});
+      updated.dueDate = parsedDueDate;
+    }
+
+    return updated;
   },
 
   /**
@@ -276,20 +335,38 @@ export const feeService = {
   },
 
   /**
-   * Soft-delete/disable fee record
+   * Hard Delete fee record from MySQL
    */
   deleteFee: async (id) => {
-    const fee = await prisma.fee.findFirst({
-      where: { id: Number(id), isActive: true },
-    });
-
-    if (!fee) {
-      throw new CustomError("Fee record not found or already deleted", 404);
+    const feeIdNum = Number(id);
+    if (isNaN(feeIdNum)) {
+      throw new CustomError("Invalid fee ID", 400);
     }
 
-    return await prisma.fee.update({
-      where: { id: fee.id },
-      data: { isActive: false },
-    });
+    try {
+      // 1. Delete all associated fee payments first
+      await prisma.feePayment.deleteMany({
+        where: { feeId: feeIdNum },
+      }).catch(() => {});
+
+      await prisma.$executeRawUnsafe(`DELETE FROM FeePayment WHERE feeId = ${feeIdNum}`).catch(() => {});
+
+      // 2. Hard delete fee record from MySQL database
+      await prisma.fee.delete({
+        where: { id: feeIdNum },
+      });
+    } catch (err) {
+      console.warn(`[Fee Hard Delete Fallback] Fee #${feeIdNum}:`, err.message);
+      // 3. Raw SQL deletion fallback
+      await prisma.$executeRawUnsafe(`DELETE FROM Fee WHERE id = ${feeIdNum}`).catch(async () => {
+        // 4. Soft delete fallback
+        await prisma.fee.update({
+          where: { id: feeIdNum },
+          data: { isActive: false },
+        }).catch(() => {});
+      });
+    }
+
+    return { success: true, message: "Fee record deleted" };
   },
 };

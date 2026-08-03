@@ -14,7 +14,7 @@ const getStudentFromUser = async (user) => {
 
 // Create a new fee record
 export const createFee = asyncHandler(async (req, res) => {
-  const { studentId, franchiseId, batchId, totalFee, paidAmount } = req.body;
+  const { studentId, franchiseId, batchId, totalFee, paidAmount, dueDate } = req.body;
   
   const fee = await feeService.createFee({
     studentId: Number(studentId),
@@ -22,6 +22,7 @@ export const createFee = asyncHandler(async (req, res) => {
     batchId: Number(batchId),
     totalFee: Number(totalFee),
     paidAmount: paidAmount ? Number(paidAmount) : 0,
+    dueDate,
   });
 
   res.status(201).json({
@@ -76,10 +77,14 @@ export const getFeeById = asyncHandler(async (req, res) => {
   });
 });
 
-// Update total fee
+// Update fee details
 export const updateFee = asyncHandler(async (req, res) => {
+  const { totalFee, paidAmount, dueDate, status } = req.body;
   const fee = await feeService.updateFee(req.params.id, {
-    totalFee: Number(req.body.totalFee),
+    totalFee,
+    paidAmount,
+    dueDate,
+    status,
   });
 
   res.status(200).json({

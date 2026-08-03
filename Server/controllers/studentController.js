@@ -2,16 +2,24 @@ import prisma from "../config/prisma.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 export const createStudent = asyncHandler(async (req, res) => {
-    const { name, email, password, dateOfBirth, gender, phone, address, fatherName, batchId, profilePhoto } = req.body;
+    let { name, email, password, dateOfBirth, gender, phone, address, fatherName, batchId, profilePhoto } = req.body;
     const hashedPassword = password ? await import("bcrypt").then(({ default: bcrypt }) => bcrypt.hash(password, 10)) : null;
 
     let franchiseId = req.body.franchiseId ? Number(req.body.franchiseId) : null;
     if (!franchiseId && req.user && req.user.role === "FRANCHISE") {
-        let franchise = await prisma.franchise.findFirst({ where: { userId: Number(req.user.id) } });
-        if (!franchise && req.user.email) {
-            franchise = await prisma.franchise.findFirst({ where: { email: req.user.email } });
+        if (req.user.franchiseId) {
+            franchiseId = Number(req.user.franchiseId);
+        } else {
+            let franchise = await prisma.franchise.findFirst({ where: { userId: Number(req.user.id) } });
+            if (!franchise && req.user.email) {
+                franchise = await prisma.franchise.findFirst({ where: { email: req.user.email } });
+            }
+            if (franchise) franchiseId = franchise.id;
         }
-        if (franchise) franchiseId = franchise.id;
+    }
+
+    if (!email || !email.trim()) {
+        email = `student_${Date.now()}_${Math.floor(Math.random() * 1000)}@abacus.com`;
     }
 
     const student = await prisma.student.create({
@@ -20,11 +28,12 @@ export const createStudent = asyncHandler(async (req, res) => {
             email,
             password: hashedPassword,
             dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-            gender,
-            phone,
-            address,
-            fatherName,
+            gender: gender || "male",
+            phone: phone || null,
+            address: address || null,
+            fatherName: fatherName || null,
             batchId: batchId ? Number(batchId) : null,
+            franchiseId: franchiseId ? Number(franchiseId) : null,
             profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || null
         }
     });

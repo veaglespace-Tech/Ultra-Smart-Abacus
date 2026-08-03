@@ -120,11 +120,19 @@ export default function SalariesManagement() {
       teacherId: salary.teacherId,
       month: salary.month,
       year: salary.year,
-      basicSalary: salary.basicSalary.toString(),
-      bonus: salary.bonus.toString(),
-      deductions: salary.deductions.toString(),
+      basicSalary: salary.basicSalary ? salary.basicSalary.toString() : "0",
+      bonus: salary.bonus ? salary.bonus.toString() : "0",
+      deductions: salary.deductions ? salary.deductions.toString() : "0",
       paymentStatus: salary.paymentStatus,
-      paymentDate: salary.paymentDate ? salary.paymentDate.split("T")[0] : "",
+      paymentDate: (() => {
+        if (!salary.paymentDate) return "";
+        try {
+          const d = new Date(salary.paymentDate);
+          return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
+        } catch (e) {
+          return "";
+        }
+      })(),
       paymentMode: salary.paymentMode || "Bank Transfer",
       referenceNumber: salary.referenceNumber || "",
       remarks: salary.remarks || ""
@@ -179,15 +187,14 @@ export default function SalariesManagement() {
     try {
       const res = await api.salary.pay(id, {
         paymentDate: new Date().toISOString(),
-        paymentMode: "Bank Transfer",
-        referenceNumber: "DIRECT-PAY"
+        paymentMode: "Bank Transfer"
       });
       if (res.success) {
-        setSuccessMessage("Salary marked as paid successfully.");
+        setSuccessMessage("Salary status updated to Paid.");
         fetchData();
       }
     } catch (err) {
-      setErrorMessage("Failed to mark salary as paid.");
+      setErrorMessage(err.message || "Failed to update payment status.");
     }
   };
 
@@ -216,7 +223,15 @@ export default function SalariesManagement() {
       s.deductions,
       s.netSalary,
       s.paymentStatus,
-      s.paymentDate ? s.paymentDate.split("T")[0] : "N/A",
+      (() => {
+        if (!s.paymentDate) return "N/A";
+        try {
+          const d = new Date(s.paymentDate);
+          return isNaN(d.getTime()) ? "N/A" : d.toISOString().split("T")[0];
+        } catch (e) {
+          return "N/A";
+        }
+      })(),
       s.paymentMode || "N/A",
       s.referenceNumber || "N/A"
     ].join(","));
@@ -301,19 +316,19 @@ export default function SalariesManagement() {
               <tbody>
                 <tr>
                   <td>Basic Salary</td>
-                  <td style="text-align: right; font-weight: bold;">₹${salary.basicSalary.toLocaleString()}</td>
+                  <td style="text-align: right; font-weight: bold;">₹${Number(salary.basicSalary || 0).toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td>Additions (Bonus / Incentives)</td>
-                  <td style="text-align: right; color: #2f855a;">+ ₹${salary.bonus.toLocaleString()}</td>
+                  <td style="text-align: right; color: #2f855a;">+ ₹${Number(salary.bonus || 0).toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td>Deductions (Taxes / Leaves)</td>
-                  <td style="text-align: right; color: #c53030;">- ₹${salary.deductions.toLocaleString()}</td>
+                  <td style="text-align: right; color: #c53030;">- ₹${Number(salary.deductions || 0).toLocaleString()}</td>
                 </tr>
                 <tr class="total-row">
                   <td>Net Remuneration Disbursed</td>
-                  <td style="text-align: right; color: #4f46e5; font-size: 16px;">₹${salary.netSalary.toLocaleString()}</td>
+                  <td style="text-align: right;">₹${Number(salary.netSalary || 0).toLocaleString()}</td>
                 </tr>
               </tbody>
             </table>
@@ -467,12 +482,12 @@ export default function SalariesManagement() {
                       {MONTHS[s.month - 1]} {s.year}
                     </td>
                     <td className="py-4 px-6 text-slate-500 dark:text-slate-400 space-y-0.5">
-                      <p>Basic: ₹{s.basicSalary.toLocaleString()}</p>
-                      <p className="text-emerald-600">Bonus: +₹{s.bonus.toLocaleString()}</p>
-                      <p className="text-rose-500">Ded: -₹{s.deductions.toLocaleString()}</p>
+                      <p>Basic: ₹{Number(s.basicSalary || 0).toLocaleString()}</p>
+                      <p className="text-emerald-600">Bonus: +₹{Number(s.bonus || 0).toLocaleString()}</p>
+                      <p className="text-rose-500">Ded: -₹{Number(s.deductions || 0).toLocaleString()}</p>
                     </td>
                     <td className="py-4 px-6 font-bold text-sm text-indigo-600 dark:text-indigo-400">
-                      ₹{s.netSalary.toLocaleString()}
+                      ₹{Number(s.netSalary || 0).toLocaleString()}
                     </td>
                     <td className="py-4 px-6 text-slate-500 dark:text-slate-400 space-y-0.5">
                       {s.paymentStatus === "PAID" ? (
@@ -495,24 +510,22 @@ export default function SalariesManagement() {
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {s.paymentStatus === "PENDING" && (
-                          <>
-                            <button 
-                              onClick={() => handleMarkAsPaid(s.id)}
-                              className="px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-250 dark:border-emerald-900 cursor-pointer"
-                              title="Mark as Paid"
-                            >
-                              Disburse
-                            </button>
-                            <button 
-                              onClick={() => handleOpenEditModal(s)}
-                              className="p-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer"
-                              title="Edit Salary"
-                            >
-                              <Edit size={12} />
-                            </button>
-                          </>
+                        {s.paymentStatus !== "PAID" && (
+                          <button 
+                            onClick={() => handleMarkAsPaid(s.id)}
+                            className="px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-250 dark:border-emerald-900 cursor-pointer"
+                            title="Mark as Paid"
+                          >
+                            Disburse
+                          </button>
                         )}
+                        <button 
+                          onClick={() => handleOpenEditModal(s)}
+                          className="p-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer"
+                          title="Edit Salary"
+                        >
+                          <Edit size={12} />
+                        </button>
                         <button 
                           onClick={() => triggerPrintSlip(s)}
                           className="p-1.5 bg-indigo-50 dark:bg-indigo-950/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-200 dark:border-indigo-900 cursor-pointer"

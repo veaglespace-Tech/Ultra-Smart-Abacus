@@ -29,6 +29,7 @@ export const createSalary = asyncHandler(async (req, res) => {
         teacherId,
         month,
         year,
+        basicSalary: inputBasic,
         bonus = 0,
         deductions = 0,
         paymentStatus = "PENDING",
@@ -38,11 +39,25 @@ export const createSalary = asyncHandler(async (req, res) => {
         remarks
     } = req.body;
 
-    const bon = parseFloat(bonus);
-    const ded = parseFloat(deductions);
+    const bon = parseFloat(bonus) || 0;
+    const ded = parseFloat(deductions) || 0;
 
-    const { presentDays, dailyRate, basicSalary } = await calculateAttendanceSalary(teacherId, month, year);
-    const netSalary = basicSalary + bon - ded;
+    // Check if Teacher exists
+    const teacher = await prisma.teacher.findUnique({
+        where: { id: parseInt(teacherId) }
+    });
+    if (!teacher) {
+        throw new CustomError("Teacher not found", 404);
+    }
+
+    const { presentDays, dailyRate, basicSalary: calcBasic } = await calculateAttendanceSalary(teacherId, month, year);
+
+    let basicSalary = parseFloat(inputBasic);
+    if (isNaN(basicSalary) || basicSalary <= 0) {
+        basicSalary = calcBasic > 0 ? calcBasic : (teacher.salary || 10000);
+    }
+
+    const netSalary = Math.max(0, basicSalary + bon - ded);
 
     // Retrieve Franchise ID if the creator is a Franchise Admin
     let franchiseId = null;
@@ -53,14 +68,6 @@ export const createSalary = asyncHandler(async (req, res) => {
         if (franchise) {
             franchiseId = franchise.id;
         }
-    }
-
-    // Check if Teacher exists
-    const teacher = await prisma.teacher.findUnique({
-        where: { id: parseInt(teacherId) }
-    });
-    if (!teacher) {
-        throw new CustomError("Teacher not found", 404);
     }
 
     // Check if record already exists for this month & year
@@ -113,6 +120,7 @@ export const createSalary = asyncHandler(async (req, res) => {
 export const updateSalary = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const {
+        basicSalary: inputBasic,
         bonus,
         deductions,
         paymentStatus,
@@ -130,20 +138,20 @@ export const updateSalary = asyncHandler(async (req, res) => {
         throw new CustomError("Salary record not found", 404);
     }
 
-    const { presentDays, dailyRate, basicSalary } = await calculateAttendanceSalary(
-        existingSalary.teacherId,
-        existingSalary.month,
-        existingSalary.year
-    );
+    const inputBasic = req.body.basicSalary !== undefined ? req.body.basicSalary : req.body.basic;
+    let basicSalary = existingSalary.basicSalary;
+    if (inputBasic !== undefined && inputBasic !== null && !isNaN(parseFloat(inputBasic))) {
+        basicSalary = parseFloat(inputBasic);
+    }
 
     const bon = bonus !== undefined ? parseFloat(bonus) : existingSalary.bonus;
     const ded = deductions !== undefined ? parseFloat(deductions) : existingSalary.deductions;
-    const netSalary = basicSalary + bon - ded;
+    const netSalary = Math.max(0, basicSalary + bon - ded);
 
     const updated = await prisma.salary.update({
         where: { id: parseInt(id) },
         data: {
-            basicSalary: basic,
+            basicSalary,
             bonus: bon,
             deductions: ded,
             netSalary,
