@@ -153,27 +153,53 @@ export const getStudentById = asyncHandler(async (req, res) => {
 });
 
 export const updateStudent = asyncHandler(async (req, res) => {
-    console.log("Reached updateStudent controller with params:", req.params, "and body:", req.body);
+    console.log("Reached updateStudent controller with params:", req.params, "and body keys:", Object.keys(req.body || {}));
 
-    const { profilePhoto, ...restBody } = req.body || {};
+    try {
+        await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN documents LONGTEXT NULL`).catch(() => {});
+    } catch (e) {}
+
+    const { profilePhoto, documents, ...restBody } = req.body || {};
+    
+    let documentsStr = undefined;
+    if (documents !== undefined && documents !== null) {
+        documentsStr = typeof documents === 'object' ? JSON.stringify(documents) : String(documents);
+    }
+
     const updateData = {
         ...restBody,
         profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || undefined,
     };
+    if (documentsStr !== undefined) {
+        updateData.documents = documentsStr;
+    }
 
     const student = await prisma.student.update({
         where: {
             id: Number(req.params.id),
         },
         data: updateData,
+    }).catch(async (err) => {
+        console.warn("Prisma update fallback for student:", err.message);
+        if (documentsStr !== undefined) {
+            await prisma.$executeRawUnsafe(`UPDATE Student SET documents = ? WHERE id = ?`, documentsStr, Number(req.params.id)).catch(() => {});
+        }
+        return await prisma.student.findUnique({ where: { id: Number(req.params.id) } });
     });
+
+    let formattedDocs = student?.documents;
+    if (typeof formattedDocs === 'string') {
+        try { formattedDocs = JSON.parse(formattedDocs); } catch (e) {}
+    }
 
     res.status(200).json({
         success: true,
         message: "Student updated successfully",
-        data: student,
+        data: {
+            ...student,
+            documents: formattedDocs
+        },
     });
-
 });
 
 

@@ -4,6 +4,27 @@ const TOKEN_KEY = 'abacus_auth_token';
 const USER_KEY = 'abacus_user_data';
 
 export const storageService = {
+  // Generic Storage Helpers
+  get: (key) => {
+    if (typeof window !== 'undefined') {
+      const item = localStorage.getItem(key);
+      if (!item) return null;
+      try {
+        return JSON.parse(item);
+      } catch (e) {
+        return item;
+      }
+    }
+    return null;
+  },
+  set: (key, val) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const str = typeof val === 'object' ? JSON.stringify(val) : val;
+        localStorage.setItem(key, str);
+      } catch (e) {}
+    }
+  },
   // 1. JWT Access Token Management
   getToken: () => {
     if (typeof window !== 'undefined') {
