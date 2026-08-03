@@ -5,7 +5,8 @@ import { api } from "@/services/api";
 import { 
   UserPlus, GraduationCap, Users, ShieldAlert, CheckCircle2, 
   MessageSquare, Clock, Pencil, Trash, X, Save, ArrowLeft, 
-  Search, Download, CheckSquare, Square, History, User
+  Search, Download, CheckSquare, Square, History, User,
+  Camera, FileText, IdCard, Home, ClipboardList, Receipt, FileCheck
 } from "lucide-react";
 
 export default function FranchiseStudents() {
@@ -323,28 +324,58 @@ export default function FranchiseStudents() {
       {/* POP-UP DETAILED STUDENT ACCOUNT LOG VIEW */}
       {isViewOpen && selectedStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-[#fcfbfa] border border-[#e2dcd0] w-full max-w-md rounded-2xl p-6 shadow-xl relative overflow-hidden text-[#2c3539]">
+          <div className="bg-[#fcfbfa] border border-[#e2dcd0] w-full max-w-lg rounded-2xl p-6 shadow-xl relative overflow-hidden text-[#2c3539] max-h-[90vh] overflow-y-auto space-y-4">
             <div className={`absolute top-0 left-0 w-full h-1.5 ${selectedStudent.status === 'Active' ? 'bg-[#4a5d4e]' : 'bg-rose-600'}`} />
             <button onClick={() => setIsViewOpen(false)} className="absolute top-4 right-4 text-[#8a9485] hover:text-[#1a202c] transition-colors cursor-pointer"><X size={15} /></button>
-            <div className="flex items-center gap-3.5 mb-5 mt-2">
+            <div className="flex items-center gap-3.5 mt-2">
               <div className="p-2.5 bg-[#f4f0e6] border border-[#e2dcd0] rounded-xl text-[#4a5d4e]"><User size={18} /></div>
               <div>
                 <h3 className="text-sm font-black text-[#1a202c] tracking-tight">{selectedStudent.name}</h3>
                 <p className="text-[10px] text-[#8a9485] font-mono uppercase tracking-wider">{selectedStudent.id} | {selectedStudent.level}</p>
               </div>
             </div>
-            <div className="bg-[#f4f0e6]/50 border border-[#e2dcd0]/60 rounded-xl p-4 space-y-3 font-mono text-xs text-[#5a6455] mb-4">
+            <div className="bg-[#f4f0e6]/50 border border-[#e2dcd0]/60 rounded-xl p-4 space-y-3 font-mono text-xs text-[#5a6455]">
               <div className="flex justify-between items-center border-b border-[#e2dcd0]/60 pb-2"><span>Batch Slot:</span><span className="text-[#1a202c] font-bold">{selectedStudent.batch}</span></div>
               <div className="flex justify-between items-center border-b border-[#e2dcd0]/60 pb-2"><span>Assigned Teacher:</span><span className="text-[#1a202c]">{selectedStudent.teacher}</span></div>
               <div className="flex justify-between items-center"><span>Parent Contact:</span><span className="text-[#1a202c]">{selectedStudent.phone}</span></div>
             </div>
-            <div className="mb-5">
+
+            {/* STUDENT ADMISSION DOCUMENTS VAULT SUMMARY */}
+            <div className="space-y-2">
+              <div className="text-[10px] text-[#8a9485] uppercase font-bold flex items-center justify-between">
+                <span className="flex items-center gap-1"><FileCheck size={12} /> Admission Documents Vault (7 Docs):</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-[#f4f0e6]/40 border border-[#e2dcd0] rounded-xl p-3">
+                {[
+                  { id: 'studentPhoto', label: 'Student Photo', icon: Camera },
+                  { id: 'birthCertificate', label: 'Birth Certificate', icon: FileText },
+                  { id: 'studentAadhaar', label: 'Student Aadhaar Card', icon: IdCard },
+                  { id: 'parentAadhaar', label: 'Parent Aadhaar Card', icon: Users },
+                  { id: 'addressProof', label: 'Address Proof', icon: Home },
+                  { id: 'admissionForm', label: 'Admission Form', icon: ClipboardList },
+                  { id: 'feeReceipt', label: 'Fee Payment Receipt', icon: Receipt },
+                ].map(doc => {
+                  const Icon = doc.icon;
+                  return (
+                    <div key={doc.id} className="p-2 bg-white rounded-lg border border-[#e2dcd0] flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 truncate">
+                        <Icon size={13} className="text-[#4a5d4e] shrink-0" />
+                        <span className="font-bold text-[#1a202c] truncate text-[10px]">{doc.label}</span>
+                      </div>
+                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-[9px] rounded-full border border-emerald-200 shrink-0">Supported ✓</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
               <div className="text-[10px] text-[#8a9485] uppercase font-bold flex items-center gap-1 mb-2"><History size={12} /> Audit Logs:</div>
               <div className="bg-[#f4f0e6]/40 border border-[#e2dcd0] rounded-xl p-3 max-h-24 overflow-y-auto space-y-1.5 text-[11px] font-mono text-[#7a8475]">
                 {selectedStudent.logs?.map((log, i) => <div key={i} className="leading-relaxed">• {log}</div>)}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="grid grid-cols-2 gap-3">
               <button onClick={() => window.open(`https://wa.me/91${selectedStudent.phone}`, "_blank")} className="px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold cursor-pointer flex items-center justify-center gap-1.5 hover:bg-emerald-100 transition-all"><MessageSquare size={13} /> WhatsApp</button>
               <button onClick={() => handleEdit(selectedStudent)} className="px-3 py-2 bg-[#f4f0e6] border border-[#e2dcd0] text-[#5a6455] rounded-xl text-xs font-bold cursor-pointer flex items-center justify-center gap-1.5 hover:bg-[#e2dcd0]/50 transition-all"><Pencil size={13} /> Edit Profile</button>
             </div>
