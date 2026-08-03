@@ -32,12 +32,36 @@ export function AdminDataProvider({ children }) {
   const [franchises, setFranchises] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [settings, setSettings] = useState({
+  const [settings, setSettingsState] = useState({
     allowPublicRegister: false,
     maintenanceMode: false,
     emailAlerts: true,
     autoApproveFranchise: false
   });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("admin_system_settings");
+      if (saved) {
+        try {
+          setSettingsState(JSON.parse(saved));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }, []);
+
+  const setSettings = (newSettings) => {
+    setSettingsState(prev => {
+      const updated = typeof newSettings === 'function' ? newSettings(prev) : newSettings;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("admin_system_settings", JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
+
   const [loading, setLoading] = useState(true);
 
   const fetchAdminData = async () => {

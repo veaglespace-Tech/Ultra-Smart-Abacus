@@ -164,7 +164,13 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-white dark:bg-[#0f0a1e] transition-colors duration-300" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div 
+      className="min-h-screen w-full flex flex-col bg-cover bg-center bg-fixed relative transition-colors duration-300" 
+      style={{ 
+        fontFamily: "Inter, sans-serif",
+        backgroundImage: "linear-gradient(to bottom, rgba(15, 10, 30, 0.88), rgba(45, 27, 105, 0.85)), url('/images/contact.jpg')"
+      }}
+    >
 
       {/* Marquee CSS */}
       <style dangerouslySetInnerHTML={{ __html: `
@@ -183,7 +189,6 @@ export default function Home() {
           ════════════════════════════════════════ */}
       <section
         className="relative min-h-[92vh] flex items-center overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #1a1035 0%, #2D1B69 50%, #3d2a88 100%)" }}
       >
         {/* Background Image Overlay */}
         <div
@@ -500,17 +505,18 @@ export default function Home() {
       {/* ════════════════════════════════════════
           ABOUT SECTION
           ════════════════════════════════════════ */}
-      <section className="pt-16 pb-12 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
-<div className="max-w-7xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-16 items-center">
-            <div className="relative">
-<div className="relative rounded-3xl overflow-hidden shadow-2xl w-full max-w-[700px] h-[300px] sm:h-[400px] lg:h-[550px] mx-auto">              <img src="/images/banner.jpg" alt="Smart Abacus Academy" className="w-full h-full object-cover" />
+      <section className="py-10 px-6 bg-white/70 dark:bg-[#150e2a]/70 backdrop-blur-md transition-colors duration-300">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
+          <div className="relative">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl w-full max-w-[700px] h-[280px] sm:h-[360px] lg:h-[430px] mx-auto">
+              <img src="/images/banner.jpg" alt="Smart Abacus Academy" className="w-full h-full object-cover" />
               <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(45,27,105,0.3), transparent)" }} />
             </div>
             {/* Decorative card floating */}
-            <div className="absolute -bottom-6 -right-6 p-4 rounded-2xl shadow-xl"
+            <div className="absolute -bottom-4 -right-4 p-3.5 rounded-2xl shadow-xl"
               style={{ background: "linear-gradient(135deg, #2D1B69, #FF6B2B)", color: "white" }}>
-              <div className="text-3xl font-black" style={{ fontFamily: "Poppins, sans-serif" }}>15+</div>
-              <div className="text-xs font-medium opacity-80">Years of Trust</div>
+              <div className="text-2xl font-black" style={{ fontFamily: "Poppins, sans-serif" }}>15+</div>
+              <div className="text-[11px] font-medium opacity-80">Years of Trust</div>
             </div>
             {/* Dot decoration */}
             <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full opacity-20 dot-pattern" />
@@ -518,20 +524,20 @@ export default function Home() {
 
           {/* Content */}
           <div>
-            <span className="badge-accent mb-4 inline-flex">About Our Academy</span>
-            <h2 className="section-heading text-[#2D1B69] mb-6">
+            <span className="badge-accent mb-3 inline-flex">About Our Academy</span>
+            <h2 className="section-heading text-[#2D1B69] mb-4">
               India&apos;s Most Trusted<br />
               <span style={{ color: "#FF6B2B" }}>Abacus Academy</span>
             </h2>
-            <p className="text-slate-600 text-lg leading-relaxed mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
+            <p className="text-slate-600 text-base leading-relaxed mb-3" style={{ fontFamily: "Inter, sans-serif" }}>
               Smart Abacus is a leading education platform dedicated to unlocking the mathematical potential in every child. With over 15 years of excellence, we have empowered thousands of students to achieve extraordinary computational abilities and academic success.
             </p>
-            <p className="text-slate-600 text-lg leading-relaxed mb-8" style={{ fontFamily: "Inter, sans-serif" }}>
+            <p className="text-slate-600 text-base leading-relaxed mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
               Our comprehensive curriculum combines traditional Abacus methodology with modern educational techniques, ensuring students develop not just calculation skills but also enhanced memory, focus, and problem-solving abilities.
             </p>
 
             {/* Promise List */}
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-2.5 mb-6">
               {[
                 "Personalized learning paths for every student",
                 "Expert guidance from certified instructors",
@@ -544,13 +550,13 @@ export default function Home() {
                     style={{ background: "linear-gradient(135deg, #FF6B2B, #FFCA28)" }}>
                     <CheckCircle2 size={12} color="white" />
                   </div>
-                  <span className="text-slate-700 text-lg font-medium" style={{ fontFamily: "Inter, sans-serif" }}>{item}</span>
+                  <span className="text-slate-700 text-base font-medium" style={{ fontFamily: "Inter, sans-serif" }}>{item}</span>
                 </li>
               ))}
             </ul>
 
             <Link href="/about"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-bold text-sm text-white transition-all"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-sm text-white transition-all"
               style={{ background: "linear-gradient(135deg, #2D1B69, #3d2a88)", fontFamily: "Poppins, sans-serif" }}>
               Learn More About Us
               <ArrowRight size={16} />
@@ -562,11 +568,11 @@ export default function Home() {
       {/* ════════════════════════════════════════
           BENEFITS SECTION — ULTRA MODERN CARDS
           ════════════════════════════════════════ */}
-      <section className="pt-20 pb-10 px-6 overflow-hidden bg-gradient-to-b from-[#f8f6ff] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] transition-colors duration-300">
+      <section className="py-10 px-6 overflow-hidden bg-white/70 dark:bg-[#150e2a]/70 backdrop-blur-md transition-colors duration-300">
         <div className=" mx-auto">
           <div className="text-center mb-10">
             <span className="badge-primary mb-4 inline-flex">Why Abacus?</span>
-            <h2 className="section-heading text-[#2D1B69]">
+            <h2 className="section-heading text-[#2D1B69] dark:text-white">
               Benefits That Last a <span style={{ color: "#FF6B2B" }}>Lifetime</span>
             </h2>
             <p className="section-subheading mx-auto mt-4 text-center">
@@ -584,7 +590,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.15 }}
                   transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
-                  className="group relative rounded-3xl overflow-hidden cursor-default bg-white dark:bg-[#1e1445] border border-slate-100 dark:border-slate-850"
+                  className="group relative rounded-3xl overflow-hidden cursor-default bg-white/90 dark:bg-[#1e1445]/90 backdrop-blur-sm border border-slate-100 dark:border-slate-850"
                   style={{
                     boxShadow: "0 2px 20px rgba(45,27,105,0.07)",
                     transition: "transform 0.35s ease, box-shadow 0.35s ease",
@@ -697,11 +703,11 @@ export default function Home() {
       {/* ════════════════════════════════════════
           COURSES SECTION
           ════════════════════════════════════════ */}
-      <section className="pt-10 pb-10 px-6 bg-gradient-to-b from-[#FFF8F0] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] transition-colors duration-300">
+      <section className="pt-10 pb-10 px-6 bg-white/70 dark:bg-[#150e2a]/70 backdrop-blur-md transition-colors duration-300">
         <div className=" mx-auto">
           <div className="text-center mb-10">
             <span className="badge-accent mb-4 inline-flex">Our Programs</span>
-            <h2 className="section-heading text-[#2D1B69]">
+            <h2 className="section-heading text-[#2D1B69] dark:text-white">
               Comprehensive <span style={{ color: "#FF6B2B" }}>Courses</span>
             </h2>
             <p className="section-subheading mx-auto mt-4 text-center">
@@ -717,7 +723,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
-                className="relative group bg-white dark:bg-[#1e1445] rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800/80 hover:shadow-2xl hover:-translate-y-2 transition-all duration-400"
+                className="relative group bg-white/90 dark:bg-[#1e1445]/90 backdrop-blur-md rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800/80 hover:shadow-2xl hover:-translate-y-2 transition-all duration-400"
                 style={{ borderTop: `6px solid ${course.badgeColor}` }}
               >
                 {/* Absolute badge aligned to the top line (Glassmorphism with border glow & pulse dot) */}
@@ -839,11 +845,11 @@ export default function Home() {
       {/* ════════════════════════════════════════
           FAQ SECTION
           ════════════════════════════════════════ */}
-      <section className="pt-20 pb-10 px-6 bg-white">
+      <section className="pt-20 pb-10 px-6 bg-white/70 dark:bg-[#0f0a1e]/70 backdrop-blur-md">
         <div className=" mx-auto">
           <div className="text-center mb-10">
             <span className="badge-primary mb-4 inline-flex">Have Questions?</span>
-            <h2 className="section-heading text-[#2D1B69]">
+            <h2 className="section-heading text-[#2D1B69] dark:text-white">
               Frequently Asked <span style={{ color: "#FF6B2B" }}>Questions</span>
             </h2>
             <p className="section-subheading mx-auto mt-4 text-center">

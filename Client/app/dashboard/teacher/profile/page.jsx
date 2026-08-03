@@ -25,7 +25,9 @@ export default function TeacherProfilePage() {
         ...prev,
         name: user.name || prev.name,
         email: user.email || prev.email,
-        phone: user.phone || prev.phone
+        phone: user.phone || prev.phone,
+        qualification: user.qualification || user.teacher?.qualification || prev.qualification || '',
+        experience: user.experience || user.teacher?.experience || prev.experience || ''
       }));
       setProfileImage(user?.profilePhoto || null);
     }
@@ -105,30 +107,53 @@ export default function TeacherProfilePage() {
     }
   };
 
-  const handleUpdateProfile = (e) => {
+  const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setIsSavingProfile(true);
 
-    const updatedUser = {
-      ...(user || {}),
-      name: profile.name,
-      email: profile.email,
-      phone: profile.phone,
-      profilePhoto: profileImage || null
-    };
+    try {
+      const teacherId = user?.teacher?.id || user?.teacherId || user?.rawId;
+      if (teacherId) {
+        const token = storageService.getToken();
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/teachers/${teacherId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: profile.name,
+            qualification: profile.qualification,
+            experience: profile.experience,
+          }),
+        }).catch((err) => console.warn("API update teacher warning:", err));
+      }
 
-    if (setUser) setUser(updatedUser);
-    storageService.setUser(updatedUser);
+      const updatedUser = {
+        ...(user || {}),
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        qualification: profile.qualification,
+        experience: profile.experience,
+        profilePhoto: profileImage || null
+      };
 
-    setTimeout(() => {
-      setIsSavingProfile(false);
+      if (setUser) setUser(updatedUser);
+      storageService.setUser(updatedUser);
+
       confetti({
         particleCount: 50,
         spread: 30,
         origin: { y: 0.8 }
       });
       alert("Faculty Profile Successfully Updated.");
-    }, 600);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update profile. Please try again.");
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleUpdatePassword = async (e) => {

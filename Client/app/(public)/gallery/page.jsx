@@ -70,12 +70,17 @@ export default function GalleryPage() {
     : galleryItems.filter((i) => i.category === activeFilter);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#0f0a1e] transition-colors duration-300" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div 
+      className="min-h-screen flex flex-col bg-cover bg-center bg-fixed relative transition-colors duration-300" 
+      style={{ 
+        fontFamily: "Inter, sans-serif",
+        backgroundImage: "linear-gradient(to bottom, rgba(15, 10, 30, 0.88), rgba(45, 27, 105, 0.85)), url('/images/contact.jpg')"
+      }}
+    >
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative py-24 px-6 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #1a1035 0%, #2D1B69 60%, #3d2a88 100%)" }}>
+      <section className="relative py-24 px-6 overflow-hidden">
         <div className="absolute inset-0 dot-pattern opacity-15" />
         <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full opacity-20 animate-blob1"
           style={{ background: "radial-gradient(circle, #FF6B2B, transparent 70%)", filter: "blur(60px)" }} />
@@ -103,7 +108,7 @@ export default function GalleryPage() {
       </section>
 
       {/* ── Filter + Grid ── */}
-      <section className="py-16 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
+      <section className="py-16 px-6 bg-white/70 dark:bg-[#150e2a]/70 backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
 
           {/* Filters */}
@@ -113,7 +118,7 @@ export default function GalleryPage() {
                 className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${
                   activeFilter === cat 
                     ? "text-white" 
-                    : "bg-white dark:bg-[#1e1445] text-[#64748b] dark:text-[#b8a9e8] border-2 border-slate-200 dark:border-slate-800"
+                    : "bg-white/80 dark:bg-[#1e1445]/80 backdrop-blur-sm text-[#64748b] dark:text-[#b8a9e8] border-2 border-slate-200 dark:border-slate-800"
                 }`}
                 style={{
                   background: activeFilter === cat ? "linear-gradient(135deg, #2D1B69, #3d2a88)" : "",
@@ -131,7 +136,7 @@ export default function GalleryPage() {
               const catColor = categoryColors[item.category] || { bg: "#2D1B69", text: "white" };
               return (
                 <div key={item.id}
-                  className="group relative rounded-3xl overflow-hidden bg-white shadow-sm border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer"
+                  className="group relative rounded-3xl overflow-hidden bg-white/90 dark:bg-[#1e1445]/90 backdrop-blur-sm shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer"
                   onClick={() => setLightbox(item)}>
 
                   {/* Image */}

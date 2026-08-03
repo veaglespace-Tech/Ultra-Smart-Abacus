@@ -69,12 +69,17 @@ export default function ContactPage() {
   const inputClass = "w-full rounded-2xl border-2 border-slate-200 bg-slate-50 py-3.5 px-5 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:bg-white focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200";
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#0f0a1e] transition-colors duration-300" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div 
+      className="min-h-screen flex flex-col bg-cover bg-center bg-fixed relative transition-colors duration-300" 
+      style={{ 
+        fontFamily: "Inter, sans-serif",
+        backgroundImage: "linear-gradient(to bottom, rgba(15, 10, 30, 0.88), rgba(45, 27, 105, 0.85)), url('/images/contact.jpg')"
+      }}
+    >
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative py-24 px-6 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #1a1035 0%, #2D1B69 60%, #3d2a88 100%)" }}>
+      <section className="relative py-24 px-6 overflow-hidden">
         <div className="absolute inset-0 dot-pattern opacity-15" />
         <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full opacity-20 animate-blob1"
           style={{ background: "radial-gradient(circle, #FF6B2B, transparent 70%)", filter: "blur(60px)" }} />
@@ -101,7 +106,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <section className="py-14 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
+      <section className="py-14 px-6 bg-white/70 dark:bg-[#150e2a]/70 backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-5">
           {contactInfo.map(({ icon: Icon, title, textSize,lineTextSize, lines, color, bg }, i) => (
             <motion.div
@@ -111,7 +116,7 @@ export default function ContactPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.08 }}
               whileHover={{ y: -6, scale: 1.02 }}
-              className="p-6 rounded-2xl bg-white dark:bg-[#1e1445] card-shine-effect text-center shadow-sm transition-all duration-300"
+              className="p-6 rounded-2xl bg-white/90 dark:bg-[#1e1445]/90 backdrop-blur-sm card-shine-effect text-center shadow-md transition-all duration-300"
               style={{ border: `1px solid ${color}25` }}
             >
               <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
@@ -175,7 +180,7 @@ return (
 
 
       {/* ── Main Form + Map Area ── */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-16 px-6 bg-white/70 dark:bg-[#0f0a1e]/70 backdrop-blur-md">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-12">
 
           {/* Left: Form */}
@@ -186,7 +191,7 @@ return (
             transition={{ duration: 0.6 }}
             className="lg:col-span-2"
           >
-            <div className="bg-white dark:bg-[#1a1035] rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-xl p-8">
+            <div className="bg-white/90 dark:bg-[#1a1035]/90 backdrop-blur-md rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-xl p-8">
               <div className="mb-8">
                 <span className="badge-accent mb-3 inline-flex">Send a Message</span>
                 <h2 className="text-2xl font-black text-[#2D1B69] dark:text-white" style={{ fontFamily: "Poppins, sans-serif" }}>

@@ -31,12 +31,17 @@ const promise = [
 
 export default function About() {
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#0f0a1e] transition-colors duration-300" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div 
+      className="min-h-screen flex flex-col bg-cover bg-center bg-fixed relative transition-colors duration-300" 
+      style={{ 
+        fontFamily: "Inter, sans-serif",
+        backgroundImage: "linear-gradient(to bottom, rgba(15, 10, 30, 0.88), rgba(45, 27, 105, 0.85)), url('/images/contact.jpg')"
+      }}
+    >
       <Navbar />
 
       {/* ── Hero Banner ── */}
-      <section className="relative py-28 px-6 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #1a1035 0%, #2D1B69 60%, #3d2a88 100%)" }}>
+      <section className="relative py-28 px-6 overflow-hidden">
         <div className="absolute inset-0 opacity-15"
           style={{ backgroundImage: "url('/images/banner.jpg')", backgroundSize: "cover", backgroundPosition: "center", mixBlendMode: "luminosity" }} />
         <div className="absolute inset-0 dot-pattern opacity-15" />
@@ -66,7 +71,7 @@ export default function About() {
       </section>
 
       {/* ── About Content ── */}
-      <section className="pt-16 pb-6 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
+      <section className="pt-16 pb-6 px-6 bg-white/70 dark:bg-[#150e2a]/70 backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div className="relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[420px]">
@@ -83,7 +88,7 @@ export default function About() {
 
           <div>
             <span className="badge-accent mb-4 inline-flex">Who We Are</span>
-            <h2 className="section-heading text-[#2D1B69] mb-6">
+            <h2 className="section-heading text-[#2D1B69] dark:text-white mb-6">
               Leading the Future of<br />
               <span style={{ color: "#FF6B2B" }}>Math Education</span>
             </h2>
@@ -120,38 +125,43 @@ export default function About() {
       </section>
 
       {/* ── Our Promise ── */}
-      <section className="pt-6 pb-16 px-6 bg-white dark:bg-[#0f0a1e] transition-colors duration-300">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+      <section className="py-16 px-4 sm:px-6 bg-white/70 dark:bg-[#0f0a1e]/70 backdrop-blur-md transition-colors duration-300">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           <div>
-            <span className="badge-primary inline-flex items-center px-8 py-3 text-xl font-bold rounded-full">Our Commitment</span>
-            <h2 className="section-heading text-[#2D1B69] mb-6">
+            <span className="badge-primary inline-flex items-center px-6 py-2.5 text-base sm:text-lg font-bold rounded-full mb-3">Our Commitment</span>
+            <h2 className="section-heading text-[#2D1B69] dark:text-white mb-6">
               Our Promise to<br />
               <span style={{ color: "#FF6B2B" }}>Every Family</span>
             </h2>
-            <ul className="space-y-4">
+            <ul className="space-y-3.5">
               {promise.map((item, i) => (
                 <li key={i} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                     style={{ background: "linear-gradient(135deg, #FF6B2B, #FFCA28)" }}>
-                    <CheckCircle2 size={13} color="white" />
+                    <CheckCircle2 size={12} color="white" />
                   </div>
-                  <span className="text-slate-700 text-lg font-medium">{item}</span>
+                  <span className="text-slate-700 dark:text-slate-200 text-base sm:text-lg font-medium">{item}</span>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* Decorative bento grid */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             {[
-              { title: "Game-Based Learning", color: "#2D1B69", bg: "rgba(45,27,105,0.08)", emoji: "🎮" },
-              { title: "Certified Instructors", color: "#FF6B2B", bg: "rgba(255,107,43,0.08)", emoji: "👩‍🏫" },
-              { title: "Progress Tracking", color: "#FFCA28", bg: "rgba(255,202,40,0.1)", emoji: "📊" },
-              { title: "Parent Reports", color: "#10B981", bg: "rgba(16,185,129,0.08)", emoji: "📋" },
-            ].map(({ title, color, bg, emoji }, i) => (
-              <div key={i} className="p-5 rounded-2xl card-hover bg-slate-50 dark:bg-[#1e1445]" style={{ border: `1.5px solid ${color}20` }}>
-                <div className="text-3xl mb-3">{emoji}</div>
-                <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200" style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h3>
+              { title: "Game-Based Learning", desc: "Interactive gamified modules keep children motivated & excited.", color: "#2D1B69", bg: "rgba(45,27,105,0.08)", emoji: "🎮" },
+              { title: "Certified Instructors", desc: "Accredited teachers trained in specialized mental math pedagogy.", color: "#FF6B2B", bg: "rgba(255,107,43,0.08)", emoji: "👩‍🏫" },
+              { title: "Progress Tracking", desc: "Detailed performance telemetry and level assessment metrics.", color: "#FFCA28", bg: "rgba(255,202,40,0.1)", emoji: "📊" },
+              { title: "Parent Reports", desc: "Transparent weekly feedback and dedicated progress reviews.", color: "#10B981", bg: "rgba(16,185,129,0.08)", emoji: "📋" },
+            ].map(({ title, desc, color, bg, emoji }, i) => (
+              <div key={i} className="p-5 sm:p-6 rounded-3xl card-hover bg-white/90 dark:bg-[#1e1445]/90 backdrop-blur-md shadow-md flex flex-col justify-between" style={{ border: `2px solid ${color}25` }}>
+                <div>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-3" style={{ background: `${color}15`, border: `1px solid ${color}30` }}>
+                    {emoji}
+                  </div>
+                  <h3 className="font-bold text-sm sm:text-base text-slate-800 dark:text-white mb-1.5 leading-snug break-words" style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-300 leading-relaxed">{desc}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -210,7 +220,7 @@ export default function About() {
       </section>
 
       {/* ── Team Section ── */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-20 px-6 bg-white/70 dark:bg-[#0f0a1e]/70 backdrop-blur-md">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
             <span className="badge-accent mb-4 inline-flex">Meet the Team</span>

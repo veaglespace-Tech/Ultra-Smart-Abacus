@@ -61,12 +61,17 @@ export default function CoursesPage() {
     : abacusCourses.filter((c) => c.filter === activeFilter);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#0f0a1e] transition-colors duration-300" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div 
+      className="min-h-screen flex flex-col bg-cover bg-center bg-fixed relative transition-colors duration-300" 
+      style={{ 
+        fontFamily: "Inter, sans-serif",
+        backgroundImage: "linear-gradient(to bottom, rgba(15, 10, 30, 0.88), rgba(45, 27, 105, 0.85)), url('/images/contact.jpg')"
+      }}
+    >
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative py-24 px-6 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #1a1035 0%, #2D1B69 60%, #3d2a88 100%)" }}>
+      <section className="relative py-24 px-6 overflow-hidden">
         <div className="absolute inset-0 dot-pattern opacity-15" />
         <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full opacity-20 animate-blob1"
           style={{ background: "radial-gradient(circle, #FF6B2B, transparent 70%)", filter: "blur(60px)" }} />
@@ -94,7 +99,7 @@ export default function CoursesPage() {
       </section>
 
       {/* ── Courses Grid ── */}
-      <section className="py-16 px-6 bg-[#FFF8F0] dark:bg-[#150e2a] transition-colors duration-300">
+      <section className="py-16 px-6 bg-white/70 dark:bg-[#150e2a]/70 backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
 
           {/* Filter Tabs */}
@@ -120,7 +125,7 @@ export default function CoursesPage() {
                     />
                   )}
                   {!isActive && (
-                    <span className="absolute inset-0 bg-white dark:bg-[#1e1445] border-2 border-slate-200 dark:border-slate-800 rounded-full -z-10" />
+                    <span className="absolute inset-0 bg-white/80 dark:bg-[#1e1445]/80 backdrop-blur-sm border-2 border-slate-200 dark:border-slate-800 rounded-full -z-10" />
                   )}
                 </button>
               );
@@ -138,7 +143,7 @@ export default function CoursesPage() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.3 }}
                   key={course.id}
-                  className="relative group bg-white dark:bg-[#1e1445] rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800/85 hover:shadow-2xl hover:-translate-y-2 transition-all duration-350"
+                  className="relative group bg-white/90 dark:bg-[#1e1445]/90 backdrop-blur-md rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800/85 hover:shadow-2xl hover:-translate-y-2 transition-all duration-350"
                   style={{ borderTop: `6px solid ${course.badgeColor}` }}
                 >
                   {/* Absolute badge aligned to the top line (Glassmorphism with border glow & pulse dot) */}

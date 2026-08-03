@@ -1,7 +1,7 @@
 // src/app/dashboard/teacher/settings/page.jsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/context/ThemeContext";
 import { Sun, Moon, Bell, Shield, Eye, Globe, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -17,18 +17,40 @@ export default function TeacherSettingsPage() {
     marketing: false
   });
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("teacher_notif_settings");
+      if (saved) {
+        try {
+          setNotifs(JSON.parse(saved));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }, []);
+
   const [savingSettings, setSavingSettings] = useState(false);
 
   const handleToggleNotif = (key) => {
-    setNotifs(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+    setNotifs(prev => {
+      const updated = {
+        ...prev,
+        [key]: !prev[key]
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("teacher_notif_settings", JSON.stringify(updated));
+      }
+      return updated;
+    });
   };
 
   const handleSaveSettings = (e) => {
     e.preventDefault();
     setSavingSettings(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("teacher_notif_settings", JSON.stringify(notifs));
+    }
     setTimeout(() => {
       setSavingSettings(false);
       confetti({
@@ -37,7 +59,7 @@ export default function TeacherSettingsPage() {
         origin: { y: 0.8 }
       });
       alert("Faculty preferences saved successfully.");
-    }, 1000);
+    }, 600);
   };
 
   return (
