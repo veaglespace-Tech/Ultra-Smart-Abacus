@@ -7,64 +7,117 @@ import {
   UploadCloud, Eye, Download, CheckCircle2, AlertCircle, X, ShieldCheck, FileCheck
 } from "lucide-react";
 import confetti from "canvas-confetti";
-import { useStudentData } from "../StudentContext";
-import { storageService } from "@/services/storage.services";
 import { useAuth } from "@/context/AuthContext";
+import { storageService } from "@/services/storage.services";
 
 const DOCUMENT_TYPES = [
-  { id: 'studentPhoto', name: 'Student Photo', description: 'Recent passport size photo of student', icon: Camera, color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800' },
-  { id: 'birthCertificate', name: 'Birth Certificate', description: 'Official Birth Certificate or DOB proof', icon: FileText, color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800' },
-  { id: 'studentAadhaar', name: 'Student Aadhaar Card', description: 'Student UIDAI Aadhaar card photo/PDF', icon: IdCard, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800' },
-  { id: 'parentAadhaar', name: 'Parent Aadhaar Card', description: 'Parent / Guardian Aadhaar card photo/PDF', icon: Users, color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800' },
-  { id: 'addressProof', name: 'Address Proof', description: 'Electricity bill, Ration card, or Rent agreement', icon: Home, color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800' },
-  { id: 'admissionForm', name: 'Admission Form', description: 'Signed academy admission application form', icon: ClipboardList, color: 'text-rose-600 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800' },
-  { id: 'feeReceipt', name: 'Fee Payment Receipt', description: 'Official tuition / admission fee receipt', icon: Receipt, color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800' },
+  { id: "studentPhoto", name: "Student Photo", description: "Recent passport size photo of student", icon: Camera, color: "text-blue-600 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800" },
+  { id: "birthCertificate", name: "Birth Certificate", description: "Official Birth Certificate or DOB proof", icon: FileText, color: "text-purple-600 bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800" },
+  { id: "studentAadhaar", name: "Student Aadhaar Card", description: "Student UIDAI Aadhaar card photo/PDF", icon: IdCard, color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800" },
+  { id: "parentAadhaar", name: "Parent Aadhaar Card", description: "Father or Mother Aadhaar card photo/PDF", icon: Users, color: "text-amber-600 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800" },
+  { id: "addressProof", name: "Address Proof", description: "Electricity bill, Ration card, or Rent agreement", icon: Home, color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800" },
+  { id: "admissionForm", name: "Admission Form", description: "Signed admission form / registration paper", icon: ClipboardList, color: "text-rose-600 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800" },
+  { id: "feeReceipt", name: "Fee Payment Receipt", description: "Enrollment fee transaction receipt", icon: Receipt, color: "text-sky-600 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800" },
 ];
 
 export default function StudentProfilePage() {
-  const { profile, updateProfile } = useStudentData();
-  const { user, setUser } = useAuth();
+  const { user, setUser, updateProfile } = useAuth();
+
+  // Mock student profile data fallback
+  const profile = {
+    name: user?.name || "Prajwal Gunjal",
+    email: user?.email || "prajwal@gmail.com",
+    phone: user?.phone || "+91 9876543210",
+    parentName: user?.parentGuardianName || user?.fatherName || "Ramesh Gunjal",
+    rollNo: "STU-2026-001",
+    level: "Level 1 (Foundation)",
+    batch: "Afternoon Batch (3 PM - 4 PM)",
+    center: "Main Academy Center",
+    joinedDate: "January 15, 2026",
+    id: user?.id || 1,
+    profilePhoto: user?.profilePhoto || null,
+  };
+
   const fileInputRef = useRef(null);
   const docInputRefs = useRef({});
 
-  const [profileImage, setProfileImage] = useState(profile.profilePhoto || user?.profilePhoto || null);
+  // Student Profile Photo State with Lazy Initializer for persistence across refreshes
+  const [profileImage, setProfileImage] = useState(() => {
+    try {
+      const storedUser = typeof window !== 'undefined' ? storageService.getUser() : null;
+      const storedPhoto = typeof window !== 'undefined' 
+        ? (storageService.get('abacus_student_profile_photo') || storageService.get('student_profile_photo')) 
+        : null;
+      return storedPhoto || user?.profilePhoto || profile?.profilePhoto || storedUser?.profilePhoto || storedUser?.student?.profilePhoto || null;
+    } catch (e) {
+      return null;
+    }
+  });
 
-  // Edit Profile form states
-  const [editName, setEditName] = useState(profile.name || "");
-  const [editEmail, setEditEmail] = useState(profile.email || "");
-  const [editPhone, setEditPhone] = useState(profile.phone || "");
-  const [editParentName, setEditParentName] = useState(profile.parentName || "");
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editParentName, setEditParentName] = useState("");
+
   const [profileSuccess, setProfileSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Student Document Vault State
-  const [documents, setDocuments] = useState({
-    studentPhoto: null,
-    birthCertificate: null,
-    studentAadhaar: null,
-    parentAadhaar: null,
-    addressProof: null,
-    admissionForm: null,
-    feeReceipt: null,
+  const mergeNonNullDocs = (target, source) => {
+    if (!source || typeof source !== 'object') return target;
+    const res = { ...target };
+    Object.keys(source).forEach(k => {
+      if (source[k] !== null && source[k] !== undefined) {
+        res[k] = source[k];
+      }
+    });
+    return res;
+  };
+
+  // Student Document Vault State with Lazy Initializer
+  const [documents, setDocuments] = useState(() => {
+    const baseDocs = {
+      studentPhoto: null,
+      birthCertificate: null,
+      studentAadhaar: null,
+      parentAadhaar: null,
+      addressProof: null,
+      admissionForm: null,
+      feeReceipt: null,
+    };
+    try {
+      let mergedDocs = { ...baseDocs };
+      if (typeof window !== 'undefined') {
+        const sessionItem = sessionStorage.getItem('abacus_student_documents');
+        if (sessionItem) {
+          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(sessionItem)); } catch (e) {}
+        }
+        const localItem = localStorage.getItem('abacus_student_documents');
+        if (localItem) {
+          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(localItem)); } catch (e) {}
+        }
+      }
+      const storedUser = typeof window !== 'undefined' ? storageService.getUser() : null;
+      mergedDocs = mergeNonNullDocs(mergedDocs, storedUser?.documents);
+      mergedDocs = mergeNonNullDocs(mergedDocs, storedUser?.student?.documents);
+      return mergedDocs;
+    } catch (e) {
+      return baseDocs;
+    }
   });
 
   const [activeDocPreview, setActiveDocPreview] = useState(null);
 
-  // Helper to save documents reliably across multiple local keys AND backend MySQL DB
+  // Helper to save documents reliably across local storage, session storage AND backend MySQL DB
   const saveDocumentsToStorage = async (updatedDocs) => {
     try {
-      const keysToSave = [
-        `student_docs_${user?.email?.toLowerCase() || 'main'}`,
-        `student_docs_${user?.id || 'main'}`,
-        `student_docs_${profile?.id || 'main'}`,
-        `student_docs_global`
-      ];
-      keysToSave.forEach(k => {
-        if (storageService?.set) storageService.set(k, updatedDocs);
-      });
+      if (typeof window !== 'undefined') {
+        try { sessionStorage.setItem('abacus_student_documents', JSON.stringify(updatedDocs)); } catch (e) {}
+        try { localStorage.setItem('abacus_student_documents', JSON.stringify(updatedDocs)); } catch (e) {}
+      }
 
+      const currentUser = user || (typeof window !== 'undefined' ? storageService.getUser() : null);
       const updatedUser = {
-        ...(user || {}),
+        ...(currentUser || {}),
         documents: updatedDocs
       };
       if (setUser) setUser(updatedUser);
@@ -72,7 +125,7 @@ export default function StudentProfilePage() {
       if (updateProfile) updateProfile({ documents: updatedDocs });
 
       // Direct Sync with Backend Server API DB
-      const targetId = profile?.id || profile?.rawId || user?.student?.id || user?.id;
+      const targetId = profile?.id || profile?.rawId || currentUser?.student?.id || currentUser?.id;
       if (targetId) {
         const token = storageService.getToken();
         await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/${targetId}`, {
@@ -90,48 +143,82 @@ export default function StudentProfilePage() {
   };
 
   useEffect(() => {
-    setProfileImage(profile.profilePhoto || user?.profilePhoto || null);
-    setEditName(profile.name || user?.name || "");
-    setEditEmail(profile.email || user?.email || "");
-    setEditPhone(profile.phone || user?.phone || "");
-    setEditParentName(profile.parentName || user?.parentGuardianName || user?.fatherName || "");
+    const currentUser = user || (typeof window !== 'undefined' ? storageService.getUser() : null);
+    const storedPhoto = typeof window !== 'undefined' 
+      ? (storageService.get('abacus_student_profile_photo') || storageService.get('student_profile_photo')) 
+      : null;
+    const photoToSet = storedPhoto || currentUser?.profilePhoto || profile.profilePhoto || null;
+    if (photoToSet) {
+      setProfileImage(photoToSet);
+    }
 
-    // Multi-source document retrieval on load/refresh
+    setEditName(profile.name || currentUser?.name || "");
+    setEditEmail(profile.email || currentUser?.email || "");
+    setEditPhone(profile.phone || currentUser?.phone || "");
+    setEditParentName(profile.parentName || currentUser?.parentGuardianName || currentUser?.fatherName || "");
+
+    // 1. Restore from local and session storage synchronously
     try {
-      const keysToTry = [
-        `student_docs_${user?.email?.toLowerCase() || 'main'}`,
-        `student_docs_${user?.id || 'main'}`,
-        `student_docs_${profile?.id || 'main'}`,
-        `student_docs_global`
-      ];
-
       let mergedDocs = {};
-      keysToTry.forEach(k => {
-        const found = storageService?.get ? storageService.get(k) : null;
-        if (found && typeof found === 'object') {
-          mergedDocs = { ...mergedDocs, ...found };
+      if (typeof window !== 'undefined') {
+        const sessionItem = sessionStorage.getItem('abacus_student_documents');
+        if (sessionItem) {
+          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(sessionItem)); } catch (e) {}
         }
-      });
+        const localItem = localStorage.getItem('abacus_student_documents');
+        if (localItem) {
+          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(localItem)); } catch (e) {}
+        }
+      }
 
-      if (user?.documents && typeof user.documents === 'object') {
-        mergedDocs = { ...mergedDocs, ...user.documents };
-      }
-      if (profile?.documents && typeof profile.documents === 'object') {
-        mergedDocs = { ...mergedDocs, ...profile.documents };
-      }
+      mergedDocs = mergeNonNullDocs(mergedDocs, currentUser?.documents);
+      mergedDocs = mergeNonNullDocs(mergedDocs, currentUser?.student?.documents);
 
       if (Object.keys(mergedDocs).length > 0) {
-        setDocuments(prev => ({ ...prev, ...mergedDocs }));
+        setDocuments(prev => mergeNonNullDocs(prev, mergedDocs));
       }
     } catch (e) {
-      console.warn("Could not load documents from storage:", e);
+      console.warn("Could not load local documents:", e);
     }
-  }, [profile, user]);
+
+    // 2. Fetch directly from Backend MySQL Database to guarantee permanent persistence
+    const fetchBackendDocuments = async () => {
+      try {
+        const token = storageService.getToken();
+        if (!token) return;
+        const targetId = profile?.id || profile?.rawId || currentUser?.student?.id || currentUser?.id;
+        const url = targetId 
+          ? `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/${targetId}`
+          : `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/profile`;
+
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const studentData = data?.data || data?.student;
+        let dbDocs = studentData?.documents;
+        if (typeof dbDocs === 'string') {
+          try { dbDocs = JSON.parse(dbDocs); } catch (e) {}
+        }
+        if (dbDocs && typeof dbDocs === 'object') {
+          setDocuments(prev => mergeNonNullDocs(prev, dbDocs));
+          if (typeof window !== 'undefined') {
+            try { sessionStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) {}
+            try { localStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) {}
+          }
+        }
+      } catch (err) {
+        console.warn("Backend document fetch warning:", err);
+      }
+    };
+
+    fetchBackendDocuments();
+  }, [user]);
 
   const _apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const _publicBase = _apiUrl.replace(/\/api\/?$/, "");
 
-  const _rawPhoto = profileImage || profile.profilePhoto || user?.profilePhoto || null;
+  const _rawPhoto = profileImage || (typeof window !== 'undefined' ? (storageService.get('abacus_student_profile_photo') || storageService.get('student_profile_photo')) : null) || user?.profilePhoto || null;
   const resolvedProfilePhoto = _rawPhoto
     ? _rawPhoto.startsWith("/")
       ? `${_publicBase}${_rawPhoto}`
@@ -146,7 +233,7 @@ export default function StudentProfilePage() {
       reader.onload = (event) => {
         const img = new Image();
         img.src = event.target.result;
-        img.onload = () => {
+        img.onload = async () => {
           const canvas = document.createElement("canvas");
           const MAX = 400;
           let w = img.width;
@@ -163,14 +250,36 @@ export default function StudentProfilePage() {
           const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
 
           setProfileImage(compressedDataUrl);
-          updateProfile({ profilePhoto: compressedDataUrl });
+
+          // Save photo in dedicated local storage keys
+          if (storageService?.set) {
+            storageService.set('abacus_student_profile_photo', compressedDataUrl);
+            storageService.set('student_profile_photo', compressedDataUrl);
+          }
+
+          if (updateProfile) updateProfile({ profilePhoto: compressedDataUrl });
 
           const updatedUser = {
             ...(user || {}),
             profilePhoto: compressedDataUrl
           };
           if (setUser) setUser(updatedUser);
-          storageService.setUser(updatedUser);
+          if (storageService?.setUser) storageService.setUser(updatedUser);
+
+          // Direct Backend Sync to MySQL Student Table
+          const targetId = profile?.id || profile?.rawId || user?.student?.id || user?.id;
+          if (targetId) {
+            const token = storageService.getToken();
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/${targetId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ profilePhoto: compressedDataUrl }),
+            }).catch(err => console.warn("API profilePhoto sync warning:", err));
+          }
+
           setProfileSuccess("Profile photo updated successfully!");
           setTimeout(() => setProfileSuccess(""), 3000);
         };
@@ -178,20 +287,39 @@ export default function StudentProfilePage() {
     }
   };
 
-  const handleDeletePhoto = () => {
+  const handleDeletePhoto = async () => {
     if (window.confirm("Are you sure you want to delete your profile photo?")) {
       setProfileImage(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      updateProfile({ profilePhoto: null });
+      if (storageService?.set) {
+        storageService.set('abacus_student_profile_photo', null);
+        storageService.set('student_profile_photo', null);
+      }
+      if (updateProfile) updateProfile({ profilePhoto: null });
 
       const updatedUser = {
         ...(user || {}),
         profilePhoto: null
       };
       if (setUser) setUser(updatedUser);
-      storageService.setUser(updatedUser);
+      if (storageService?.setUser) storageService.setUser(updatedUser);
+
+      // Direct Backend Sync to MySQL Student Table
+      const targetId = profile?.id || profile?.rawId || user?.student?.id || user?.id;
+      if (targetId) {
+        const token = storageService.getToken();
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/${targetId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ profilePhoto: null }),
+        }).catch(err => console.warn("API profilePhoto sync warning:", err));
+      }
+
       setProfileSuccess("Profile photo removed successfully!");
       setTimeout(() => setProfileSuccess(""), 3000);
     }
@@ -341,25 +469,24 @@ export default function StudentProfilePage() {
     }
   };
 
-  const initials = (editName || profile.name)
-    ? (editName || profile.name).split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
-    : "ST";
-
   const uploadedCount = Object.values(documents).filter(Boolean).length;
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner Overview */}
+    <div className="space-[#2c3539] space-y-6">
+      
+      {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
           <h2 className="text-xl font-black tracking-tight">
-            <span className="gradient-text">STUDENT PROFILE HUB</span>
+            <span className="gradient-text">STUDENT PROFILE</span>
           </h2>
-          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Manage personal profile details, contact information, and student document vault.</p>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">
+            Manage academic records, personal information, admission verification documents, and contact details.
+          </p>
         </div>
       </div>
 
-      {/* Profile modification success message */}
+      {/* Success notification banner */}
       {profileSuccess && (
         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-600 dark:text-emerald-350 shadow-inner flex items-center gap-2 animate-fade-in">
           <CheckCircle2 size={16} />
@@ -376,20 +503,18 @@ export default function StudentProfilePage() {
               <img
                 src={resolvedProfilePhoto}
                 alt="Profile"
-                className="w-24 h-24 rounded-full object-cover border-4 border-orange-500 shadow-md"
+                className="w-full h-full rounded-full object-cover border-4 border-amber-500/20 shadow-inner"
               />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#FF6B2B] to-[#FFCA28] p-1">
-                <div className="w-full h-full rounded-full bg-slate-955 flex items-center justify-center font-black text-2xl text-orange-400">
-                  {initials}
-                </div>
+              <div className="w-full h-full rounded-full bg-amber-500 text-white font-black text-2xl flex items-center justify-center shadow-md">
+                {profile.name.charAt(0)}
               </div>
             )}
-
+            
             <input
-              ref={fileInputRef}
               type="file"
               accept="image/*"
+              ref={fileInputRef}
               className="hidden"
               onChange={handleFileChange}
             />
@@ -397,145 +522,145 @@ export default function StudentProfilePage() {
             <button
               type="button"
               onClick={() => fileInputRef.current.click()}
-              className="absolute bottom-0 right-0 bg-[#FF6B2B] hover:bg-orange-600 text-white p-2 rounded-full shadow-lg cursor-pointer transition-colors"
+              className="absolute bottom-0 right-0 p-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-md cursor-pointer transition-transform hover:scale-105"
               title="Change Photo"
             >
               <Camera size={14} />
             </button>
           </div>
 
-          {/* Action buttons for photo */}
-          <div className="flex items-center justify-center gap-2 mb-3">
+          {/* ACTION BUTTONS FOR PHOTO */}
+          <div className="flex items-center gap-2 my-2">
             <button
               type="button"
               onClick={() => fileInputRef.current.click()}
-              className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <Camera size={12} />
               <span>{resolvedProfilePhoto ? 'Change' : 'Upload'}</span>
             </button>
-            
+
             {resolvedProfilePhoto && (
               <button
                 type="button"
                 onClick={handleDeletePhoto}
-                className="flex items-center gap-1 px-2.5 py-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-[11px] font-bold rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-xs font-bold rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer"
                 title="Delete Photo"
               >
                 <Trash2 size={12} />
-                <span>Delete</span>
+                <span>Remove</span>
               </button>
             )}
           </div>
-          
+
           <h3 className="text-base font-bold text-slate-955 dark:text-white">{editName || profile.name}</h3>
           <span className="text-xs text-slate-500 font-mono mt-0.5">{profile.rollNo}</span>
-          
+
           <div className="w-full border-t border-slate-100 dark:border-slate-800 mt-6 pt-6 space-y-3.5 text-xs text-left">
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Course Level</span>
-              <span className="text-slate-800 dark:text-slate-200 font-bold">Level {profile.level || 1}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{profile.level}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Assigned Batch</span>
-              <span className="text-slate-800 dark:text-slate-200 font-bold">{profile.batch || "Afternoon Batch"}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{profile.batch}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Registered Center</span>
-              <span className="text-slate-800 dark:text-slate-200 font-bold text-right truncate max-w-[170px]">{profile.center || "Main Academy Center"}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{profile.center}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800/80 pt-3">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Document Vault</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">{uploadedCount} / {DOCUMENT_TYPES.length} Uploaded</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full text-[10px] border border-emerald-200 dark:border-emerald-800">
+                {uploadedCount} / {DOCUMENT_TYPES.length} Uploaded
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Profile detail values sheet / form */}
-        <div className="lg:col-span-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-5">
-          <div className="border-b border-slate-150 dark:border-slate-800 pb-4">
-            <h3 className="text-xs font-black tracking-tight uppercase flex items-center gap-2">
-              <User size={16} className="text-accent" />
-              <span className="gradient-text">PERSONAL RECORDS PROFILE INFORMATION</span>
+        {/* Editable profile fields form */}
+        <div className="lg:col-span-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <UserCheck size={18} className="text-accent" />
+            <h3 className="text-xs font-black text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+              Personal Records Profile Information
             </h3>
           </div>
 
-          <form onSubmit={handleSaveProfile} className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-350">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSaveProfile} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                <label className="block text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider text-[10px] font-bold">
                   Full Name
                 </label>
-                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 px-3 py-2.5 rounded-xl">
-                  <User size={14} className="text-slate-400" />
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
+                  <User size={15} className="text-slate-400" />
                   <input
                     type="text"
-                    required
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="bg-transparent border-none text-xs focus:outline-none w-full text-slate-800 dark:text-slate-100"
+                    className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200"
+                    placeholder="Student Name"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                <label className="block text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider text-[10px] font-bold">
                   Registered Email
                 </label>
-                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 px-3 py-2.5 rounded-xl">
-                  <Mail size={14} className="text-slate-400" />
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
+                  <Mail size={15} className="text-slate-400" />
                   <input
                     type="email"
-                    required
                     value={editEmail}
                     onChange={(e) => setEditEmail(e.target.value)}
-                    className="bg-transparent border-none text-xs focus:outline-none w-full text-slate-800 dark:text-slate-100 font-mono"
+                    className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200"
+                    placeholder="student@example.com"
                   />
                 </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                <label className="block text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider text-[10px] font-bold">
                   Contact Number
                 </label>
-                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 px-3 py-2.5 rounded-xl">
-                  <Phone size={14} className="text-slate-400" />
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
+                  <Phone size={15} className="text-slate-400" />
                   <input
                     type="text"
-                    required
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    className="bg-transparent border-none text-xs focus:outline-none w-full text-slate-800 dark:text-slate-100 font-mono"
+                    className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200"
+                    placeholder="+91 Phone"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                <label className="block text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider text-[10px] font-bold">
                   Parent / Guardian Name
                 </label>
-                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 px-3 py-2.5 rounded-xl">
-                  <UserCheck size={14} className="text-slate-400" />
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
+                  <Users size={15} className="text-slate-400" />
                   <input
                     type="text"
-                    required
                     value={editParentName}
                     onChange={(e) => setEditParentName(e.target.value)}
-                    className="bg-transparent border-none text-xs focus:outline-none w-full text-slate-800 dark:text-slate-100"
+                    className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200"
+                    placeholder="Father/Mother Name"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end pt-3">
+            <div className="flex justify-end pt-4">
               <button
                 type="submit"
                 disabled={isSaving}
-                className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-6 py-3 rounded-xl transition-all cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine border-none"
+                className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-[#FF6B2B]/20 btn-shine"
               >
-                {isSaving ? 'Updating...' : 'Update Student Profile'}
+                {isSaving ? "Saving..." : "Update Student Profile"}
               </button>
             </div>
           </form>
@@ -543,8 +668,8 @@ export default function StudentProfilePage() {
 
       </div>
 
-      {/* STUDENT DOCUMENT VAULT & VERIFICATION REPOSITORY */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-6">
+      {/* STUDENT DOCUMENT VAULT & RECORDS VERIFICATION */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
             <h3 className="text-sm font-black text-slate-900 dark:text-slate-50 uppercase tracking-wide flex items-center gap-2">
@@ -641,7 +766,7 @@ export default function StudentProfilePage() {
                       <button
                         type="button"
                         onClick={() => docInputRefs.current[doc.id]?.click()}
-                        className="w-full py-3 px-3 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-accent dark:hover:border-accent rounded-xl text-center transition-colors bg-white/50 dark:bg-slate-900/50 hover:bg-accent/5 flex items-center justify-center gap-2 group cursor-pointer"
+                        className="w-full py-3 px-3 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-accent dark:hover:border-accent rounded-xl text-center transition-colors bg-[#fcfbfa] dark:bg-slate-900/50 hover:bg-accent/5 flex items-center justify-center gap-2 group cursor-pointer"
                       >
                         <UploadCloud size={16} className="text-slate-400 group-hover:text-accent transition-colors" />
                         <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 group-hover:text-accent">

@@ -1,12 +1,28 @@
-import prisma from "../config/prisma.js";
-import CustomError from "../utils/customError.js";
+const ensureFeeColumns = async () => {
+  const alterColumns = [
+    `ALTER TABLE \`Fee\` ADD COLUMN \`franchiseId\` INT NULL`,
+    `ALTER TABLE \`Fee\` ADD COLUMN \`batchId\` INT NULL`,
+    `ALTER TABLE \`Fee\` ADD COLUMN \`totalFee\` DOUBLE NULL DEFAULT 0`,
+    `ALTER TABLE \`Fee\` ADD COLUMN \`paidAmount\` DOUBLE NULL DEFAULT 0`,
+    `ALTER TABLE \`Fee\` ADD COLUMN \`dueAmount\` DOUBLE NULL DEFAULT 0`,
+    `ALTER TABLE \`Fee\` ADD COLUMN \`status\` VARCHAR(191) NULL DEFAULT 'PENDING'`,
+    `ALTER TABLE \`Fee\` ADD COLUMN \`isActive\` TINYINT(1) DEFAULT 1`,
+    `ALTER TABLE \`FeePayment\` ADD COLUMN \`referenceNumber\` VARCHAR(191) NULL`,
+    `ALTER TABLE \`FeePayment\` ADD COLUMN \`remarks\` VARCHAR(191) NULL`
+  ];
+  for (const sql of alterColumns) {
+    try {
+      await prisma.$executeRawUnsafe(sql);
+    } catch (e) { }
+  }
+};
 
 export const feeService = {
   /**
    * Create a new fee record
    */
   createFee: async (data) => {
-    const { studentId, franchiseId, batchId, totalFee, paidAmount = 0, dueDate } = data;
+    const { studentId, franchiseId, batchId, totalFee, paidAmount = 0 } = data;
 
     if (totalFee <= 0) {
       throw new CustomError("Total fee must be greater than 0", 400);
@@ -49,8 +65,8 @@ export const feeService = {
     }
 
     try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE Fee ADD COLUMN dueDate DATETIME NULL`).catch(() => {});
-    } catch (e) {}
+      await prisma.$executeRawUnsafe(`ALTER TABLE Fee ADD COLUMN dueDate DATETIME NULL`).catch(() => { });
+    } catch (e) { }
 
     const fee = await prisma.fee.create({
       data: {
@@ -72,7 +88,7 @@ export const feeService = {
 
     if (parsedDueDate) {
       const formattedIso = parsedDueDate.toISOString().slice(0, 19).replace('T', ' ');
-      await prisma.$executeRawUnsafe(`UPDATE Fee SET dueDate = '${formattedIso}' WHERE id = ${fee.id}`).catch(() => {});
+      await prisma.$executeRawUnsafe(`UPDATE Fee SET dueDate = '${formattedIso}' WHERE id = ${fee.id}`).catch(() => { });
       fee.dueDate = parsedDueDate;
     }
 
@@ -83,7 +99,7 @@ export const feeService = {
    * Get filtered fee records
    */
   getFees: async (query) => {
-    const { studentName, batchId, franchiseId, status, page = 1, limit = 50, sortBy = "createdAt", sortOrder = "desc" } = query;
+    const { studentName, batchId, franchiseId, status, page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = query;
 
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
@@ -211,8 +227,8 @@ export const feeService = {
     }
 
     try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE Fee ADD COLUMN dueDate DATETIME NULL`).catch(() => {});
-    } catch (e) {}
+      await prisma.$executeRawUnsafe(`ALTER TABLE Fee ADD COLUMN dueDate DATETIME NULL`).catch(() => { });
+    } catch (e) { }
 
     const updated = await prisma.fee.update({
       where: { id: Number(id) },
@@ -231,7 +247,7 @@ export const feeService = {
 
     if (parsedDueDate) {
       const formattedIso = parsedDueDate.toISOString().slice(0, 19).replace('T', ' ');
-      await prisma.$executeRawUnsafe(`UPDATE Fee SET dueDate = '${formattedIso}' WHERE id = ${Number(id)}`).catch(() => {});
+      await prisma.$executeRawUnsafe(`UPDATE Fee SET dueDate = '${formattedIso}' WHERE id = ${Number(id)}`).catch(() => { });
       updated.dueDate = parsedDueDate;
     }
 
@@ -309,6 +325,7 @@ export const feeService = {
    * Fetch specific student's fee summary and payment history
    */
   getStudentFeesSummary: async (studentId) => {
+    await ensureFeeColumns();
     const fees = await prisma.fee.findMany({
       where: { studentId: Number(studentId), isActive: true },
       include: {
@@ -347,9 +364,9 @@ export const feeService = {
       // 1. Delete all associated fee payments first
       await prisma.feePayment.deleteMany({
         where: { feeId: feeIdNum },
-      }).catch(() => {});
+      }).catch(() => { });
 
-      await prisma.$executeRawUnsafe(`DELETE FROM FeePayment WHERE feeId = ${feeIdNum}`).catch(() => {});
+      await prisma.$executeRawUnsafe(`DELETE FROM FeePayment WHERE feeId = ${feeIdNum}`).catch(() => { });
 
       // 2. Hard delete fee record from MySQL database
       await prisma.fee.delete({
@@ -363,7 +380,7 @@ export const feeService = {
         await prisma.fee.update({
           where: { id: feeIdNum },
           data: { isActive: false },
-        }).catch(() => {});
+        }).catch(() => { });
       });
     }
 

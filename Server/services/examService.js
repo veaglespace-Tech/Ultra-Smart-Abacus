@@ -1,11 +1,25 @@
-import prisma from "../config/prisma.js";
-import CustomError from "../utils/customError.js";
+const ensureExamResultColumns = async () => {
+  const alterColumns = [
+    `ALTER TABLE \`ExamResult\` ADD COLUMN \`percentage\` DOUBLE NULL`,
+    `ALTER TABLE \`ExamResult\` ADD COLUMN \`grade\` VARCHAR(191) NULL`,
+    `ALTER TABLE \`ExamResult\` ADD COLUMN \`isPassed\` TINYINT(1) DEFAULT 0`,
+    `ALTER TABLE \`ExamResult\` ADD COLUMN \`isAbsent\` TINYINT(1) DEFAULT 0`,
+    `ALTER TABLE \`ExamResult\` ADD COLUMN \`remarks\` VARCHAR(191) NULL`,
+    `ALTER TABLE \`ExamResult\` ADD COLUMN \`publishedAt\` DATETIME NULL`
+  ];
+  for (const sql of alterColumns) {
+    try {
+      await prisma.$executeRawUnsafe(sql);
+    } catch (e) {}
+  }
+};
 
 export const examService = {
 
   //   Create Exam
 
   createExam: async (data, user) => {
+    await ensureExamResultColumns();
     // 0. Ensure all required columns exist in MySQL Exam table
     const alterColumns = [
       `ALTER TABLE \`Exam\` ADD COLUMN \`examCode\` VARCHAR(191) NULL`,
@@ -218,6 +232,7 @@ export const examService = {
    * Get All Exams
    */
   getAllExams: async (query) => {
+    await ensureExamResultColumns();
     const {
       page = 1,
       limit = 50,
@@ -470,6 +485,7 @@ export const examService = {
    * Get Student Exams & Results
    */
   getStudentExams: async (userId) => {
+    await ensureExamResultColumns();
     let student = null;
     if (userId) {
       student = await prisma.student.findUnique({ where: { userId: Number(userId) } }).catch(() => null);
