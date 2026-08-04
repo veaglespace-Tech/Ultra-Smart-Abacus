@@ -161,7 +161,15 @@ export default function FranchiseLayout({ children }) {
           <Link href="/dashboard/franchise/profile" className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2 hover:border-[#FF6B2B]/50 transition-all group">
             <div className="w-8 h-8 rounded-lg overflow-hidden bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40 group-hover:scale-105 transition-transform shrink-0">
               {user?.profilePhoto ? (
-                <img src={user.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                <img
+                  src={
+                    user.profilePhoto.startsWith("data:") || user.profilePhoto.startsWith("http")
+                      ? user.profilePhoto
+                      : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000"}${user.profilePhoto.startsWith("/") ? "" : "/"}${user.profilePhoto}`
+                  }
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 userInitials
               )}
@@ -282,7 +290,11 @@ export default function FranchiseLayout({ children }) {
                 <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
                   <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
-                      {userInitials}
+                      {user?.profilePhoto ? (
+                        <img src={getImageUrl(user.profilePhoto)} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        userInitials
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{userName}</p>

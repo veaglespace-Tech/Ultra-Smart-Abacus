@@ -33,6 +33,9 @@ prisma.$executeRawUnsafe(`
   )
 `).catch(() => {});
 
+prisma.$executeRawUnsafe(`ALTER TABLE User ADD COLUMN profilePhoto LONGTEXT NULL`).catch(() => {});
+prisma.$executeRawUnsafe(`ALTER TABLE Franchise ADD COLUMN profilePhoto LONGTEXT NULL`).catch(() => {});
+
 
 
 export default prisma

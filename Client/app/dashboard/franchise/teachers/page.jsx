@@ -39,8 +39,8 @@ export default function FranchiseTeachersPage() {
   const fetchTeachers = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/teachers');
-      let data = res.data || res;
+      const res = await api.franchise.getTeachers();
+      let data = res?.teachers || res?.data || res;
       if (data && data.data) data = data.data;
 
       if (Array.isArray(data)) {

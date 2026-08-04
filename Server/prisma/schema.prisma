@@ -33,6 +33,7 @@ model User {
   phone String?
   city String?
   address String?
+  profilePhoto String? @db.LongText
 
   
   role Role
@@ -92,6 +93,7 @@ model Franchise {
   phone String?
 
   address String?
+  profilePhoto String? @db.LongText
 
   userId Int @unique
 

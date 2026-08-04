@@ -147,9 +147,10 @@ export const registerFranchise = async (req, res, next) => {
 // Get Franchise Profile
 export const getFranchiseProfile = async (req, res, next) => {
     try {
+        const userId = Number(req.user.id);
         let franchise = await prisma.franchise.findFirst({
             where: {
-                userId: Number(req.user.id)
+                userId: userId
             },
             include: {
                 user: {
@@ -187,6 +188,22 @@ export const getFranchiseProfile = async (req, res, next) => {
             });
         }
 
+        let photo = null;
+        try {
+            const rawUser = await prisma.$queryRawUnsafe(`SELECT profilePhoto FROM User WHERE id = ${userId}`);
+            if (rawUser?.[0]?.profilePhoto) {
+                photo = rawUser[0].profilePhoto;
+            }
+            if (!photo && franchise?.id) {
+                const rawFranchise = await prisma.$queryRawUnsafe(`SELECT profilePhoto FROM Franchise WHERE id = ${franchise.id}`);
+                if (rawFranchise?.[0]?.profilePhoto) {
+                    photo = rawFranchise[0].profilePhoto;
+                }
+            }
+        } catch (e) {
+            console.error("Error fetching raw profilePhoto:", e);
+        }
+
         if (!franchise) {
             franchise = {
                 id: 1,
@@ -194,14 +211,20 @@ export const getFranchiseProfile = async (req, res, next) => {
                 email: req.user?.email || "vrushali@gmail.com",
                 phone: req.user?.phone || "+91 9876543210",
                 address: req.user?.address || "Franchise Center",
-                profilePhoto: null,
+                profilePhoto: photo,
                 user: {
-                    id: Number(req.user?.id) || 1,
+                    id: userId || 1,
                     name: req.user?.name || "Vrushali Landge",
                     email: req.user?.email || "vrushali@gmail.com",
-                    role: "FRANCHISE"
+                    role: "FRANCHISE",
+                    profilePhoto: photo
                 }
             };
+        } else {
+            franchise.profilePhoto = photo;
+            if (franchise.user) {
+                franchise.user.profilePhoto = photo;
+            }
         }
 
         res.json({
@@ -491,6 +514,7 @@ next(error)
 export const updateFranchiseProfile = async (req, res, next) => {
     try {
         const { name, phone, address, city, password, profilePhoto } = req.body;
+        const photoValue = req.file ? `/uploads/profiles/${req.file.filename}` : profilePhoto;
         const userId = Number(req.user.id);
 
         let updateUserData = {};
@@ -498,7 +522,6 @@ export const updateFranchiseProfile = async (req, res, next) => {
         if (phone !== undefined) updateUserData.phone = phone;
         if (address !== undefined) updateUserData.address = address;
         if (city !== undefined) updateUserData.city = city;
-        if (profilePhoto !== undefined) updateUserData.profilePhoto = profilePhoto;
         if (password && password.trim().length >= 6) {
             updateUserData.password = await bcrypt.hash(password.trim(), 10);
         }
@@ -523,12 +546,30 @@ export const updateFranchiseProfile = async (req, res, next) => {
             if (name) franchiseUpdateData.name = name;
             if (phone !== undefined) franchiseUpdateData.phone = phone;
             if (address !== undefined) franchiseUpdateData.address = address;
-            if (profilePhoto !== undefined) franchiseUpdateData.profilePhoto = profilePhoto;
 
             franchise = await prisma.franchise.update({
                 where: { id: franchise.id },
                 data: franchiseUpdateData
             });
+        }
+
+        if (photoValue !== undefined) {
+            try {
+                const escapedPhoto = photoValue ? photoValue.replace(/'/g, "''") : null;
+                if (escapedPhoto) {
+                    await prisma.$executeRawUnsafe(`UPDATE User SET profilePhoto = '${escapedPhoto}' WHERE id = ${userId}`);
+                    if (franchise?.id) {
+                        await prisma.$executeRawUnsafe(`UPDATE Franchise SET profilePhoto = '${escapedPhoto}' WHERE id = ${franchise.id}`);
+                    }
+                } else {
+                    await prisma.$executeRawUnsafe(`UPDATE User SET profilePhoto = NULL WHERE id = ${userId}`);
+                    if (franchise?.id) {
+                        await prisma.$executeRawUnsafe(`UPDATE Franchise SET profilePhoto = NULL WHERE id = ${franchise.id}`);
+                    }
+                }
+            } catch (e) {
+                console.error("Error updating raw profilePhoto:", e);
+            }
         }
 
         res.json({
@@ -543,7 +584,7 @@ export const updateFranchiseProfile = async (req, res, next) => {
                 phone: user.phone,
                 city: user.city,
                 address: user.address,
-                profilePhoto: user.profilePhoto || profilePhoto
+                profilePhoto: photoValue !== undefined ? photoValue : null
             }
         });
     } catch (error) {

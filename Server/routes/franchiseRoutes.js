@@ -18,6 +18,8 @@ import franchiseValidation from "../validation/franchiseValidation.js"
 import validationMiddleware from "../middleware/validation.middleware.js"
 
 
+import upload from "../middleware/uploadMiddleware.js"
+
 const router = express.Router()
 
 
@@ -50,6 +52,7 @@ router.put(
     "/profile",
     authMiddleware,
     authorize("FRANCHISE", "ADMIN"),
+    upload.single("profilePhoto"),
     updateFranchiseProfile
 )
 

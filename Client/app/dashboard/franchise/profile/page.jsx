@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export default function FranchiseProfilePage() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [profile, setProfile] = useState(null);
   const [metrics, setMetrics] = useState({ totalStudents: 0, activeTeachers: 0, batchesCount: 0, pendingFees: 0 });
   const [loading, setLoading] = useState(true);
@@ -20,6 +20,7 @@ export default function FranchiseProfilePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -31,6 +32,15 @@ export default function FranchiseProfilePage() {
     confirmPassword: ""
   });
 
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith("data:") || url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+    const apiHost = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "") : "http://localhost:5000";
+    return `${apiHost}${url.startsWith("/") ? "" : "/"}${url}`;
+  };
+
   const fetchProfileData = async () => {
     setLoading(true);
     try {
@@ -41,7 +51,12 @@ export default function FranchiseProfilePage() {
 
       const profData = profileRes?.franchise || profileRes?.data || {};
       setProfile(profData);
-      setProfilePhoto(profData.profilePhoto || profData.user?.profilePhoto || user?.profilePhoto || null);
+      const photoFromApi = profData.profilePhoto || profData.user?.profilePhoto || user?.profilePhoto || null;
+      setProfilePhoto(photoFromApi);
+
+      if (photoFromApi && user && user.profilePhoto !== photoFromApi && setUser) {
+        setUser(prev => (prev ? { ...prev, profilePhoto: photoFromApi } : prev));
+      }
 
       setFormData({
         name: profData.name || user?.name || "",
@@ -65,7 +80,7 @@ export default function FranchiseProfilePage() {
 
   useEffect(() => {
     fetchProfileData();
-  }, [user]);
+  }, []);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
@@ -81,6 +96,8 @@ export default function FranchiseProfilePage() {
       return;
     }
 
+    setSelectedFile(file);
+
     const reader = new FileReader();
     reader.onload = () => {
       setProfilePhoto(reader.result);
@@ -90,6 +107,7 @@ export default function FranchiseProfilePage() {
   };
 
   const handleRemovePhoto = () => {
+    setSelectedFile(null);
     setProfilePhoto(null);
     setSuccessMessage("Profile photo removed. Click 'Save Profile Changes' to apply.");
   };
@@ -117,22 +135,48 @@ export default function FranchiseProfilePage() {
 
     setSaving(true);
     try {
-      const payload = {
-        name: formData.name,
-        phone: formData.phone,
-        address: formData.address,
-        city: formData.city,
-        profilePhoto: profilePhoto
-      };
-
-      if (formData.password) {
-        payload.password = formData.password;
+      let payload;
+      if (selectedFile) {
+        payload = new FormData();
+        payload.append("profilePhoto", selectedFile);
+        payload.append("name", formData.name);
+        payload.append("phone", formData.phone);
+        payload.append("address", formData.address);
+        payload.append("city", formData.city);
+        if (formData.password) {
+          payload.append("password", formData.password);
+        }
+      } else {
+        payload = {
+          name: formData.name,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          profilePhoto: profilePhoto
+        };
+        if (formData.password) {
+          payload.password = formData.password;
+        }
       }
 
-      await api.franchise.updateProfile(payload);
-      setSuccessMessage("Franchise profile updated successfully!");
-      setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
-      await fetchProfileData();
+      const updateRes = await api.franchise.updateProfile(payload);
+      const updatedPhoto = updateRes?.user?.profilePhoto || updateRes?.franchise?.profilePhoto || profilePhoto;
+
+      const updatedUser = {
+        ...user,
+        ...updateRes?.user,
+        profilePhoto: updatedPhoto
+      };
+
+      if (setUser) {
+        setUser(updatedUser);
+      }
+      try {
+        const { storageService } = await import("@/services/storage.services");
+        storageService.setUser(updatedUser);
+      } catch (e) {}
+
+      setSelectedFile(null);
       setSuccessMessage("Franchise profile updated successfully!");
       setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
       await fetchProfileData();
@@ -226,7 +270,7 @@ export default function FranchiseProfilePage() {
                   <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] p-0.5 shadow-md flex items-center justify-center">
                     {profilePhoto ? (
                       <img
-                        src={profilePhoto}
+                        src={getImageUrl(profilePhoto)}
                         alt="Profile Photo"
                         className="w-full h-full object-cover rounded-[14px]"
                       />
