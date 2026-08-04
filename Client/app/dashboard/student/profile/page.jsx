@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { 
+import {
   Camera, Trash2, User, Mail, Phone, UserCheck,
   FileText, IdCard, Users, Home, ClipboardList, Receipt,
   UploadCloud, Eye, Download, CheckCircle2, AlertCircle, X, ShieldCheck, FileCheck
@@ -41,25 +41,17 @@ export default function StudentProfilePage() {
   const fileInputRef = useRef(null);
   const docInputRefs = useRef({});
 
-  // Student Profile Photo State with Lazy Initializer for persistence across refreshes
-  const [profileImage, setProfileImage] = useState(() => {
-    try {
-      const storedUser = typeof window !== 'undefined' ? storageService.getUser() : null;
-      const storedPhoto = typeof window !== 'undefined' 
-        ? (storageService.get('abacus_student_profile_photo') || storageService.get('student_profile_photo')) 
-        : null;
-      return storedPhoto || user?.profilePhoto || profile?.profilePhoto || storedUser?.profilePhoto || storedUser?.student?.profilePhoto || null;
-    } catch (e) {
-      return null;
-    }
-  });
+  // Student Profile Photo State
+  const [profileImage, setProfileImage] = useState(null);
 
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editParentName, setEditParentName] = useState("");
 
+  const [isMounted, setIsMounted] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState("");
+  const [validationError, setValidationError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const mergeNonNullDocs = (target, source) => {
@@ -73,36 +65,15 @@ export default function StudentProfilePage() {
     return res;
   };
 
-  // Student Document Vault State with Lazy Initializer
-  const [documents, setDocuments] = useState(() => {
-    const baseDocs = {
-      studentPhoto: null,
-      birthCertificate: null,
-      studentAadhaar: null,
-      parentAadhaar: null,
-      addressProof: null,
-      admissionForm: null,
-      feeReceipt: null,
-    };
-    try {
-      let mergedDocs = { ...baseDocs };
-      if (typeof window !== 'undefined') {
-        const sessionItem = sessionStorage.getItem('abacus_student_documents');
-        if (sessionItem) {
-          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(sessionItem)); } catch (e) {}
-        }
-        const localItem = localStorage.getItem('abacus_student_documents');
-        if (localItem) {
-          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(localItem)); } catch (e) {}
-        }
-      }
-      const storedUser = typeof window !== 'undefined' ? storageService.getUser() : null;
-      mergedDocs = mergeNonNullDocs(mergedDocs, storedUser?.documents);
-      mergedDocs = mergeNonNullDocs(mergedDocs, storedUser?.student?.documents);
-      return mergedDocs;
-    } catch (e) {
-      return baseDocs;
-    }
+  // Student Document Vault State
+  const [documents, setDocuments] = useState({
+    studentPhoto: null,
+    birthCertificate: null,
+    studentAadhaar: null,
+    parentAadhaar: null,
+    addressProof: null,
+    admissionForm: null,
+    feeReceipt: null,
   });
 
   const [activeDocPreview, setActiveDocPreview] = useState(null);
@@ -111,8 +82,8 @@ export default function StudentProfilePage() {
   const saveDocumentsToStorage = async (updatedDocs) => {
     try {
       if (typeof window !== 'undefined') {
-        try { sessionStorage.setItem('abacus_student_documents', JSON.stringify(updatedDocs)); } catch (e) {}
-        try { localStorage.setItem('abacus_student_documents', JSON.stringify(updatedDocs)); } catch (e) {}
+        try { sessionStorage.setItem('abacus_student_documents', JSON.stringify(updatedDocs)); } catch (e) { }
+        try { localStorage.setItem('abacus_student_documents', JSON.stringify(updatedDocs)); } catch (e) { }
       }
 
       const currentUser = user || (typeof window !== 'undefined' ? storageService.getUser() : null);
@@ -143,9 +114,10 @@ export default function StudentProfilePage() {
   };
 
   useEffect(() => {
+    setIsMounted(true);
     const currentUser = user || (typeof window !== 'undefined' ? storageService.getUser() : null);
-    const storedPhoto = typeof window !== 'undefined' 
-      ? (storageService.get('abacus_student_profile_photo') || storageService.get('student_profile_photo')) 
+    const storedPhoto = typeof window !== 'undefined'
+      ? (storageService.get('abacus_student_profile_photo') || storageService.get('student_profile_photo'))
       : null;
     const photoToSet = storedPhoto || currentUser?.profilePhoto || profile.profilePhoto || null;
     if (photoToSet) {
@@ -163,11 +135,11 @@ export default function StudentProfilePage() {
       if (typeof window !== 'undefined') {
         const sessionItem = sessionStorage.getItem('abacus_student_documents');
         if (sessionItem) {
-          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(sessionItem)); } catch (e) {}
+          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(sessionItem)); } catch (e) { }
         }
         const localItem = localStorage.getItem('abacus_student_documents');
         if (localItem) {
-          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(localItem)); } catch (e) {}
+          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(localItem)); } catch (e) { }
         }
       }
 
@@ -187,7 +159,7 @@ export default function StudentProfilePage() {
         const token = storageService.getToken();
         if (!token) return;
         const targetId = profile?.id || profile?.rawId || currentUser?.student?.id || currentUser?.id;
-        const url = targetId 
+        const url = targetId
           ? `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/${targetId}`
           : `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/profile`;
 
@@ -198,13 +170,13 @@ export default function StudentProfilePage() {
         const studentData = data?.data || data?.student;
         let dbDocs = studentData?.documents;
         if (typeof dbDocs === 'string') {
-          try { dbDocs = JSON.parse(dbDocs); } catch (e) {}
+          try { dbDocs = JSON.parse(dbDocs); } catch (e) { }
         }
         if (dbDocs && typeof dbDocs === 'object') {
           setDocuments(prev => mergeNonNullDocs(prev, dbDocs));
           if (typeof window !== 'undefined') {
-            try { sessionStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) {}
-            try { localStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) {}
+            try { sessionStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) { }
+            try { localStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) { }
           }
         }
       } catch (err) {
@@ -218,7 +190,7 @@ export default function StudentProfilePage() {
   const _apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const _publicBase = _apiUrl.replace(/\/api\/?$/, "");
 
-  const _rawPhoto = profileImage || (typeof window !== 'undefined' ? (storageService.get('abacus_student_profile_photo') || storageService.get('student_profile_photo')) : null) || user?.profilePhoto || null;
+  const _rawPhoto = profileImage || (isMounted && typeof window !== 'undefined' ? (storageService.get('abacus_student_profile_photo') || storageService.get('student_profile_photo')) : null) || user?.profilePhoto || null;
   const resolvedProfilePhoto = _rawPhoto
     ? _rawPhoto.startsWith("/")
       ? `${_publicBase}${_rawPhoto}`
@@ -235,7 +207,7 @@ export default function StudentProfilePage() {
         img.src = event.target.result;
         img.onload = async () => {
           const canvas = document.createElement("canvas");
-          const MAX = 400;
+          const MAX = 250;
           let w = img.width;
           let h = img.height;
           if (w > h) {
@@ -247,9 +219,10 @@ export default function StudentProfilePage() {
           canvas.height = h;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
-          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.70);
 
           setProfileImage(compressedDataUrl);
+          setValidationError("");
 
           // Save photo in dedicated local storage keys
           if (storageService?.set) {
@@ -352,6 +325,7 @@ export default function StudentProfilePage() {
         return updated;
       });
 
+      setValidationError("");
       setProfileSuccess(`${DOCUMENT_TYPES.find(d => d.id === docId)?.name || 'Document'} uploaded successfully!`);
       setTimeout(() => setProfileSuccess(""), 3000);
     };
@@ -410,7 +384,28 @@ export default function StudentProfilePage() {
   };
 
   const handleSaveProfile = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    setValidationError("");
+
+    // Strict validation: Require all fields, profile photo, and documents to be present
+    const missingItems = [];
+    if (!editName || !editName.trim()) missingItems.push("Full Name");
+    if (!editEmail || !editEmail.trim()) missingItems.push("Registered Email");
+    if (!editPhone || !editPhone.trim()) missingItems.push("Contact Number");
+    if (!editParentName || !editParentName.trim()) missingItems.push("Parent / Guardian Name");
+    if (!profileImage && !resolvedProfilePhoto) missingItems.push("Profile Photo");
+
+    DOCUMENT_TYPES.forEach(doc => {
+      if (!documents[doc.id]) {
+        missingItems.push(doc.name);
+      }
+    });
+
+    if (missingItems.length > 0) {
+      setValidationError(`All profile details and document records must be filled before submitting. Missing (${missingItems.length}): ${missingItems.join(", ")}`);
+      return;
+    }
+
     setIsSaving(true);
     try {
       const token = storageService.getToken();
@@ -473,7 +468,7 @@ export default function StudentProfilePage() {
 
   return (
     <div className="space-[#2c3539] space-y-6">
-      
+
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
@@ -495,7 +490,7 @@ export default function StudentProfilePage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
-        
+
         {/* Visual profile detail summary card */}
         <div className="lg:col-span-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 flex flex-col items-center text-center shadow-sm">
           <div className="relative w-24 h-24 mb-2">
@@ -510,7 +505,7 @@ export default function StudentProfilePage() {
                 {profile.name.charAt(0)}
               </div>
             )}
-            
+
             <input
               type="file"
               accept="image/*"
@@ -571,8 +566,8 @@ export default function StudentProfilePage() {
             </div>
             <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800/80 pt-3">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Document Vault</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full text-[10px] border border-emerald-200 dark:border-emerald-800">
-                {uploadedCount} / {DOCUMENT_TYPES.length} Uploaded
+              <span suppressHydrationWarning className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full text-[10px] border border-emerald-200 dark:border-emerald-800">
+                {isMounted ? uploadedCount : 0} / {DOCUMENT_TYPES.length} Uploaded
               </span>
             </div>
           </div>
@@ -653,16 +648,6 @@ export default function StudentProfilePage() {
                 </div>
               </div>
             </div>
-
-            <div className="flex justify-end pt-4">
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-[#FF6B2B]/20 btn-shine"
-              >
-                {isSaving ? "Saving..." : "Update Student Profile"}
-              </button>
-            </div>
           </form>
         </div>
 
@@ -681,8 +666,8 @@ export default function StudentProfilePage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-full">
-              {uploadedCount} / {DOCUMENT_TYPES.length} Files Attached
+            <span suppressHydrationWarning className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-full">
+              {isMounted ? uploadedCount : 0} / {DOCUMENT_TYPES.length} Files Attached
             </span>
           </div>
         </div>
@@ -695,13 +680,12 @@ export default function StudentProfilePage() {
             const isUploaded = !!docData;
 
             return (
-              <div 
+              <div
                 key={doc.id}
-                className={`rounded-2xl border p-4 transition-all duration-200 space-y-3 flex flex-col justify-between ${
-                  isUploaded 
-                    ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/30 dark:bg-emerald-950/20' 
-                    : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 hover:border-slate-300 dark:hover:border-slate-700'
-                }`}
+                className={`rounded-2xl border p-4 transition-all duration-200 space-y-3 flex flex-col justify-between ${isUploaded
+                  ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/30 dark:bg-emerald-950/20'
+                  : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 hover:border-slate-300 dark:hover:border-slate-700'
+                  }`}
               >
                 {/* Header info */}
                 <div className="space-y-2">
@@ -745,7 +729,7 @@ export default function StudentProfilePage() {
                       {docData.dataUrl?.startsWith('data:image') && (
                         <div className="relative w-full h-24 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 group">
                           <img src={docData.dataUrl} alt={doc.name} className="w-full h-full object-cover" />
-                          <div 
+                          <div
                             onClick={() => setActiveDocPreview({ ...docData, title: doc.name })}
                             className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white font-bold text-[11px] gap-1 cursor-pointer transition-opacity backdrop-blur-xs"
                           >
@@ -756,8 +740,8 @@ export default function StudentProfilePage() {
                     </div>
                   ) : (
                     <div className="pt-1">
-                      <input 
-                        type="file" 
+                      <input
+                        type="file"
                         ref={el => docInputRefs.current[doc.id] = el}
                         accept="image/*,application/pdf"
                         className="hidden"
@@ -819,8 +803,8 @@ export default function StudentProfilePage() {
                   </div>
                 )}
 
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   ref={el => docInputRefs.current[doc.id] = el}
                   accept="image/*,application/pdf"
                   className="hidden"
@@ -830,6 +814,30 @@ export default function StudentProfilePage() {
             );
           })}
         </div>
+      </div>
+
+      {/* Validation error notification banner above bottom button */}
+      {validationError && (
+        <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3.5 text-xs text-rose-600 dark:text-rose-400 shadow-inner flex items-start gap-2.5 animate-fade-in my-3">
+          <AlertCircle size={18} className="shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-slate-900 dark:text-slate-100">Cannot Update Profile Yet</p>
+            <p className="text-[11px] mt-0.5 opacity-90">{validationError}</p>
+          </div>
+        </div>
+      )}
+
+      {/* UPDATE STUDENT PROFILE BUTTON AT THE VERY END */}
+      <div className="flex justify-end pt-2 pb-4">
+        <button
+          type="button"
+          onClick={handleSaveProfile}
+          disabled={isSaving}
+          className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white font-black text-xs px-8 py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-[#FF6B2B]/25 btn-shine flex items-center gap-2"
+        >
+          <CheckCircle2 size={16} />
+          <span>{isSaving ? "Updating Profile..." : "Update Student Profile"}</span>
+        </button>
       </div>
 
       {/* DOCUMENT FULLSCREEN PREVIEW MODAL */}
@@ -856,14 +864,14 @@ export default function StudentProfilePage() {
 
             <div className="flex-1 overflow-auto flex items-center justify-center p-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 min-h-[350px]">
               {activeDocPreview.dataUrl?.startsWith('data:image') ? (
-                <img 
-                  src={activeDocPreview.dataUrl} 
-                  alt={activeDocPreview.title} 
+                <img
+                  src={activeDocPreview.dataUrl}
+                  alt={activeDocPreview.title}
                   className="max-h-[65vh] max-w-full object-contain rounded-lg shadow-md"
                 />
               ) : activeDocPreview.dataUrl?.startsWith('data:application/pdf') ? (
-                <iframe 
-                  src={activeDocPreview.dataUrl} 
+                <iframe
+                  src={activeDocPreview.dataUrl}
                   title="PDF Preview"
                   className="w-full h-[65vh] rounded-lg"
                 />

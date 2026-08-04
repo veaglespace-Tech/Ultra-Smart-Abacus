@@ -1,3 +1,6 @@
+import prisma from "../config/prisma.js";
+import CustomError from "../utils/customError.js";
+
 const ensureFeeColumns = async () => {
   const alterColumns = [
     `ALTER TABLE \`Fee\` ADD COLUMN \`franchiseId\` INT NULL`,
@@ -7,8 +10,13 @@ const ensureFeeColumns = async () => {
     `ALTER TABLE \`Fee\` ADD COLUMN \`dueAmount\` DOUBLE NULL DEFAULT 0`,
     `ALTER TABLE \`Fee\` ADD COLUMN \`status\` VARCHAR(191) NULL DEFAULT 'PENDING'`,
     `ALTER TABLE \`Fee\` ADD COLUMN \`isActive\` TINYINT(1) DEFAULT 1`,
+    `ALTER TABLE \`Fee\` ADD COLUMN \`dueDate\` DATETIME NULL`,
+    `ALTER TABLE \`Fee\` ADD COLUMN \`createdAt\` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3)`,
+    `ALTER TABLE \`Fee\` ADD COLUMN \`updatedAt\` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)`,
     `ALTER TABLE \`FeePayment\` ADD COLUMN \`referenceNumber\` VARCHAR(191) NULL`,
-    `ALTER TABLE \`FeePayment\` ADD COLUMN \`remarks\` VARCHAR(191) NULL`
+    `ALTER TABLE \`FeePayment\` ADD COLUMN \`remarks\` VARCHAR(191) NULL`,
+    `ALTER TABLE \`FeePayment\` ADD COLUMN \`createdAt\` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3)`,
+    `ALTER TABLE \`FeePayment\` ADD COLUMN \`updatedAt\` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)`
   ];
   for (const sql of alterColumns) {
     try {
@@ -99,6 +107,7 @@ export const feeService = {
    * Get filtered fee records
    */
   getFees: async (query) => {
+    await ensureFeeColumns();
     const { studentName, batchId, franchiseId, status, page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = query;
 
     const skip = (Number(page) - 1) * Number(limit);

@@ -1,3 +1,6 @@
+import prisma from "../config/prisma.js";
+import CustomError from "../utils/customError.js";
+
 const ensureExamResultColumns = async () => {
   const alterColumns = [
     `ALTER TABLE \`ExamResult\` ADD COLUMN \`percentage\` DOUBLE NULL`,
@@ -5,7 +8,9 @@ const ensureExamResultColumns = async () => {
     `ALTER TABLE \`ExamResult\` ADD COLUMN \`isPassed\` TINYINT(1) DEFAULT 0`,
     `ALTER TABLE \`ExamResult\` ADD COLUMN \`isAbsent\` TINYINT(1) DEFAULT 0`,
     `ALTER TABLE \`ExamResult\` ADD COLUMN \`remarks\` VARCHAR(191) NULL`,
-    `ALTER TABLE \`ExamResult\` ADD COLUMN \`publishedAt\` DATETIME NULL`
+    `ALTER TABLE \`ExamResult\` ADD COLUMN \`publishedAt\` DATETIME NULL`,
+    `ALTER TABLE \`ExamResult\` ADD COLUMN \`createdAt\` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3)`,
+    `ALTER TABLE \`ExamResult\` ADD COLUMN \`updatedAt\` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)`
   ];
   for (const sql of alterColumns) {
     try {
@@ -31,7 +36,9 @@ export const examService = {
       `ALTER TABLE \`Exam\` ADD COLUMN \`totalMarks\` INT NULL`,
       `ALTER TABLE \`Exam\` ADD COLUMN \`passingMarks\` INT NULL`,
       `ALTER TABLE \`Exam\` ADD COLUMN \`examDate\` DATETIME NULL`,
-      `ALTER TABLE \`Exam\` ADD COLUMN \`description\` VARCHAR(191) NULL`
+      `ALTER TABLE \`Exam\` ADD COLUMN \`description\` VARCHAR(191) NULL`,
+      `ALTER TABLE \`Exam\` ADD COLUMN \`createdAt\` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3)`,
+      `ALTER TABLE \`Exam\` ADD COLUMN \`updatedAt\` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)`
     ];
 
     for (const sql of alterColumns) {
