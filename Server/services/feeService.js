@@ -334,9 +334,15 @@ export const feeService = {
    * Fetch specific student's fee summary and payment history
    */
   getStudentFeesSummary: async (studentId) => {
-    await ensureFeeColumns();
     const fees = await prisma.fee.findMany({
-      where: { studentId: Number(studentId), isActive: true },
+      where: {
+        OR: [
+          { studentId: Number(studentId) },
+          ...(student && student.userId ? [{ studentId: Number(student.userId) }] : []),
+          ...(student && student.email ? [{ student: { email: student.email } }] : [])
+        ],
+        isActive: true
+      },
       include: {
         batch: true,
         franchise: true,
@@ -344,11 +350,12 @@ export const feeService = {
           orderBy: { paymentDate: "desc" },
         },
       },
+      orderBy: { createdAt: "desc" }
     });
 
-    const totalFee = fees.reduce((sum, f) => sum + f.totalFee, 0);
-    const paidAmount = fees.reduce((sum, f) => sum + f.paidAmount, 0);
-    const dueAmount = fees.reduce((sum, f) => sum + f.dueAmount, 0);
+    const totalFee = fees.reduce((sum, f) => sum + (f.totalFee || 0), 0);
+    const paidAmount = fees.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
+    const dueAmount = fees.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
 
     return {
       summary: {

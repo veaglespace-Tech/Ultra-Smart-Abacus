@@ -5,10 +5,41 @@ import CustomError from "../utils/customError.js";
 
 // Helper to get student from current user context
 const getStudentFromUser = async (user) => {
-  let student = await prisma.student.findUnique({ where: { userId: user.id } });
+  if (!user) return null;
+
+  // 1. Try finding by userId
+  let student = await prisma.student.findUnique({ where: { userId: Number(user.id) } });
+
+  // 2. Try finding by email
   if (!student && user.email) {
-    student = await prisma.student.findFirst({ where: { email: user.email } });
+    student = await prisma.student.findFirst({
+      where: {
+        email: {
+          equals: user.email.trim(),
+        }
+      }
+    });
   }
+
+  // 3. Try finding by name
+  if (!student && user.name) {
+    student = await prisma.student.findFirst({
+      where: {
+        name: {
+          contains: user.name.trim(),
+        }
+      }
+    });
+  }
+
+  // Auto-link userId to Student record if found
+  if (student && !student.userId) {
+    await prisma.student.update({
+      where: { id: student.id },
+      data: { userId: Number(user.id) }
+    }).catch(() => {});
+  }
+
   return student;
 };
 
