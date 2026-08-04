@@ -11,7 +11,7 @@ const contactInfo = [
   {
     icon: Phone,
     title: "Call Us Directly",
-    textSize:"text-lg",
+    textSize: "text-lg",
     lineTextSize: "text-base",
     lines: ["+91 9325252247", "+91 7867896734"],
     color: "#2D1B69",
@@ -20,7 +20,7 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email Inquiries",
-    textSize:"text-lg",
+    textSize: "text-lg",
     lineTextSize: "text-base",
     lines: ["gunjalsejal04@gmail.com", "admissions@gmail.com"],
     color: "#FF6B2B",
@@ -29,7 +29,7 @@ const contactInfo = [
   {
     icon: Clock,
     title: "Working Hours",
-    textSize:"text-lg",
+    textSize: "text-lg",
     lineTextSize: "text-base",
     lines: ["Monday – Saturday", "09:00 AM – 06:00 PM (IST)"],
     color: "#10B981",
@@ -38,7 +38,7 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "Visit Us",
-    textSize:"text-lg",
+    textSize: "text-lg",
     lineTextSize: "text-base",
     lines: ["Office no 207, Kudale Patil Chambers, Heritage, near Bhairavnath Temple, Jadhav Nagar, Vadgaon Budruk, Pune, Maharashtra 411041"],
     color: "#FFCA28",
@@ -69,9 +69,9 @@ export default function ContactPage() {
   const inputClass = "w-full rounded-2xl border-2 border-slate-200 bg-slate-50 py-3.5 px-5 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:bg-white focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200";
 
   return (
-    <div 
-      className="min-h-screen flex flex-col bg-cover bg-center bg-fixed relative transition-colors duration-300" 
-      style={{ 
+    <div
+      className="min-h-screen flex flex-col bg-cover bg-center bg-fixed relative transition-colors duration-300"
+      style={{
         fontFamily: "Inter, sans-serif",
         backgroundImage: "linear-gradient(to bottom, rgba(15, 10, 30, 0.88), rgba(45, 27, 105, 0.85)), url('/images/contact.jpg')"
       }}
@@ -108,7 +108,7 @@ export default function ContactPage() {
 
       <section className="py-14 px-6 bg-white/70 dark:bg-[#150e2a]/70 backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-5">
-          {contactInfo.map(({ icon: Icon, title, textSize,lineTextSize, lines, color, bg }, i) => (
+          {contactInfo.map(({ icon: Icon, title, textSize, lineTextSize, lines, color, bg }, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 15 }}
@@ -125,53 +125,53 @@ export default function ContactPage() {
               </div>
               <h3 className={`font-bold text-slate-800 dark:text-white ${textSize} mb-2`} style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h3>
               {lines.map((line, li) => {
-  if (title === "Call Us Directly") {
-    return (
-      <a
-        key={li}
-        href={`tel:${line.replace(/\s+/g, "")}`}
-        className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline transition-colors`}
-      >
-        {line}
-      </a>
-    );
-  }
+                if (title === "Call Us Directly") {
+                  return (
+                    <a
+                      key={li}
+                      href={`tel:${line.replace(/\s+/g, "")}`}
+                      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline transition-colors`}
+                    >
+                      {line}
+                    </a>
+                  );
+                }
 
-if (title === "Email Inquiries") {
-  return (
-    <a
-      key={li}
-      href={`mailto:${line}?subject=Inquiry`}
-      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline`}
-    >
-      {line}
-    </a>
-  );
-}
+                if (title === "Email Inquiries") {
+                  return (
+                    <a
+                      key={li}
+                      href={`mailto:${line}?subject=Inquiry`}
+                      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline`}
+                    >
+                      {line}
+                    </a>
+                  );
+                }
 
- if (title === "Visit Us") {
-  return (
-    <a
-      key={li}
-      href="https://maps.app.goo.gl/bGUXoYNs1f3paBaF6"
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline cursor-pointer`}
-    >
-      {line}
-    </a>
-  );
-}
+                if (title === "Visit Us") {
+                  return (
+                    <a
+                      key={li}
+                      href="Office no 207, Kudale Patil Chambers, Heritage, near Bhairavnath Temple, Jadhav Nagar, Vadgaon Budruk, Pune, Maharashtra 411041"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline cursor-pointer`}
+                    >
+                      {line}
+                    </a>
+                  );
+                }
 
-return (
-  <p
-    key={li}
-    className={`text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed`}
-  >
-    {line}
-  </p>
-);
-})}
+                return (
+                  <p
+                    key={li}
+                    className={`text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed`}
+                  >
+                    {line}
+                  </p>
+                );
+              })}
 
             </motion.div>
           ))}
@@ -184,7 +184,7 @@ return (
         <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-12">
 
           {/* Left: Form */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -35 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -288,7 +288,7 @@ return (
           </motion.div>
 
           {/* Right: Side Info */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 35 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -296,17 +296,17 @@ return (
             className="space-y-6"
           >
             {/* Map Placeholder */}
-              <div className="h-56 rounded-3xl overflow-hidden shadow-lg">
-          <iframe
-            src="https://www.google.com/maps?q=Shrimant+Dagdusheth+Halwai+Ganpati+Mandir+Pune&output=embed"
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen=""
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </div>
+            <div className="h-56 rounded-3xl overflow-hidden shadow-lg">
+              <iframe
+                src="https://www.google.com/maps?q=Office no 207, Kudale Patil Chambers, Heritage, near Bhairavnath Temple, Jadhav Nagar, Vadgaon Budruk, Pune, Maharashtra 411041&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
 
             {/* Quick Facts */}
             <div className="p-6 rounded-3xl bg-gradient-to-br from-[#FFF8F0] to-white dark:from-[#1e1445] dark:to-[#1a1035] border-2 border-[#FF6B2B]/20">

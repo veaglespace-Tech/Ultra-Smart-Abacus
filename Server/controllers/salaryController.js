@@ -2,6 +2,40 @@ import prisma from "../config/prisma.js"
 import asyncHandler from "../utils/asyncHandler.js"
 import CustomError from "../utils/customError.js"
 
+let isSalaryTableEnsured = false;
+export const ensureSalaryTable = async () => {
+    if (isSalaryTableEnsured) return;
+    try {
+        await prisma.$executeRawUnsafe(`
+            CREATE TABLE IF NOT EXISTS \`Salary\` (
+                \`id\` INT NOT NULL AUTO_INCREMENT,
+                \`teacherId\` INT NOT NULL,
+                \`franchiseId\` INT NULL,
+                \`month\` INT NOT NULL,
+                \`year\` INT NOT NULL,
+                \`basicSalary\` DOUBLE NOT NULL,
+                \`presentDays\` INT NOT NULL DEFAULT 0,
+                \`dailyRate\` DOUBLE NOT NULL DEFAULT 500,
+                \`bonus\` DOUBLE NOT NULL DEFAULT 0,
+                \`deductions\` DOUBLE NOT NULL DEFAULT 0,
+                \`netSalary\` DOUBLE NOT NULL,
+                \`paymentStatus\` VARCHAR(191) NOT NULL DEFAULT 'PENDING',
+                \`paymentDate\` DATETIME(3) NULL,
+                \`paymentMode\` VARCHAR(191) NULL,
+                \`referenceNumber\` VARCHAR(191) NULL,
+                \`remarks\` VARCHAR(191) NULL,
+                \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+                \`updatedAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+                PRIMARY KEY (\`id\`),
+                UNIQUE INDEX \`Salary_teacherId_month_year_key\`(\`teacherId\`, \`month\`, \`year\`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        `);
+        isSalaryTableEnsured = true;
+    } catch (e) {
+        console.warn("ensureSalaryTable warning:", e.message);
+    }
+};
+
 const calculateAttendanceSalary = async (teacherId, month, year) => {
     const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
     const endDate = new Date(parseInt(year), parseInt(month), 1);
@@ -25,6 +59,7 @@ const calculateAttendanceSalary = async (teacherId, month, year) => {
 
 // CREATE SALARY
 export const createSalary = asyncHandler(async (req, res) => {
+    await ensureSalaryTable();
     const {
         teacherId,
         month,
@@ -118,6 +153,7 @@ export const createSalary = asyncHandler(async (req, res) => {
 
 // UPDATE SALARY
 export const updateSalary = asyncHandler(async (req, res) => {
+    await ensureSalaryTable();
     const { id } = req.params;
     const {
         bonus,
@@ -175,6 +211,7 @@ export const updateSalary = asyncHandler(async (req, res) => {
 
 // MARK AS PAID
 export const markSalaryAsPaid = asyncHandler(async (req, res) => {
+    await ensureSalaryTable();
     const { id } = req.params;
     const { paymentDate, paymentMode, referenceNumber, remarks } = req.body;
 
@@ -210,6 +247,7 @@ export const markSalaryAsPaid = asyncHandler(async (req, res) => {
 
 // GET SALARY HISTORY (Franchise/Admin View)
 export const getSalaryHistory = asyncHandler(async (req, res) => {
+    await ensureSalaryTable();
     const { teacherId } = req.query;
 
     let franchise = null;
@@ -256,21 +294,30 @@ export const getSalaryHistory = asyncHandler(async (req, res) => {
             data: formatted
         });
     } catch (err) {
-        console.error("Salary fetch error:", err.message);
-        const salaries = await prisma.salary.findMany({
-            include: {
-                teacher: true
-            }
-        });
-        return res.status(200).json({
-            success: true,
-            data: salaries
-        });
+        console.error("Salary fetch raw query warning:", err.message);
+        try {
+            const salaries = await prisma.salary.findMany({
+                include: {
+                    teacher: true
+                }
+            });
+            return res.status(200).json({
+                success: true,
+                data: salaries
+            });
+        } catch (fallbackErr) {
+            console.error("Salary fetch fallback error:", fallbackErr.message);
+            return res.status(200).json({
+                success: true,
+                data: []
+            });
+        }
     }
 });
 
 // GET TEACHER SALARY HISTORY (Self View)
 export const getTeacherSalaryHistory = asyncHandler(async (req, res) => {
+    await ensureSalaryTable();
     const teacher = await prisma.teacher.findUnique({
         where: { userId: req.user.id }
     });
@@ -282,24 +329,32 @@ export const getTeacherSalaryHistory = asyncHandler(async (req, res) => {
         });
     }
 
-    const salaries = await prisma.salary.findMany({
-        where: {
-            teacherId: teacher.id
-        },
-        include: {
-            teacher: true,
-            franchise: true
-        },
-        orderBy: [
-            { year: "desc" },
-            { month: "desc" }
-        ]
-    });
+    try {
+        const salaries = await prisma.salary.findMany({
+            where: {
+                teacherId: teacher.id
+            },
+            include: {
+                teacher: true,
+                franchise: true
+            },
+            orderBy: [
+                { year: "desc" },
+                { month: "desc" }
+            ]
+        });
 
-    res.status(200).json({
-        success: true,
-        data: salaries
-    });
+        res.status(200).json({
+            success: true,
+            data: salaries
+        });
+    } catch (err) {
+        console.error("Teacher salary history fetch error:", err.message);
+        res.status(200).json({
+            success: true,
+            data: []
+        });
+    }
 });
 
 // GET SALARY DETAILS

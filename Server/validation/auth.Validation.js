@@ -75,10 +75,13 @@ export const loginValidation = [
         .notEmpty()
         .withMessage("Email is required")
         .bail()
-        .isEmail()
-        .withMessage(
-            "Invalid email format"
-        ),
+        .custom((value) => {
+            const val = value ? value.trim().toLowerCase() : "";
+            if (val === "admin" || /\S+@\S+\.\S+/.test(val)) {
+                return true;
+            }
+            throw new Error("Invalid email format");
+        }),
 
     body("password")
         .trim()
