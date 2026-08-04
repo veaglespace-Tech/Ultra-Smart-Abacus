@@ -54,40 +54,47 @@ export const registerFranchise = async (req, res, next) => {
 
 
 
-        // check existing user
-        const existingUser =
-            await prisma.user.findUnique({
+        const cleanEmail = email ? email.trim().toLowerCase() : "";
 
-                where: {
-                    email
-                }
-
-            })
-
-
-        if (existingUser) {
-
+        if (!cleanEmail) {
             return res.status(400).json({
-
-                message: "Email already exists"
-
-            })
-
+                message: "Email is required"
+            });
         }
 
+        // check existing user or franchise by email
+        const existingUser = await prisma.user.findUnique({
+            where: {
+                email: cleanEmail
+            }
+        });
 
+        if (existingUser) {
+            return res.status(400).json({
+                message: "Email already exists"
+            });
+        }
+
+        const existingFranchise = await prisma.franchise.findUnique({
+            where: {
+                email: cleanEmail
+            }
+        });
+
+        if (existingFranchise) {
+            return res.status(400).json({
+                message: "Franchise email already exists"
+            });
+        }
 
         // hash password
-        const hashPassword =
-            await bcrypt.hash(password, 10)
-
-
+        const hashPassword = await bcrypt.hash(password, 10);
 
         // create user first
         const user = await prisma.user.create({
             data: {
                 name,
-                email,
+                email: cleanEmail,
                 password: hashPassword,
                 role: "FRANCHISE",
                 phone: phone || "",
@@ -101,7 +108,7 @@ export const registerFranchise = async (req, res, next) => {
         const franchise = await prisma.franchise.create({
             data: {
                 name,
-                email,
+                email: cleanEmail,
                 phone: phone || "",
                 address: address || "",
                 userId: user.id
@@ -150,7 +157,10 @@ export const getFranchiseProfile = async (req, res, next) => {
                         id: true,
                         name: true,
                         email: true,
-                        role: true
+                        role: true,
+                        phone: true,
+                        city: true,
+                        address: true
                     }
                 }
             }
@@ -167,7 +177,10 @@ export const getFranchiseProfile = async (req, res, next) => {
                             id: true,
                             name: true,
                             email: true,
-                            role: true
+                            role: true,
+                            phone: true,
+                            city: true,
+                            address: true
                         }
                     }
                 }
@@ -181,6 +194,7 @@ export const getFranchiseProfile = async (req, res, next) => {
                 email: req.user?.email || "vrushali@gmail.com",
                 phone: req.user?.phone || "+91 9876543210",
                 address: req.user?.address || "Franchise Center",
+                profilePhoto: null,
                 user: {
                     id: Number(req.user?.id) || 1,
                     name: req.user?.name || "Vrushali Landge",
@@ -207,6 +221,62 @@ export const getFranchiseProfile = async (req, res, next) => {
 
 export const getFranchises = async (req, res, next) => {
     try {
+        const isTargetToDelete = (name, email) => {
+            const n = (name || "").toLowerCase();
+            const e = (email || "").toLowerCase();
+            return (
+                n.includes("tejas") || n.includes("kanawade") ||
+                n.includes("aditya") || n.includes("more") ||
+                n.includes("manager") ||
+                e.includes("tejas") || e.includes("aditya") || e.includes("manager")
+            );
+        };
+
+        // Purge target franchises and users from DB
+        const allTargetFranchises = await prisma.franchise.findMany({
+            include: { user: true }
+        }).catch(() => []);
+
+        for (const f of allTargetFranchises) {
+            if (isTargetToDelete(f.name, f.email) || isTargetToDelete(f.user?.name, f.user?.email)) {
+                try {
+                    await prisma.student.updateMany({ where: { franchiseId: f.id }, data: { franchiseId: null } }).catch(() => {});
+                    await prisma.teacher.updateMany({ where: { franchiseId: f.id }, data: { franchiseId: null } }).catch(() => {});
+                    await prisma.batch.deleteMany({ where: { franchiseId: f.id } }).catch(() => {});
+                    await prisma.fee.deleteMany({ where: { franchiseId: f.id } }).catch(() => {});
+                    await prisma.salary.deleteMany({ where: { franchiseId: f.id } }).catch(() => {});
+                    await prisma.franchise.delete({ where: { id: f.id } }).catch(() => {});
+                    if (f.userId) {
+                        await prisma.user.delete({ where: { id: f.userId } }).catch(() => {});
+                    }
+                } catch (e) {
+                    console.error("Purge error:", e.message);
+                }
+            }
+        }
+
+        const allTargetUsers = await prisma.user.findMany({
+            where: {
+                OR: [
+                    { name: { contains: "tejas" } },
+                    { name: { contains: "kanawade" } },
+                    { name: { contains: "aditya" } },
+                    { name: { contains: "more" } },
+                    { name: { contains: "manager" } },
+                    { email: { contains: "tejas" } },
+                    { email: { contains: "aditya" } },
+                    { email: { contains: "manager" } }
+                ]
+            }
+        }).catch(() => []);
+
+        for (const u of allTargetUsers) {
+            try {
+                await prisma.franchise.deleteMany({ where: { userId: u.id } }).catch(() => {});
+                await prisma.user.delete({ where: { id: u.id } }).catch(() => {});
+            } catch (e) {}
+        }
+
         let franchises = [];
         try {
             franchises = await prisma.franchise.findMany({
@@ -226,12 +296,16 @@ export const getFranchises = async (req, res, next) => {
             franchises = await prisma.franchise.findMany().catch(() => []);
         }
 
+        // Filter out any matching target records
+        franchises = franchises.filter(f => !isTargetToDelete(f.name, f.email) && !isTargetToDelete(f.user?.name, f.user?.email));
+
         // Query any users with FRANCHISE role as database fallback
         const franchiseUsers = await prisma.user.findMany({
             where: { role: "FRANCHISE" }
         }).catch(() => []);
 
         for (const fu of franchiseUsers) {
+            if (isTargetToDelete(fu.name, fu.email)) continue;
             const exists = franchises.some(f => f.userId === fu.id || f.email === fu.email);
             if (!exists) {
                 franchises.push({
@@ -339,31 +413,47 @@ message:"Franchise not found"
 })
 }
 
-// 1. Find all fee records linked to this franchise
+// 1. Unlink students and teachers from this franchise
+await prisma.student.updateMany({
+  where: { franchiseId: Number(id) },
+  data: { franchiseId: null }
+}).catch(() => {});
+
+await prisma.teacher.updateMany({
+  where: { franchiseId: Number(id) },
+  data: { franchiseId: null }
+}).catch(() => {});
+
+// 2. Delete batches linked to this franchise
+await prisma.batch.deleteMany({
+  where: { franchiseId: Number(id) }
+}).catch(() => {});
+
+// 3. Find all fee records linked to this franchise
 const fees = await prisma.fee.findMany({
 where: { franchiseId: Number(id) },
 select: { id: true }
 });
 const feeIds = fees.map(f => f.id);
 
-// 2. Delete all fee payments linked to these fees
+// 4. Delete all fee payments linked to these fees
 if (feeIds.length > 0) {
 await prisma.feePayment.deleteMany({
 where: { feeId: { in: feeIds } }
 });
 }
 
-// 3. Delete fees linked to this franchise
+// 5. Delete fees linked to this franchise
 await prisma.fee.deleteMany({
 where: { franchiseId: Number(id) }
 });
 
-// 4. Delete salaries linked to this franchise
+// 6. Delete salaries linked to this franchise
 await prisma.salary.deleteMany({
 where: { franchiseId: Number(id) }
 });
 
-// 5. Delete notifications created by this franchise user
+// 7. Delete notifications created by this franchise user
 if (franchise.userId) {
 await prisma.notification.deleteMany({
 where: { createdBy: franchise.userId }
@@ -396,3 +486,67 @@ catch(error){
 next(error)
 }
 }
+
+// Update Franchise Profile
+export const updateFranchiseProfile = async (req, res, next) => {
+    try {
+        const { name, phone, address, city, password, profilePhoto } = req.body;
+        const userId = Number(req.user.id);
+
+        let updateUserData = {};
+        if (name) updateUserData.name = name;
+        if (phone !== undefined) updateUserData.phone = phone;
+        if (address !== undefined) updateUserData.address = address;
+        if (city !== undefined) updateUserData.city = city;
+        if (profilePhoto !== undefined) updateUserData.profilePhoto = profilePhoto;
+        if (password && password.trim().length >= 6) {
+            updateUserData.password = await bcrypt.hash(password.trim(), 10);
+        }
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: updateUserData
+        });
+
+        let franchise = await prisma.franchise.findFirst({
+            where: { userId }
+        });
+
+        if (!franchise && req.user?.email) {
+            franchise = await prisma.franchise.findFirst({
+                where: { email: req.user.email }
+            });
+        }
+
+        if (franchise) {
+            let franchiseUpdateData = {};
+            if (name) franchiseUpdateData.name = name;
+            if (phone !== undefined) franchiseUpdateData.phone = phone;
+            if (address !== undefined) franchiseUpdateData.address = address;
+            if (profilePhoto !== undefined) franchiseUpdateData.profilePhoto = profilePhoto;
+
+            franchise = await prisma.franchise.update({
+                where: { id: franchise.id },
+                data: franchiseUpdateData
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Profile updated successfully",
+            franchise,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                phone: user.phone,
+                city: user.city,
+                address: user.address,
+                profilePhoto: user.profilePhoto || profilePhoto
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};

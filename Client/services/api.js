@@ -53,6 +53,7 @@ export const api = {
     sendReminder: (id) => Promise.resolve({ success: true, message: "Reminder simulated successfully" }),
     getStudentById: (id) => apiHelper.get(`/students/${id}`),
     getProfile: () => apiHelper.get('/franchise/profile'),
+    updateProfile: (data) => apiHelper.put('/franchise/profile', data),
     getDashboardMetrics: () => apiHelper.get('/franchise/metrics'),
     getStudents: () => apiHelper.get('/students'),
     createStudent: (data) => apiHelper.post('/students', data),

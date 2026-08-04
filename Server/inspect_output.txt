@@ -1,4 +1,4 @@
---- NOTIFICATIONS (3) ---
+--- NOTIFICATIONS (4) ---
 [
   {
     "id": 24,
@@ -37,6 +37,19 @@
     "createdBy": 1,
     "createdAt": "2026-07-30T11:33:42.081Z",
     "updatedAt": "2026-07-30T11:33:42.081Z",
+    "isRead": 0
+  },
+  {
+    "id": 30,
+    "title": "hello",
+    "message": "hi",
+    "type": "GENERAL",
+    "recipientType": "ALL",
+    "batchId": null,
+    "studentId": null,
+    "createdBy": 1,
+    "createdAt": "2026-08-04T10:24:35.814Z",
+    "updatedAt": "2026-08-04T10:24:35.814Z",
     "isRead": 0
   }
 ]

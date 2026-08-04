@@ -35,20 +35,4 @@ prisma.$executeRawUnsafe(`
 
 
 
-async function dumpDb() {
-  try {
-    const notifs = await prisma.$queryRawUnsafe(`SELECT * FROM Notification`);
-    const reads = await prisma.$queryRawUnsafe(`SELECT * FROM NotificationRead`);
-    const fs = await import("fs");
-    const output = `--- NOTIFICATIONS (${notifs.length}) ---\n` + 
-      JSON.stringify(notifs, null, 2) + 
-      `\n\n--- NOTIFICATION READS (${reads.length}) ---\n` + 
-      JSON.stringify(reads, null, 2);
-    fs.writeFileSync('d:/OnlineMusucalEventsMVC/Ultra-Smart-Abacus/Server/inspect_output.txt', output);
-  } catch (e) {
-    console.error("dumpDb error:", e);
-  }
-}
-setTimeout(dumpDb, 1000);
-
 export default prisma

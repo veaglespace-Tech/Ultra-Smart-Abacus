@@ -3,6 +3,7 @@ import express from "express"
 import {
 registerFranchise,
 getFranchiseProfile,
+updateFranchiseProfile,
 getFranchises,
 updateFranchise,
 deleteFranchise,
@@ -43,6 +44,13 @@ router.get(
     authMiddleware,
     authorize("FRANCHISE", "ADMIN"),
     getFranchiseProfile
+)
+
+router.put(
+    "/profile",
+    authMiddleware,
+    authorize("FRANCHISE", "ADMIN"),
+    updateFranchiseProfile
 )
 
 

@@ -120,7 +120,6 @@ export const createSalary = asyncHandler(async (req, res) => {
 export const updateSalary = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const {
-        basicSalary: inputBasic,
         bonus,
         deductions,
         paymentStatus,
