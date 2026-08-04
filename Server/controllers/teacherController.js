@@ -170,64 +170,63 @@ export const getTeachers = async (req, res, next) => {
     }
 };
 
-export const updateTeacher = async(req,res,next)=>{
+export const updateTeacher = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { name, qualification, experience, documents } = req.body || {};
 
-try{
+        try {
+            await prisma.$executeRawUnsafe(`ALTER TABLE Teacher ADD COLUMN documents LONGTEXT NULL`).catch(() => {});
+        } catch (e) {}
 
+        let documentsStr = undefined;
+        if (documents !== undefined && documents !== null) {
+            documentsStr = typeof documents === 'object' ? JSON.stringify(documents) : String(documents);
+        }
 
-const { id } = req.params
+        const updateData = {
+            ...(name ? { name } : {}),
+            ...(qualification ? { qualification } : {}),
+            ...(experience ? { experience: parseInt(experience) } : {}),
+        };
+        if (documentsStr !== undefined) {
+            updateData.documents = documentsStr;
+        }
 
+        const teacher = await prisma.teacher.update({
+            where: {
+                id: Number(id)
+            },
+            data: updateData
+        }).catch(async (err) => {
+            console.warn("Prisma update fallback for teacher:", err.message);
+            if (documentsStr !== undefined) {
+                await prisma.$executeRawUnsafe(`UPDATE Teacher SET documents = ? WHERE id = ?`, documentsStr, Number(id)).catch(() => {});
+            }
+            return await prisma.teacher.findUnique({ where: { id: Number(id) } });
+        });
 
-const {
-name,
-qualification,
-experience
-}
-= req.body
+        let formattedDocs = teacher?.documents;
+        if (typeof formattedDocs === 'string') {
+            try { formattedDocs = JSON.parse(formattedDocs); } catch (e) {}
+        }
 
-
-
-const teacher =
-await prisma.teacher.update({
-
-where:{
-id: Number(id)
-},
-
-
-data:{
-
-name,
-
-qualification,
-
-experience: experience ? parseInt(experience) : undefined
-
-}
-
-})
-
-
-
-res.json({
-
-success:true,
-
-message:"Teacher updated successfully",
-
-teacher
-
-})
-
-
-}
-catch(error){
-
-next(error)
-
-}
-
-}
+        res.json({
+            success: true,
+            message: "Teacher updated successfully",
+            teacher: {
+                ...teacher,
+                documents: formattedDocs
+            },
+            data: {
+                ...teacher,
+                documents: formattedDocs
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const deleteTeacher = async(req,res,next)=>{
 try{

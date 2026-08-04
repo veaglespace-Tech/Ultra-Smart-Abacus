@@ -63,6 +63,9 @@ async function request(endpoint, options = {}) {
     
     return data;
   } catch (error) {
+    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      throw new Error(`Failed to fetch from ${BASE_URL}${endpoint}. Please check if the backend server is running.`);
+    }
     throw error;
   }
 }

@@ -174,17 +174,32 @@ export const updateStudent = asyncHandler(async (req, res) => {
         updateData.documents = documentsStr;
     }
 
+    let studentIdNum = Number(req.params.id);
+    let existingStudent = await prisma.student.findUnique({ where: { id: studentIdNum } }).catch(() => null);
+    if (!existingStudent) {
+        existingStudent = await prisma.student.findFirst({
+            where: {
+                OR: [
+                    { userId: studentIdNum },
+                    { email: restBody.email || '' }
+                ]
+            }
+        }).catch(() => null);
+    }
+
+    const targetId = existingStudent ? existingStudent.id : studentIdNum;
+
     const student = await prisma.student.update({
         where: {
-            id: Number(req.params.id),
+            id: targetId,
         },
         data: updateData,
     }).catch(async (err) => {
         console.warn("Prisma update fallback for student:", err.message);
         if (documentsStr !== undefined) {
-            await prisma.$executeRawUnsafe(`UPDATE Student SET documents = ? WHERE id = ?`, documentsStr, Number(req.params.id)).catch(() => {});
+            await prisma.$executeRawUnsafe(`UPDATE Student SET documents = ? WHERE id = ?`, documentsStr, targetId).catch(() => {});
         }
-        return await prisma.student.findUnique({ where: { id: Number(req.params.id) } });
+        return await prisma.student.findUnique({ where: { id: targetId } });
     });
 
     let formattedDocs = student?.documents;
