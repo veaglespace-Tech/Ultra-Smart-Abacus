@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Sun, Moon, LayoutDashboard, GraduationCap, Users, Calendar, 
   CheckSquare, CreditCard, Box, BarChart3, Menu, X, LogOut, Bell,
-  IndianRupee, Search
+  IndianRupee, Search, UserCircle
 } from "lucide-react";
 import { api } from "@/services/api";
 
@@ -73,7 +73,8 @@ export default function FranchiseLayout({ children }) {
     { name: 'Payments', href: '/dashboard/franchise/payments', icon: CreditCard },
     { name: 'Salaries', href: '/dashboard/franchise/salaries', icon: IndianRupee },
     { name: 'Reports', href: '/dashboard/franchise/reports', icon: BarChart3 },
-    { name: 'Notifications', href: '/dashboard/franchise/notifications', icon: Bell }
+    { name: 'Notifications', href: '/dashboard/franchise/notifications', icon: Bell },
+    { name: 'Profile', href: '/dashboard/franchise/profile', icon: UserCircle }
   ];
 
   const unreadNotificationsCount = notifications ? notifications.filter(n => !n.isRead && !n.read).length : 0;
@@ -157,15 +158,27 @@ export default function FranchiseLayout({ children }) {
 
         {/* Footer */}
         <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
-          <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
-              {userInitials}
+          <Link href="/dashboard/franchise/profile" className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2 hover:border-[#FF6B2B]/50 transition-all group">
+            <div className="w-8 h-8 rounded-lg overflow-hidden bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40 group-hover:scale-105 transition-transform shrink-0">
+              {user?.profilePhoto ? (
+                <img
+                  src={
+                    user.profilePhoto.startsWith("data:") || user.profilePhoto.startsWith("http")
+                      ? user.profilePhoto
+                      : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000"}${user.profilePhoto.startsWith("/") ? "" : "/"}${user.profilePhoto}`
+                  }
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                userInitials
+              )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{userName}</p>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-[#FF6B2B] transition-colors">{userName}</p>
               <p className="text-[9px] text-slate-450 dark:text-slate-500 font-bold uppercase truncate">Franchise Admin</p>
             </div>
-          </div>
+          </Link>
           <button 
             onClick={handleLogout}
             className="w-full flex items-center gap-2 text-left text-xs text-rose-500 dark:text-rose-455 font-bold px-4 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors"
@@ -277,7 +290,11 @@ export default function FranchiseLayout({ children }) {
                 <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
                   <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
-                      {userInitials}
+                      {user?.profilePhoto ? (
+                        <img src={getImageUrl(user.profilePhoto)} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        userInitials
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{userName}</p>

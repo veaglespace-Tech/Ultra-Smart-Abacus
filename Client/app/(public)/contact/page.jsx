@@ -153,7 +153,7 @@ export default function ContactPage() {
                   return (
                     <a
                       key={li}
-                      href="Office no 207, Kudale Patil Chambers, Heritage, near Bhairavnath Temple, Jadhav Nagar, Vadgaon Budruk, Pune, Maharashtra 411041"
+                      href="https://www.google.com/maps/search/?api=1&query=Office+no+207,+Kudale+Patil+Chambers,+Heritage,+near+Bhairavnath+Temple,+Jadhav+Nagar,+Vadgaon+Budruk,+Pune,+Maharashtra+411041"
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline cursor-pointer`}

@@ -201,7 +201,7 @@ export default function Footer() {
                   </p>
 
                   <a
-                    href="tel:+919876543210"
+                    href="tel:+919325252247"
                     className="block text-sm text-slate-300 hover:text-[#FFCA28] transition-colors"
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >

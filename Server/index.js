@@ -1,5 +1,5 @@
 // BigInt JSON serializer initialization (v7)
-// Force Nodemon server module reload (v17)
+// Force Nodemon server module reload (v18)
 BigInt.prototype.toJSON = function () {
   return Number(this);
 };
@@ -28,7 +28,8 @@ import path from "path";
 const app = express()
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: "15mb" }))
+app.use(express.urlencoded({ limit: "15mb", extended: true }))
 
 function sanitizeBigInt(obj) {
   if (obj === null || obj === undefined) return obj;
@@ -82,6 +83,8 @@ app.use(
   express.static(path.join(process.cwd(), "uploads"))
 );
 
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
 async function ensureDefaultTeacher() {
   try {
     const existing = await prisma.teacher.findFirst();
@@ -111,12 +114,9 @@ async function ensureDefaultTeacher() {
     console.error("[Setup Teacher Error]", err.message);
   }
 }
-ensureDefaultTeacher();
 
 const PORT = process.env.PORT || 5000
 
 app.listen(PORT,()=>{
  console.log(`Server running at http://localhost:${PORT}`)
 })
-// Server restart trigger v45
-

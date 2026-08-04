@@ -398,14 +398,14 @@ export function AdminDataProvider({ children }) {
     try {
       await api.admin.createFranchise({
         name: newFranchise.name,
-        email: newFranchiseUser.email,
+        email: newFranchiseUser.email ? newFranchiseUser.email.trim().toLowerCase() : "",
         password: newFranchiseUser.password,
         phone: newFranchiseUser.phone || "9876543210",
         address: newFranchise.location
       });
       await fetchAdminData();
     } catch (error) {
-      console.error("Failed to add franchise", error);
+      console.warn("Failed to add franchise:", error.message || error);
       throw error;
     }
   };
