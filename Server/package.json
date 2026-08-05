@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon --ignore 'uploads/*' --ignore 'scratch/*' --ignore '*.log' index.js"
+    "dev": "nodemon --ignore 'uploads/*' --ignore 'scratch/*' --ignore '*.log' index.js",
+    "migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "generate": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",

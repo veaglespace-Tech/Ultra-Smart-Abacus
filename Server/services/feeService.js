@@ -334,10 +334,16 @@ export const feeService = {
    * Fetch specific student's fee summary and payment history
    */
   getStudentFeesSummary: async (studentId) => {
+    const studentIdNum = Number(studentId);
+    let student = null;
+    if (!isNaN(studentIdNum)) {
+      student = await prisma.student.findUnique({ where: { id: studentIdNum } }).catch(() => null);
+    }
+
     const fees = await prisma.fee.findMany({
       where: {
         OR: [
-          { studentId: Number(studentId) },
+          ...(!isNaN(studentIdNum) ? [{ studentId: studentIdNum }] : []),
           ...(student && student.userId ? [{ studentId: Number(student.userId) }] : []),
           ...(student && student.email ? [{ student: { email: student.email } }] : [])
         ],

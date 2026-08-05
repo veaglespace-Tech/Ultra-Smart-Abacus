@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Sun, Moon, ChevronRight } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,6 +11,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, toggleTheme, mounted } = useTheme();
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function Navbar() {
           : "bg-white/80 dark:bg-[#0f0a1e]/80 backdrop-blur-md shadow-sm"
       }`}
     >
-      <div className=" mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <div className="mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -74,8 +75,8 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-<div className="hidden lg:flex items-center mx-auto gap-8">
-            <ul className="flex items-center gap-8">
+        <div className="hidden lg:flex items-center mx-auto gap-8">
+          <ul className="flex items-center gap-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -118,13 +119,13 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Sign In */}
+            {/* Login */}
             <Link
               href="/auth/login"
               className="px-5 py-2.5 text-sm font-bold text-[#2D1B69] dark:text-violet-300 border-2 border-[#2D1B69]/30 dark:border-violet-500/40 rounded-full hover:border-[#2D1B69] dark:hover:border-violet-400 hover:bg-[#2D1B69]/5 transition-all duration-200"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
-              Sign In
+              Login
             </Link>
 
             {/* Register CTA */}
@@ -137,7 +138,7 @@ export default function Navbar() {
                 fontFamily: "Poppins, sans-serif",
               }}
             >
-              Join Now
+              Register
               <ChevronRight size={15} />
             </Link>
           </div>
@@ -203,15 +204,16 @@ export default function Navbar() {
                   onClick={() => setIsOpen(false)}
                   className="w-full text-center py-3 rounded-full font-bold text-sm text-[#2D1B69] dark:text-violet-300 border-2 border-[#2D1B69]/30 hover:border-[#2D1B69] hover:bg-[#2D1B69]/5 transition-all"
                 >
-                  Sign In
+                  Login
                 </Link>
                 <Link
                   href="/auth/register"
                   onClick={() => setIsOpen(false)}
-                  className="w-full text-center py-3 rounded-full font-bold text-sm text-white transition-all"
+                  className="w-full text-center py-3 rounded-full font-bold text-sm text-white transition-all flex items-center justify-center gap-1.5"
                   style={{ background: "linear-gradient(135deg, #FF6B2B, #e55a1f)" }}
                 >
-                  Join Now — It&apos;s Free
+                  Register
+                  <ChevronRight size={15} />
                 </Link>
               </div>
             </div>

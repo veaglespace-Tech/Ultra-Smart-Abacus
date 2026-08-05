@@ -82,10 +82,14 @@ function StudentLayoutInner({ children }) {
     day: 'numeric'
   });
 
-  const studentName = isClientMounted && profile.name ? profile.name : (user?.name || "Student");
+  const studentName = isClientMounted && profile?.name ? profile.name : (user?.name || "Student");
+  const studentEmail = isClientMounted && (profile?.email || user?.email) ? (profile?.email || user?.email) : "";
+  const studentPhoto = isClientMounted && (user?.profilePhoto || profile?.profilePhoto) ? (user?.profilePhoto || profile?.profilePhoto) : null;
   const studentInitials = isClientMounted && studentName
     ? studentName.split(" ").filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2)
     : "ST";
+  const [userProfileOpen, setUserProfileOpen] = useState(false);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-[#FFF8F0] dark:bg-[#150e2a] text-[#1a1035] dark:text-[#f0ebff] font-sans antialiased transition-colors duration-300 w-full overflow-hidden">
@@ -154,23 +158,27 @@ function StudentLayoutInner({ children }) {
 
         {/* Footer */}
         <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
-          <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
-            {user?.profilePhoto || profile?.profilePhoto ? (
+          <button
+            onClick={() => setPhotoModalOpen(true)}
+            className="w-full flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2 hover:border-[#FF6B2B]/60 hover:bg-orange-50/50 dark:hover:bg-[#2D1B69]/50 transition-all cursor-pointer group text-left"
+            title="Click to view profile photo"
+          >
+            {studentPhoto ? (
               <img
-                src={user?.profilePhoto || profile?.profilePhoto}
-                alt="Avatar"
-                className="w-8 h-8 rounded-lg object-cover border border-primary/20"
+                src={studentPhoto}
+                alt={studentName}
+                className="w-8 h-8 rounded-lg object-cover border border-primary/20 group-hover:scale-105 transition-transform shrink-0"
               />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40 group-hover:scale-105 transition-transform shrink-0">
                 {studentInitials}
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{studentName}</p>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-[#FF6B2B] transition-colors">{studentName}</p>
               <p className="text-[9px] text-slate-455 dark:text-slate-500 font-bold uppercase truncate">Level {profile.level || 1} Student</p>
             </div>
-          </div>
+          </button>
           <button 
             onClick={handleLogout}
             className="w-full flex items-center gap-2 text-left text-xs text-rose-500 dark:text-rose-455 font-bold px-4 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors"
@@ -280,15 +288,29 @@ function StudentLayoutInner({ children }) {
                 </div>
 
                 <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
-                  <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
-                      {studentInitials}
-                    </div>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setPhotoModalOpen(true);
+                    }}
+                    className="w-full flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2 hover:border-[#FF6B2B]/60 hover:bg-orange-50/50 dark:hover:bg-[#2D1B69]/50 transition-all cursor-pointer group text-left"
+                  >
+                    {studentPhoto ? (
+                      <img
+                        src={studentPhoto}
+                        alt={studentName}
+                        className="w-8 h-8 rounded-lg object-cover border border-primary/20 group-hover:scale-105 transition-transform shrink-0"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40 group-hover:scale-105 transition-transform shrink-0">
+                        {studentInitials}
+                      </div>
+                    )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-[#1a1035] dark:text-white font-medium">{studentName}</p>
+                      <p className="text-xs font-bold text-[#1a1035] dark:text-white font-medium group-hover:text-[#FF6B2B] transition-colors">{studentName}</p>
                       <p className="text-[9px] text-slate-455 dark:text-slate-500 font-bold uppercase truncate text-left">Level {profile.level || 1} Student</p>
                     </div>
-                  </div>
+                  </button>
                   <button 
                     onClick={handleLogout}
                     className="w-full flex items-center gap-2 text-left text-xs text-rose-500 dark:text-rose-455 font-bold px-4 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors"
@@ -419,18 +441,76 @@ function StudentLayoutInner({ children }) {
               )}
             </button>
 
-            {/* Profile Avatar */}
-            <Link href="/dashboard/student/profile" className="flex items-center gap-2 hover:opacity-90">
-              <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 font-black flex items-center justify-center text-xs shadow-sm shadow-orange-500/10">
-                {studentInitials}
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">
-                  {studentName}
-                </p>
-                <span className="text-[9px] text-slate-400 dark:text-slate-450 font-bold">online</span>
-              </div>
-            </Link>
+            {/* Profile Avatar & Interactive Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setUserProfileOpen(!userProfileOpen)}
+                className="flex items-center gap-2 hover:opacity-90 cursor-pointer text-left focus:outline-none"
+              >
+                <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 font-black flex items-center justify-center text-xs shadow-sm shadow-orange-500/10 overflow-hidden shrink-0">
+                  {studentPhoto ? (
+                    <img src={studentPhoto} alt={studentName} className="w-full h-full object-cover" />
+                  ) : (
+                    studentInitials
+                  )}
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">
+                    {studentName}
+                  </p>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-450 font-bold">online</span>
+                </div>
+              </button>
+
+              {/* Profile Header Dropdown Menu */}
+              {userProfileOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setUserProfileOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-[#1a1035] border border-slate-200 dark:border-[#3d2a88]/40 rounded-2xl p-3 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center gap-3 p-2 pb-3 border-b border-slate-100 dark:border-[#3d2a88]/30">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2D1B69] to-[#FF6B2B] text-white font-black flex items-center justify-center text-xs shadow-md overflow-hidden shrink-0">
+                        {studentPhoto ? (
+                          <img src={studentPhoto} alt={studentName} className="w-full h-full object-cover" />
+                        ) : (
+                          studentInitials
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{studentName}</h4>
+                        {studentEmail && <p className="text-[10px] text-slate-400 truncate">{studentEmail}</p>}
+                        <span className="inline-block mt-0.5 px-2 py-0.5 text-[9px] font-extrabold rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400">
+                          {profile?.rollNo || "Student"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="py-2 space-y-1">
+                      <Link
+                        href="/dashboard/student/profile"
+                        onClick={() => setUserProfileOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2D1B69]/40 rounded-xl transition-colors"
+                      >
+                        <User size={14} className="text-orange-500" />
+                        <span>My Profile</span>
+                      </Link>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-[#3d2a88]/30">
+                      <button
+                        onClick={() => {
+                          setUserProfileOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-2 text-xs font-bold text-rose-500 dark:text-rose-455 px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors text-left cursor-pointer"
+                      >
+                        <LogOut size={14} />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
 
@@ -442,6 +522,73 @@ function StudentLayoutInner({ children }) {
         </main>
       </div>
 
+      {/* Enlarged Profile Photo & Details Lightbox Modal */}
+      <AnimatePresence>
+        {photoModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPhotoModalOpen(false)}
+              className="absolute inset-0 bg-black/75 backdrop-blur-md"
+            />
+
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative z-10 w-full max-w-sm bg-white dark:bg-[#1a1035] border border-slate-200 dark:border-[#3d2a88]/60 rounded-3xl p-6 shadow-2xl text-center space-y-4"
+            >
+              <button
+                onClick={() => setPhotoModalOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+
+              {/* Enlarged Avatar */}
+              <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-[#2D1B69] to-[#FF6B2B] p-1 shadow-xl relative group">
+                <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-[#150e2a] flex items-center justify-center">
+                  {studentPhoto ? (
+                    <img src={studentPhoto} alt={studentName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-3xl font-black text-[#FF6B2B]">{studentInitials}</span>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">{studentName}</h3>
+                {studentEmail && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{studentEmail}</p>}
+                <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-bold bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">
+                  <span>Level {profile.level || 1} Student</span>
+                  {profile.rollNo && <span>• {profile.rollNo}</span>}
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    setPhotoModalOpen(false);
+                    router.push("/dashboard/student/profile");
+                  }}
+                  className="w-full py-3 rounded-2xl font-bold text-xs text-white bg-gradient-to-r from-[#2D1B69] to-[#FF6B2B] hover:opacity-95 shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <User size={15} />
+                  <span>Go to Full Profile Page</span>
+                </button>
+                <button
+                  onClick={() => setPhotoModalOpen(false)}
+                  className="w-full py-2.5 rounded-2xl font-bold text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Close Preview
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

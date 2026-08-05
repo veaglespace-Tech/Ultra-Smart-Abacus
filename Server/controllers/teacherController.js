@@ -13,7 +13,8 @@ export const registerTeacher = async (req, res, next) => {
             qualification,
             experience,
             specialization,
-            phone
+            phone,
+            documents
         } = req.body;
 
         const existing = await prisma.user.findUnique({
@@ -37,6 +38,11 @@ export const registerTeacher = async (req, res, next) => {
             if (franchise) franchiseId = franchise.id;
         }
 
+        let documentsStr = null;
+        if (documents !== undefined && documents !== null) {
+            documentsStr = typeof documents === 'object' ? JSON.stringify(documents) : String(documents);
+        }
+
         const user = await prisma.user.create({
             data: {
                 name,
@@ -53,9 +59,18 @@ export const registerTeacher = async (req, res, next) => {
                 experience: experience ? parseInt(experience) : 1,
                 phone: phone || "",
                 specialization: specialization || "Abacus Math",
-                userId: user.id
+                userId: user.id,
+                documents: documentsStr
             }
         });
+
+        try {
+            await prisma.$executeRawUnsafe(`ALTER TABLE Teacher ADD COLUMN documents LONGTEXT NULL`).catch(() => {});
+            if (documentsStr) {
+                const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                await prisma.$executeRawUnsafe(`UPDATE Teacher SET documents = '${escaped}' WHERE id = ${teacher.id}`).catch(() => {});
+            }
+        } catch (e) {}
 
         if (franchiseId) {
             await prisma.$executeRawUnsafe(`UPDATE Teacher SET franchiseId = ${franchiseId} WHERE id = ${teacher.id}`).catch(() => {});
@@ -201,10 +216,16 @@ export const updateTeacher = async (req, res, next) => {
         }).catch(async (err) => {
             console.warn("Prisma update fallback for teacher:", err.message);
             if (documentsStr !== undefined) {
-                await prisma.$executeRawUnsafe(`UPDATE Teacher SET documents = ? WHERE id = ?`, documentsStr, Number(id)).catch(() => {});
+                const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                await prisma.$executeRawUnsafe(`UPDATE Teacher SET documents = '${escaped}' WHERE id = ${Number(id)}`).catch(() => {});
             }
             return await prisma.teacher.findUnique({ where: { id: Number(id) } });
         });
+
+        if (documentsStr !== undefined && id) {
+            const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            await prisma.$executeRawUnsafe(`UPDATE Teacher SET documents = '${escaped}' WHERE id = ${Number(id)}`).catch(() => {});
+        }
 
         let formattedDocs = teacher?.documents;
         if (typeof formattedDocs === 'string') {

@@ -49,6 +49,7 @@ export const registerUser = asyncHandler(async (req, res) => {
             city,
             address,
             parentGuardianName,
+            profilePhoto,
         },
     });
 
@@ -65,6 +66,19 @@ export const registerUser = asyncHandler(async (req, res) => {
     }
 
     if (role === "STUDENT") {
+        const defaultDocs = JSON.stringify({
+            studentPhoto: profilePhoto || null,
+            birthCertificate: null,
+            studentAadhaar: null,
+            parentAadhaar: null,
+            addressProof: null,
+            admissionForm: null,
+            feeReceipt: null
+        });
+        const documentsStr = req.body.documents
+            ? (typeof req.body.documents === 'object' ? JSON.stringify(req.body.documents) : String(req.body.documents))
+            : defaultDocs;
+
         const student = await prisma.student.create({
             data: {
                 name: fullName,
@@ -78,9 +92,18 @@ export const registerUser = asyncHandler(async (req, res) => {
                     ? new Date(dateOfBirth)
                     : null,
                 profilePhoto,
+                documents: documentsStr,
                 userId: user.id,
             },
         });
+
+        try {
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN documents LONGTEXT NULL`).catch(() => {});
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN profilePhoto VARCHAR(255) NULL`).catch(() => {});
+            const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            await prisma.$executeRawUnsafe(`UPDATE Student SET documents = '${escaped}'${profilePhoto ? `, profilePhoto = '${profilePhoto}'` : ''} WHERE id = ${student.id}`).catch(() => {});
+        } catch (e) {}
+
         if (franchiseId) {
             await prisma.$executeRawUnsafe(`UPDATE Student SET franchiseId = ${franchiseId} WHERE id = ${student.id}`).catch(() => {});
         }
