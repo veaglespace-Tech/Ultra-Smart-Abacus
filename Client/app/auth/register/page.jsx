@@ -84,8 +84,23 @@ function RegisterPageContent() {
     dateOfBirth: "",
   });
 
+  const [mobileError, setMobileError] = useState("");
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleMobileChange = (e) => {
+    const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+    setFormData((prev) => ({ ...prev, mobileNumber: val }));
+
+    if (val.length === 0) {
+      setMobileError("Mobile number is required");
+    } else if (val.length < 10) {
+      setMobileError(`Mobile number must be 10 digits (${val.length}/10)`);
+    } else {
+      setMobileError("");
+    }
   };
 
   const handleRoleSelect = (roleValue) => {
@@ -104,6 +119,13 @@ function RegisterPageContent() {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
+      return;
+    }
+
+    const cleanMobile = formData.mobileNumber.replace(/\D/g, "");
+    if (!cleanMobile || cleanMobile.length !== 10) {
+      setMobileError("Mobile number must be 10 digits");
+      alert("Please enter a valid 10-digit mobile number!");
       return;
     }
     setLoading(true);
@@ -452,14 +474,20 @@ if (!response.ok) {
                       name="mobileNumber"
                       id="mobileNumber"
                       required
+                      maxLength={10}
                       value={formData.mobileNumber}
-                      onChange={handleChange}
+                      onChange={handleMobileChange}
                       placeholder="9876543210"
-                      className="w-full rounded-r-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#150e2a] py-3.5 pl-10 pr-3 text-slate-800 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200"
+                      className={`w-full rounded-r-2xl border-2 ${mobileError ? "border-rose-500 focus:border-rose-500" : "border-slate-200 dark:border-slate-800 focus:border-[#FF6B2B]"} bg-white dark:bg-[#150e2a] py-3.5 pl-10 pr-3 text-slate-800 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200`}
                       style={{ fontFamily: "Inter, sans-serif" }}
                     />
                   </div>
                 </div>
+                {mobileError && (
+                  <p className="text-rose-500 text-[11px] font-bold mt-1 flex items-center gap-1">
+                    <span>⚠️ {mobileError}</span>
+                  </p>
+                )}
               </div>
             </div>
 

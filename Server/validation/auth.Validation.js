@@ -53,7 +53,15 @@ export const registerValidation = [
 
     body("phone")
         .optional()
-        .trim(),
+        .trim()
+        .custom((value) => {
+            if (!value) return true;
+            const digits = value.replace(/\D/g, "");
+            if (digits.length > 0 && digits.length < 10) {
+                throw new Error("Mobile number must be a valid 10-digit number");
+            }
+            return true;
+        }),
 
     body("gender")
         .optional()

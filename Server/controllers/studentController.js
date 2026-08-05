@@ -270,10 +270,10 @@ export const deleteStudent = asyncHandler(async (req, res) => {
     });
 
     // 6. Delete user record if linked
-    if (student.userId) {
+    if (existingStudent?.userId) {
         await prisma.user.delete({
-            where: { id: student.userId }
-        });
+            where: { id: existingStudent.userId }
+        }).catch(() => {});
     }
 
     res.status(200).json({
