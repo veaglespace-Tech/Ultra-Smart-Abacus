@@ -61,11 +61,11 @@ export default function StudentProfilePage() {
   const [validationError, setValidationError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const mergeNonNullDocs = (target, source) => {
+  const mergeDocs = (target, source) => {
     if (!source || typeof source !== 'object') return target;
     const res = { ...target };
     Object.keys(source).forEach(k => {
-      if (source[k] !== null && source[k] !== undefined) {
+      if (source[k] !== undefined) {
         res[k] = source[k];
       }
     });
@@ -155,19 +155,19 @@ export default function StudentProfilePage() {
       if (typeof window !== 'undefined') {
         const sessionItem = sessionStorage.getItem('abacus_student_documents');
         if (sessionItem) {
-          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(sessionItem)); } catch (e) { }
+          try { mergedDocs = mergeDocs(mergedDocs, JSON.parse(sessionItem)); } catch (e) { }
         }
         const localItem = localStorage.getItem('abacus_student_documents');
         if (localItem) {
-          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(localItem)); } catch (e) { }
+          try { mergedDocs = mergeDocs(mergedDocs, JSON.parse(localItem)); } catch (e) { }
         }
       }
 
-      mergedDocs = mergeNonNullDocs(mergedDocs, currentUser?.documents);
-      mergedDocs = mergeNonNullDocs(mergedDocs, currentUser?.student?.documents);
+      mergedDocs = mergeDocs(mergedDocs, currentUser?.documents);
+      mergedDocs = mergeDocs(mergedDocs, currentUser?.student?.documents);
 
       if (Object.keys(mergedDocs).length > 0) {
-        setDocuments(prev => mergeNonNullDocs(prev, mergedDocs));
+        setDocuments(prev => mergeDocs(prev, mergedDocs));
       }
     } catch (e) {
       console.warn("Could not load local documents:", e);
@@ -193,7 +193,7 @@ export default function StudentProfilePage() {
           try { dbDocs = JSON.parse(dbDocs); } catch (e) { }
         }
         if (dbDocs && typeof dbDocs === 'object') {
-          setDocuments(prev => mergeNonNullDocs(prev, dbDocs));
+          setDocuments(prev => mergeDocs(prev, dbDocs));
           if (typeof window !== 'undefined') {
             try { sessionStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) { }
             try { localStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) { }
@@ -341,7 +341,7 @@ export default function StudentProfilePage() {
 
       setDocuments(prev => {
         const updated = { ...prev, [docId]: newDoc };
-        saveDocumentsToStorage(updated);
+        setTimeout(() => saveDocumentsToStorage(updated), 0);
         return updated;
       });
 
@@ -389,18 +389,16 @@ export default function StudentProfilePage() {
   };
 
   const handleDocDelete = (docId, docName) => {
-    if (window.confirm(`Are you sure you want to delete ${docName}?`)) {
-      setDocuments(prev => {
-        const updated = { ...prev, [docId]: null };
-        saveDocumentsToStorage(updated);
-        return updated;
-      });
-      if (docInputRefs.current[docId]) {
-        docInputRefs.current[docId].value = "";
-      }
-      setProfileSuccess(`${docName} removed.`);
-      setTimeout(() => setProfileSuccess(""), 3000);
+    setDocuments(prev => {
+      const updated = { ...prev, [docId]: null };
+      setTimeout(() => saveDocumentsToStorage(updated), 0);
+      return updated;
+    });
+    if (docInputRefs.current[docId]) {
+      docInputRefs.current[docId].value = "";
     }
+    setProfileSuccess(`${docName || 'Document'} deleted successfully.`);
+    setTimeout(() => setProfileSuccess(""), 3000);
   };
 
   const handleSaveProfile = async (e) => {
@@ -924,7 +922,11 @@ export default function StudentProfilePage() {
 
                       <button
                         type="button"
-                        onClick={() => handleDocDelete(doc.id, doc.name)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDocDelete(doc.id, doc.name);
+                        }}
                         className="p-1.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-lg transition-colors cursor-pointer"
                         title="Delete Document"
                       >
