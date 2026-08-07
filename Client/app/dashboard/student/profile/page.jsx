@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   Camera, Trash2, User, Mail, Phone, UserCheck,
   FileText, IdCard, Users, Home, ClipboardList, Receipt,
-  UploadCloud, Eye, Download, CheckCircle2, AlertCircle, X, ShieldCheck, FileCheck
+  UploadCloud, Eye, Download, CheckCircle2, AlertCircle, X, ShieldCheck, FileCheck, Loader2
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
@@ -49,16 +49,23 @@ export default function StudentProfilePage() {
   const [editPhone, setEditPhone] = useState("");
   const [editParentName, setEditParentName] = useState("");
 
+  const [savedFields, setSavedFields] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    parentName: ""
+  });
+
   const [isMounted, setIsMounted] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState("");
   const [validationError, setValidationError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const mergeNonNullDocs = (target, source) => {
+  const mergeDocs = (target, source) => {
     if (!source || typeof source !== 'object') return target;
     const res = { ...target };
     Object.keys(source).forEach(k => {
-      if (source[k] !== null && source[k] !== undefined) {
+      if (source[k] !== undefined) {
         res[k] = source[k];
       }
     });
@@ -124,10 +131,23 @@ export default function StudentProfilePage() {
       setProfileImage(photoToSet);
     }
 
-    setEditName(profile.name || currentUser?.name || "");
-    setEditEmail(profile.email || currentUser?.email || "");
-    setEditPhone(profile.phone || currentUser?.phone || "");
-    setEditParentName(profile.parentName || currentUser?.parentGuardianName || currentUser?.fatherName || "");
+    const storedPersonal = typeof window !== 'undefined' ? storageService.get('abacus_student_personal_fields') : null;
+    const initialName = storedPersonal?.name || currentUser?.name || profile.name || "";
+    const initialEmail = storedPersonal?.email || currentUser?.email || profile.email || "";
+    const initialPhone = storedPersonal?.phone || currentUser?.phone || profile.phone || "";
+    const initialParent = storedPersonal?.parentName || currentUser?.parentGuardianName || currentUser?.fatherName || profile.parentName || "";
+
+    setEditName(initialName);
+    setEditEmail(initialEmail);
+    setEditPhone(initialPhone);
+    setEditParentName(initialParent);
+
+    setSavedFields({
+      name: initialName,
+      email: initialEmail,
+      phone: initialPhone,
+      parentName: initialParent
+    });
 
     // 1. Restore from local and session storage synchronously
     try {
@@ -135,19 +155,19 @@ export default function StudentProfilePage() {
       if (typeof window !== 'undefined') {
         const sessionItem = sessionStorage.getItem('abacus_student_documents');
         if (sessionItem) {
-          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(sessionItem)); } catch (e) { }
+          try { mergedDocs = mergeDocs(mergedDocs, JSON.parse(sessionItem)); } catch (e) { }
         }
         const localItem = localStorage.getItem('abacus_student_documents');
         if (localItem) {
-          try { mergedDocs = mergeNonNullDocs(mergedDocs, JSON.parse(localItem)); } catch (e) { }
+          try { mergedDocs = mergeDocs(mergedDocs, JSON.parse(localItem)); } catch (e) { }
         }
       }
 
-      mergedDocs = mergeNonNullDocs(mergedDocs, currentUser?.documents);
-      mergedDocs = mergeNonNullDocs(mergedDocs, currentUser?.student?.documents);
+      mergedDocs = mergeDocs(mergedDocs, currentUser?.documents);
+      mergedDocs = mergeDocs(mergedDocs, currentUser?.student?.documents);
 
       if (Object.keys(mergedDocs).length > 0) {
-        setDocuments(prev => mergeNonNullDocs(prev, mergedDocs));
+        setDocuments(prev => mergeDocs(prev, mergedDocs));
       }
     } catch (e) {
       console.warn("Could not load local documents:", e);
@@ -173,7 +193,7 @@ export default function StudentProfilePage() {
           try { dbDocs = JSON.parse(dbDocs); } catch (e) { }
         }
         if (dbDocs && typeof dbDocs === 'object') {
-          setDocuments(prev => mergeNonNullDocs(prev, dbDocs));
+          setDocuments(prev => mergeDocs(prev, dbDocs));
           if (typeof window !== 'undefined') {
             try { sessionStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) { }
             try { localStorage.setItem('abacus_student_documents', JSON.stringify(dbDocs)); } catch (e) { }
@@ -321,7 +341,7 @@ export default function StudentProfilePage() {
 
       setDocuments(prev => {
         const updated = { ...prev, [docId]: newDoc };
-        saveDocumentsToStorage(updated);
+        setTimeout(() => saveDocumentsToStorage(updated), 0);
         return updated;
       });
 
@@ -369,18 +389,16 @@ export default function StudentProfilePage() {
   };
 
   const handleDocDelete = (docId, docName) => {
-    if (window.confirm(`Are you sure you want to delete ${docName}?`)) {
-      setDocuments(prev => {
-        const updated = { ...prev, [docId]: null };
-        saveDocumentsToStorage(updated);
-        return updated;
-      });
-      if (docInputRefs.current[docId]) {
-        docInputRefs.current[docId].value = "";
-      }
-      setProfileSuccess(`${docName} removed.`);
-      setTimeout(() => setProfileSuccess(""), 3000);
+    setDocuments(prev => {
+      const updated = { ...prev, [docId]: null };
+      setTimeout(() => saveDocumentsToStorage(updated), 0);
+      return updated;
+    });
+    if (docInputRefs.current[docId]) {
+      docInputRefs.current[docId].value = "";
     }
+    setProfileSuccess(`${docName || 'Document'} deleted successfully.`);
+    setTimeout(() => setProfileSuccess(""), 3000);
   };
 
   const handleSaveProfile = async (e) => {
@@ -450,6 +468,17 @@ export default function StudentProfilePage() {
       };
       if (setUser) setUser(updatedUser);
       storageService.setUser(updatedUser);
+
+      const newSaved = {
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+        parentName: editParentName,
+      };
+      setSavedFields(newSaved);
+      if (typeof window !== 'undefined') {
+        try { storageService.set('abacus_student_personal_fields', newSaved); } catch (e) { }
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -464,18 +493,106 @@ export default function StudentProfilePage() {
     }
   };
 
+  const handleSavePersonalRecords = async (e) => {
+    if (e) e.preventDefault();
+    setValidationError("");
+
+    const missingFields = [];
+    if (!editName || !editName.trim()) missingFields.push("Full Name");
+    if (!editEmail || !editEmail.trim()) missingFields.push("Registered Email");
+    if (!editPhone || !editPhone.trim()) missingFields.push("Contact Number");
+    if (!editParentName || !editParentName.trim()) missingFields.push("Parent / Guardian Name");
+
+    if (missingFields.length > 0) {
+      setValidationError(`Please fill out: ${missingFields.join(", ")}`);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const token = storageService.getToken();
+      const targetId = profile?.id || profile?.rawId || user?.student?.id || user?.id;
+
+      if (targetId) {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api"}/students/${targetId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: editName,
+            email: editEmail,
+            phone: editPhone,
+            fatherName: editParentName,
+            parentName: editParentName,
+          }),
+        }).catch(err => console.warn("API personal records update warning:", err));
+      }
+
+      updateProfile({
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+        parentName: editParentName,
+      });
+
+      const currentUser = user || (typeof window !== 'undefined' ? storageService.getUser() : null);
+      const updatedUser = {
+        ...(currentUser || {}),
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+        parentGuardianName: editParentName,
+        fatherName: editParentName,
+      };
+      if (setUser) setUser(updatedUser);
+      if (storageService?.setUser) storageService.setUser(updatedUser);
+
+      const newSaved = {
+        name: editName,
+        email: editEmail,
+        phone: editPhone,
+        parentName: editParentName,
+      };
+      setSavedFields(newSaved);
+      if (typeof window !== 'undefined') {
+        try { storageService.set('abacus_student_personal_fields', newSaved); } catch (e) { }
+      }
+
+    } catch (err) {
+      console.error("Personal records save error:", err);
+    } finally {
+      setIsSaving(false);
+      confetti({
+        particleCount: 40,
+        spread: 30,
+        origin: { y: 0.5 }
+      });
+      setProfileSuccess("Personal Profile Records Successfully Saved!");
+      setTimeout(() => setProfileSuccess(""), 3000);
+    }
+  };
+
   const uploadedCount = Object.values(documents).filter(Boolean).length;
 
+  const isModified = isMounted && (
+    (editName !== savedFields.name) ||
+    (editEmail !== savedFields.email) ||
+    (editPhone !== savedFields.phone) ||
+    (editParentName !== savedFields.parentName)
+  );
+
   return (
-    <div className="space-[#2c3539] space-y-6">
+    <div className="space-y-4">
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-3 gap-3">
         <div>
-          <h2 className="text-xl font-black tracking-tight">
+          <h2 className="text-lg font-black tracking-tight">
             <span className="gradient-text">STUDENT PROFILE</span>
           </h2>
-          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Manage academic records, personal information, admission verification documents, and contact details.
           </p>
         </div>
@@ -483,17 +600,17 @@ export default function StudentProfilePage() {
 
       {/* Success notification banner */}
       {profileSuccess && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-600 dark:text-emerald-350 shadow-inner flex items-center gap-2 animate-fade-in">
-          <CheckCircle2 size={16} />
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-2.5 text-xs text-emerald-600 dark:text-emerald-350 shadow-inner flex items-center gap-2 animate-fade-in">
+          <CheckCircle2 size={15} />
           <span className="font-semibold">{profileSuccess}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch animate-fade-in">
 
         {/* Visual profile detail summary card */}
-        <div className="lg:col-span-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 flex flex-col items-center text-center shadow-sm">
-          <div className="relative w-24 h-24 mb-2">
+        <div className="lg:col-span-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 flex flex-col items-center text-center shadow-sm">
+          <div className="relative w-20 h-20 mb-1.5">
             {resolvedProfilePhoto ? (
               <img
                 src={resolvedProfilePhoto}
@@ -517,19 +634,19 @@ export default function StudentProfilePage() {
             <button
               type="button"
               onClick={() => fileInputRef.current.click()}
-              className="absolute bottom-0 right-0 p-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-md cursor-pointer transition-transform hover:scale-105"
+              className="absolute bottom-0 right-0 p-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-md cursor-pointer transition-transform hover:scale-105"
               title="Change Photo"
             >
-              <Camera size={14} />
+              <Camera size={13} />
             </button>
           </div>
 
           {/* ACTION BUTTONS FOR PHOTO */}
-          <div className="flex items-center gap-2 my-2">
+          <div className="flex items-center gap-2 my-1.5">
             <button
               type="button"
               onClick={() => fileInputRef.current.click()}
-              className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <Camera size={12} />
               <span>{resolvedProfilePhoto ? 'Change' : 'Upload'}</span>
@@ -539,7 +656,7 @@ export default function StudentProfilePage() {
               <button
                 type="button"
                 onClick={handleDeletePhoto}
-                className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-xs font-bold rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-xs font-bold rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer"
                 title="Delete Photo"
               >
                 <Trash2 size={12} />
@@ -548,10 +665,10 @@ export default function StudentProfilePage() {
             )}
           </div>
 
-          <h3 className="text-base font-bold text-slate-955 dark:text-white">{editName || profile.name}</h3>
-          <span className="text-xs text-slate-500 font-mono mt-0.5">{profile.rollNo}</span>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">{editName || profile.name}</h3>
+          <span className="text-[11px] text-slate-500 font-mono mt-0.5">{profile.rollNo}</span>
 
-          <div className="w-full border-t border-slate-100 dark:border-slate-800 mt-6 pt-6 space-y-3.5 text-xs text-left">
+          <div className="w-full border-t border-slate-100 dark:border-slate-800 mt-4 pt-4 space-y-2.5 text-xs text-left mt-auto">
             <div className="flex justify-between">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Course Level</span>
               <span className="font-bold text-slate-800 dark:text-slate-200">{profile.level}</span>
@@ -564,98 +681,110 @@ export default function StudentProfilePage() {
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Registered Center</span>
               <span className="font-bold text-slate-800 dark:text-slate-200">{profile.center}</span>
             </div>
-            <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800/80 pt-3">
+            <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
               <span className="text-slate-500 font-semibold uppercase tracking-wider text-[9px]">Document Vault</span>
-              <span suppressHydrationWarning className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full text-[10px] border border-emerald-200 dark:border-emerald-800">
+              <span suppressHydrationWarning className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full text-[10px] border border-emerald-200 dark:border-emerald-800">
                 {isMounted ? uploadedCount : 0} / {DOCUMENT_TYPES.length} Uploaded
               </span>
             </div>
           </div>
         </div>
 
-        {/* Editable profile fields form */}
-        <div className="lg:col-span-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
-            <UserCheck size={18} className="text-accent" />
-            <h3 className="text-xs font-black text-amber-500 dark:text-amber-400 uppercase tracking-wider">
-              Personal Records Profile Information
-            </h3>
-          </div>
-
-          <form onSubmit={handleSaveProfile} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
-              <div>
-                <label className="block text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider text-[10px] font-bold">
-                  Full Name
-                </label>
-                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
-                  <User size={15} className="text-slate-400" />
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200"
-                    placeholder="Student Name"
-                  />
+        {/* Static Personal Records Profile Information card */}
+        <div className="lg:col-span-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 md:p-7 shadow-sm flex flex-col justify-between">
+          <div className="h-full flex flex-col justify-between space-y-5">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-2">
+                  <UserCheck size={18} className="text-amber-500" />
+                  <h3 className="text-xs font-black text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+                    Personal Records Profile Information
+                  </h3>
                 </div>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 px-3 py-1 rounded-full flex items-center gap-1.5">
+                  <ShieldCheck size={12} className="text-emerald-500" /> Verified Records (Read-Only)
+                </span>
               </div>
 
-              <div>
-                <label className="block text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider text-[10px] font-bold">
-                  Registered Email
-                </label>
-                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
-                  <Mail size={15} className="text-slate-400" />
-                  <input
-                    type="email"
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200"
-                    placeholder="student@example.com"
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-5 text-xs font-semibold">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider text-[10px] font-bold">
+                    Full Name
+                  </label>
+                  <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/60 dark:bg-slate-950/60 text-slate-700 dark:text-slate-300 cursor-not-allowed select-none">
+                    <User size={16} className="text-slate-400 shrink-0" />
+                    <input
+                      type="text"
+                      value={editName || profile.name}
+                      readOnly
+                      disabled
+                      className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200 font-medium cursor-not-allowed"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider text-[10px] font-bold">
-                  Contact Number
-                </label>
-                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
-                  <Phone size={15} className="text-slate-400" />
-                  <input
-                    type="text"
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200"
-                    placeholder="+91 Phone"
-                  />
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider text-[10px] font-bold">
+                    Registered Email
+                  </label>
+                  <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/60 dark:bg-slate-950/60 text-slate-700 dark:text-slate-300 cursor-not-allowed select-none">
+                    <Mail size={16} className="text-slate-400 shrink-0" />
+                    <input
+                      type="email"
+                      value={editEmail || profile.email}
+                      readOnly
+                      disabled
+                      className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200 font-medium cursor-not-allowed"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider text-[10px] font-bold">
-                  Parent / Guardian Name
-                </label>
-                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
-                  <Users size={15} className="text-slate-400" />
-                  <input
-                    type="text"
-                    value={editParentName}
-                    onChange={(e) => setEditParentName(e.target.value)}
-                    className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200"
-                    placeholder="Father/Mother Name"
-                  />
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider text-[10px] font-bold">
+                    Contact Number
+                  </label>
+                  <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/60 dark:bg-slate-950/60 text-slate-700 dark:text-slate-300 cursor-not-allowed select-none">
+                    <Phone size={16} className="text-slate-400 shrink-0" />
+                    <input
+                      type="text"
+                      value={editPhone || profile.phone}
+                      readOnly
+                      disabled
+                      className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200 font-medium cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider text-[10px] font-bold">
+                    Parent / Guardian Name
+                  </label>
+                  <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/60 dark:bg-slate-950/60 text-slate-700 dark:text-slate-300 cursor-not-allowed select-none">
+                    <Users size={16} className="text-slate-400 shrink-0" />
+                    <input
+                      type="text"
+                      value={editParentName || profile.parentName}
+                      readOnly
+                      disabled
+                      className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-slate-200 font-medium cursor-not-allowed"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </form>
+
+            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+              <span>* Official admission records (Locked). Contact administration to edit.</span>
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">Verified Profile Info</span>
+            </div>
+          </div>
         </div>
 
       </div>
 
       {/* STUDENT DOCUMENT VAULT & RECORDS VERIFICATION */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
           <div>
             <h3 className="text-sm font-black text-slate-900 dark:text-slate-50 uppercase tracking-wide flex items-center gap-2">
               <FileCheck size={18} className="text-accent" />
@@ -673,7 +802,7 @@ export default function StudentProfilePage() {
         </div>
 
         {/* 7 DOCUMENT CARDS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {DOCUMENT_TYPES.map((doc) => {
             const Icon = doc.icon;
             const docData = documents[doc.id];
@@ -793,7 +922,11 @@ export default function StudentProfilePage() {
 
                       <button
                         type="button"
-                        onClick={() => handleDocDelete(doc.id, doc.name)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDocDelete(doc.id, doc.name);
+                        }}
                         className="p-1.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-lg transition-colors cursor-pointer"
                         title="Delete Document"
                       >
@@ -836,7 +969,7 @@ export default function StudentProfilePage() {
           className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white font-black text-xs px-8 py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-[#FF6B2B]/25 btn-shine flex items-center gap-2"
         >
           <CheckCircle2 size={16} />
-          <span>{isSaving ? "Updating Profile..." : "Update Student Profile"}</span>
+          <span>{isSaving ? "Updating Profile..." : "Submit  Student Profile"}</span>
         </button>
       </div>
 

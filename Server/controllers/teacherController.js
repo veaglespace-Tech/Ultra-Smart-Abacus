@@ -187,47 +187,121 @@ export const getTeachers = async (req, res, next) => {
 
 export const updateTeacher = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const { name, qualification, experience, documents } = req.body || {};
+        await prisma.$executeRawUnsafe(`ALTER TABLE Teacher ADD COLUMN documents LONGTEXT NULL`).catch(() => {});
+        await prisma.$executeRawUnsafe(`ALTER TABLE Teacher ADD COLUMN profilePhoto LONGTEXT NULL`).catch(() => {});
 
-        try {
-            await prisma.$executeRawUnsafe(`ALTER TABLE Teacher ADD COLUMN documents LONGTEXT NULL`).catch(() => {});
-        } catch (e) {}
+        const { id } = req.params;
+        const { name, qualification, experience, documents, profilePhoto, phone, email } = req.body || {};
 
         let documentsStr = undefined;
         if (documents !== undefined && documents !== null) {
             documentsStr = typeof documents === 'object' ? JSON.stringify(documents) : String(documents);
         }
 
-        const updateData = {
-            ...(name ? { name } : {}),
-            ...(qualification ? { qualification } : {}),
-            ...(experience ? { experience: parseInt(experience) } : {}),
-        };
-        if (documentsStr !== undefined) {
-            updateData.documents = documentsStr;
-        }
+        // 1. ID Resolution (Matches Student Controller Logic)
+        let idNum = Number(id);
+        let existingTeacher = null;
 
-        const teacher = await prisma.teacher.update({
-            where: {
-                id: Number(id)
-            },
-            data: updateData
-        }).catch(async (err) => {
-            console.warn("Prisma update fallback for teacher:", err.message);
-            if (documentsStr !== undefined) {
-                const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                await prisma.$executeRawUnsafe(`UPDATE Teacher SET documents = '${escaped}' WHERE id = ${Number(id)}`).catch(() => {});
+        if (!isNaN(idNum) && idNum > 0) {
+            existingTeacher = await prisma.teacher.findUnique({ where: { id: idNum } }).catch(() => null);
+            if (!existingTeacher) {
+                existingTeacher = await prisma.teacher.findFirst({
+                    where: {
+                        OR: [
+                            { userId: idNum },
+                            { userId: Number(req.user?.id || 0) }
+                        ]
+                    }
+                }).catch(() => null);
             }
-            return await prisma.teacher.findUnique({ where: { id: Number(id) } });
-        });
-
-        if (documentsStr !== undefined && id) {
-            const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-            await prisma.$executeRawUnsafe(`UPDATE Teacher SET documents = '${escaped}' WHERE id = ${Number(id)}`).catch(() => {});
         }
 
-        let formattedDocs = teacher?.documents;
+        if (!existingTeacher && req.user) {
+            existingTeacher = await prisma.teacher.findFirst({
+                where: { userId: Number(req.user.id) }
+            }).catch(() => null);
+        }
+
+        let targetUserId = existingTeacher ? existingTeacher.userId : (req.user?.id ? Number(req.user.id) : (!isNaN(idNum) && idNum > 0 ? idNum : null));
+
+        if (!existingTeacher && targetUserId) {
+            const u = await prisma.user.findUnique({ where: { id: targetUserId } }).catch(() => null);
+            if (u) {
+                existingTeacher = await prisma.teacher.create({
+                    data: {
+                        name: name || u.name || "Teacher",
+                        qualification: qualification || "Abacus Certified Instructor",
+                        experience: experience !== undefined && experience !== null ? parseInt(experience) : 1,
+                        phone: phone || u.phone || "",
+                        userId: u.id,
+                    }
+                }).catch(async () => {
+                    const cleanName = (name || u.name || "Teacher").replace(/'/g, "\\'");
+                    const cleanQual = (qualification || "Abacus Certified Instructor").replace(/'/g, "\\'");
+                    const cleanPhone = (phone || u.phone || "").replace(/'/g, "\\'");
+                    await prisma.$executeRawUnsafe(`INSERT INTO Teacher (name, qualification, experience, phone, userId) VALUES ('${cleanName}', '${cleanQual}', 1, '${cleanPhone}', ${u.id})`).catch(() => {});
+                    return await prisma.teacher.findFirst({ where: { userId: u.id } }).catch(() => null);
+                });
+            }
+        }
+
+        const targetId = existingTeacher ? existingTeacher.id : (!isNaN(idNum) && idNum > 0 ? idNum : null);
+        if (existingTeacher && existingTeacher.userId) {
+            targetUserId = existingTeacher.userId;
+        }
+
+        // 2. Direct Raw SQL Updates (Identical to Student Document Storage Logic)
+        if (documentsStr !== undefined && (targetId || targetUserId)) {
+            const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            if (targetId) {
+                await prisma.$executeRawUnsafe(`UPDATE Teacher SET documents = '${escaped}' WHERE id = ${targetId}`).catch(() => {});
+            }
+            if (targetUserId) {
+                await prisma.$executeRawUnsafe(`UPDATE Teacher SET documents = '${escaped}' WHERE userId = ${targetUserId}`).catch(() => {});
+            }
+        }
+
+        if (profilePhoto !== undefined && (targetId || targetUserId)) {
+            const escapedPhoto = (profilePhoto || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            if (targetId) {
+                await prisma.$executeRawUnsafe(`UPDATE Teacher SET profilePhoto = '${escapedPhoto}' WHERE id = ${targetId}`).catch(() => {});
+            }
+            if (targetUserId) {
+                await prisma.$executeRawUnsafe(`UPDATE Teacher SET profilePhoto = '${escapedPhoto}' WHERE userId = ${targetUserId}`).catch(() => {});
+            }
+        }
+
+        // Update name, qualification, experience, phone
+        const fieldUpdates = [];
+        if (name) fieldUpdates.push(`name = '${name.replace(/'/g, "\\'")}'`);
+        if (qualification) fieldUpdates.push(`qualification = '${qualification.replace(/'/g, "\\'")}'`);
+        if (experience !== undefined && experience !== null) fieldUpdates.push(`experience = ${parseInt(experience) || 0}`);
+        if (phone) fieldUpdates.push(`phone = '${phone.replace(/'/g, "\\'")}'`);
+
+        if (fieldUpdates.length > 0) {
+            if (targetId) {
+                await prisma.$executeRawUnsafe(`UPDATE Teacher SET ${fieldUpdates.join(', ')} WHERE id = ${targetId}`).catch(() => {});
+            }
+            if (targetUserId) {
+                await prisma.$executeRawUnsafe(`UPDATE Teacher SET ${fieldUpdates.join(', ')} WHERE userId = ${targetUserId}`).catch(() => {});
+            }
+        }
+
+        if ((name || email) && targetUserId) {
+            const userUpdates = [];
+            if (name) userUpdates.push(`name = '${name.replace(/'/g, "\\'")}'`);
+            if (email) userUpdates.push(`email = '${email.replace(/'/g, "\\'")}'`);
+            if (userUpdates.length > 0) {
+                await prisma.$executeRawUnsafe(`UPDATE User SET ${userUpdates.join(', ')} WHERE id = ${targetUserId}`).catch(() => {});
+            }
+        }
+
+        let updatedTeacher = targetId ? await prisma.teacher.findUnique({ where: { id: targetId } }).catch(() => null) : null;
+        if (!updatedTeacher && targetUserId) {
+            updatedTeacher = await prisma.teacher.findFirst({ where: { userId: targetUserId } }).catch(() => null);
+        }
+
+        let formattedDocs = updatedTeacher?.documents || documentsStr;
         if (typeof formattedDocs === 'string') {
             try { formattedDocs = JSON.parse(formattedDocs); } catch (e) {}
         }
@@ -235,12 +309,12 @@ export const updateTeacher = async (req, res, next) => {
         res.json({
             success: true,
             message: "Teacher updated successfully",
-            teacher: {
-                ...teacher,
+            data: {
+                ...(updatedTeacher || {}),
                 documents: formattedDocs
             },
-            data: {
-                ...teacher,
+            teacher: {
+                ...(updatedTeacher || {}),
                 documents: formattedDocs
             }
         });

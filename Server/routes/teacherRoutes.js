@@ -51,11 +51,11 @@ getTeachers
 
 
 router.put(
-"/:id",
-authMiddleware,
-authorize("ADMIN", "FRANCHISE"),
-updateTeacher
-)
+  "/:id",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE", "TEACHER"),
+  updateTeacher
+);
 
 
 router.delete(
