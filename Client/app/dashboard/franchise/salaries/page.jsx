@@ -482,7 +482,7 @@ export default function SalariesManagement() {
                       {MONTHS[s.month - 1]} {s.year}
                     </td>
                     <td className="py-4 px-6 text-slate-500 dark:text-slate-400 space-y-0.5">
-                      <p>Basic: ₹{Number(s.basicSalary || 0).toLocaleString()}</p>
+                      <p>Basic: ₹{Number(s.basicSalary ?? s.basic_salary ?? s.basic ?? 0).toLocaleString()}</p>
                       <p className="text-emerald-600">Bonus: +₹{Number(s.bonus || 0).toLocaleString()}</p>
                       <p className="text-rose-500">Ded: -₹{Number(s.deductions || 0).toLocaleString()}</p>
                     </td>

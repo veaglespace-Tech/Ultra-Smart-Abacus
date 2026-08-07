@@ -1,5 +1,6 @@
 import express from "express";
 import {createStudent,
+    admitStudentById,
     getAllStudents,
     getStudentById,
     updateStudent,
@@ -22,6 +23,8 @@ upload.single("profilePhoto"),
 createStudentValidation,
 validate,
 createStudent);
+
+router.post("/admit-by-id", authMiddleware, authorize("ADMIN", "FRANCHISE"), admitStudentById);
 
 router.get("/", authMiddleware, getAllStudents);
 router.get("/profile/me", authMiddleware, getMyProfile);

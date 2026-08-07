@@ -23,6 +23,9 @@ const ensureFeeColumns = async () => {
       await prisma.$executeRawUnsafe(sql);
     } catch (e) { }
   }
+  try {
+    await prisma.$executeRawUnsafe(`UPDATE Fee SET dueDate = DATE_ADD(IFNULL(createdAt, NOW()), INTERVAL 30 DAY) WHERE dueDate IS NULL`);
+  } catch (e) { }
 };
 
 export const feeService = {
@@ -30,7 +33,7 @@ export const feeService = {
    * Create a new fee record
    */
   createFee: async (data) => {
-    const { studentId, franchiseId, batchId, totalFee, paidAmount = 0 } = data;
+    const { studentId, franchiseId, batchId, totalFee, paidAmount = 0, dueDate = null } = data || {};
 
     if (totalFee <= 0) {
       throw new CustomError("Total fee must be greater than 0", 400);
@@ -153,7 +156,7 @@ export const feeService = {
       prisma.$queryRawUnsafe(`SELECT id, dueDate FROM Fee`).catch(() => []),
     ]);
 
-    const dueDateMap = new Map((rawDueDates || []).map(r => [Number(r.id), r.dueDate]));
+    const dueDateMap = new Map((rawDueDates || []).map(r => [Number(r.id), r.dueDate || r.due_date || r.duedate || r.DueDate]));
 
     const enrichedFees = fees.map(f => ({
       ...f,
@@ -198,7 +201,7 @@ export const feeService = {
    * Update fee details
    */
   updateFee: async (id, data) => {
-    const { totalFee, paidAmount, dueDate, status } = data;
+    const { totalFee, paidAmount, dueDate = null, status } = data || {};
 
     const existingFee = await prisma.fee.findFirst({
       where: { id: Number(id) },
@@ -225,14 +228,10 @@ export const feeService = {
       calculatedStatus = newDueAmount === 0 ? "PAID" : newPaidAmount > 0 ? "PARTIAL" : "PENDING";
     }
 
-    let parsedDueDate = null;
-    if (dueDate) {
-      try {
-        parsedDueDate = new Date(dueDate);
-        if (isNaN(parsedDueDate.getTime())) parsedDueDate = null;
-      } catch (e) {
-        parsedDueDate = null;
-      }
+    let parsedDueDate = dueDate ? new Date(dueDate) : (existingFee.dueDate ? new Date(existingFee.dueDate) : null);
+    if (!parsedDueDate || isNaN(parsedDueDate.getTime())) {
+      parsedDueDate = new Date();
+      parsedDueDate.setDate(parsedDueDate.getDate() + 30);
     }
 
     try {

@@ -22,7 +22,9 @@ export const registerUser = asyncHandler(async (req, res) => {
         city,
         address,
         dateOfBirth,
-    } = req.body;
+    } = req.body || {};
+
+    const userName = fullName || req.body.name || "Abacus User";
 
     const profilePhoto = req.file
         ? `/uploads/students/${req.file.filename}`
@@ -37,26 +39,45 @@ export const registerUser = asyncHandler(async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const targetRole = role || "STUDENT";
 
     const user = await prisma.user.create({
         data: {
-            name: fullName,
+            name: userName,
             email,
             password: hashedPassword,
-            role,
-            gender,
-            phone,
-            city,
-            address,
-            parentGuardianName,
+            role: targetRole,
         },
     });
 
-    await sendEmail(
+    try {
+        await prisma.$executeRawUnsafe(`ALTER TABLE User ADD COLUMN gender VARCHAR(255) NULL`).catch(() => {});
+        await prisma.$executeRawUnsafe(`ALTER TABLE User ADD COLUMN phone VARCHAR(255) NULL`).catch(() => {});
+        await prisma.$executeRawUnsafe(`ALTER TABLE User ADD COLUMN city VARCHAR(255) NULL`).catch(() => {});
+        await prisma.$executeRawUnsafe(`ALTER TABLE User ADD COLUMN address VARCHAR(255) NULL`).catch(() => {});
+        await prisma.$executeRawUnsafe(`ALTER TABLE User ADD COLUMN parentGuardianName VARCHAR(255) NULL`).catch(() => {});
+        await prisma.$executeRawUnsafe(`ALTER TABLE User ADD COLUMN profilePhoto LONGTEXT NULL`).catch(() => {});
+
+        const updates = [];
+        if (gender) updates.push(`gender = '${gender.replace(/'/g, "''")}'`);
+        if (phone) updates.push(`phone = '${phone.replace(/'/g, "''")}'`);
+        if (city) updates.push(`city = '${city.replace(/'/g, "''")}'`);
+        if (address) updates.push(`address = '${address.replace(/'/g, "''")}'`);
+        if (parentGuardianName) updates.push(`parentGuardianName = '${parentGuardianName.replace(/'/g, "''")}'`);
+        if (profilePhoto) updates.push(`profilePhoto = '${profilePhoto.replace(/'/g, "''")}'`);
+
+        if (updates.length > 0) {
+            await prisma.$executeRawUnsafe(`UPDATE User SET ${updates.join(', ')} WHERE id = ${user.id}`).catch(() => {});
+        }
+    } catch (e) {}
+
+    sendEmail(
         email,
         "Welcome to Ultra Smart Abacus",
-        welcomeEmail(fullName)
-    );
+        welcomeEmail(userName)
+    ).catch(() => {});
+
+    const normalizedRole = String(role || "STUDENT").trim().toUpperCase();
 
     let franchiseId = req.body.franchiseId ? Number(req.body.franchiseId) : null;
     if (!franchiseId && req.user && req.user.role === "FRANCHISE") {
@@ -64,49 +85,149 @@ export const registerUser = asyncHandler(async (req, res) => {
         if (franchise) franchiseId = franchise.id;
     }
 
-    if (role === "STUDENT") {
-        const student = await prisma.student.create({
-            data: {
-                name: fullName,
-                email,
-                password: hashedPassword,
-                phone: phone || null,
-                gender: gender || null,
-                address: address || null,
-                fatherName: parentGuardianName || null,
-                dateOfBirth: dateOfBirth
-                    ? new Date(dateOfBirth)
-                    : null,
-                profilePhoto,
-                userId: user.id,
-            },
+    if (normalizedRole === "STUDENT") {
+        const defaultDocs = JSON.stringify({
+            studentPhoto: profilePhoto || null,
+            birthCertificate: null,
+            studentAadhaar: null,
+            parentAadhaar: null,
+            addressProof: null,
+            admissionForm: null,
+            feeReceipt: null
         });
-        if (franchiseId) {
-            await prisma.$executeRawUnsafe(`UPDATE Student SET franchiseId = ${franchiseId} WHERE id = ${student.id}`).catch(() => {});
+        const documentsStr = req.body.documents
+            ? (typeof req.body.documents === 'object' ? JSON.stringify(req.body.documents) : String(req.body.documents))
+            : defaultDocs;
+
+        // Ensure database table Student has necessary columns in MySQL
+        try {
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN userId INT NULL`).catch(() => {});
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN franchiseId INT NULL`).catch(() => {});
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN documents LONGTEXT NULL`).catch(() => {});
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN profilePhoto VARCHAR(255) NULL`).catch(() => {});
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN phone VARCHAR(255) NULL`).catch(() => {});
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN gender VARCHAR(255) NULL`).catch(() => {});
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN address VARCHAR(255) NULL`).catch(() => {});
+            await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN fatherName VARCHAR(255) NULL`).catch(() => {});
+        } catch (e) {}
+
+        // Check if an existing student record matches email or user.id
+        let existingStudent = await prisma.student.findFirst({
+            where: {
+                OR: [
+                    { userId: user.id },
+                    { email: email }
+                ]
+            }
+        }).catch(() => null);
+
+        let student = null;
+        if (existingStudent) {
+            student = await prisma.student.update({
+                where: { id: existingStudent.id },
+                data: {
+                    userId: user.id,
+                    name: userName,
+                }
+            }).catch(() => existingStudent);
+        } else {
+            try {
+                student = await prisma.student.create({
+                    data: {
+                        name: userName,
+                        email,
+                        password: hashedPassword,
+                        userId: user.id,
+                    },
+                });
+            } catch (createErr) {
+                console.warn("[STUDENT REGISTER WARN] Primary Prisma student.create failed, executing raw SQL fallback:", createErr.message);
+                try {
+                    const escapedName = userName.replace(/'/g, "''");
+                    const escapedEmail = email.replace(/'/g, "''");
+                    await prisma.$executeRawUnsafe(
+                        `INSERT INTO Student (name, email, password, userId, createdAt) VALUES ('${escapedName}', '${escapedEmail}', '${hashedPassword}', ${user.id}, NOW())`
+                    );
+                    student = await prisma.student.findFirst({ where: { userId: user.id } });
+                } catch (sqlErr) {
+                    console.error("[STUDENT REGISTER SQL ERROR]", sqlErr.message);
+                }
+            }
         }
-    } else if (role === "TEACHER") {
-        const teacher = await prisma.teacher.create({
-            data: {
-                name: fullName,
-                qualification: "Abacus Certified Instructor",
-                experience: 2,
-                phone: phone || null,
-                userId: user.id,
-            },
-        });
-        if (franchiseId) {
+
+        if (student) {
+            try {
+                const updates = [];
+                if (phone) updates.push(`phone = '${phone.replace(/'/g, "''")}'`);
+                if (gender) updates.push(`gender = '${gender.replace(/'/g, "''")}'`);
+                if (address) updates.push(`address = '${address.replace(/'/g, "''")}'`);
+                if (parentGuardianName) updates.push(`fatherName = '${parentGuardianName.replace(/'/g, "''")}'`);
+                if (profilePhoto) updates.push(`profilePhoto = '${profilePhoto.replace(/'/g, "''")}'`);
+                if (documentsStr) updates.push(`documents = '${documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`);
+                if (franchiseId) updates.push(`franchiseId = ${franchiseId}`);
+
+                if (updates.length > 0) {
+                    await prisma.$executeRawUnsafe(`UPDATE Student SET ${updates.join(', ')} WHERE id = ${student.id}`).catch(() => {});
+                }
+            } catch (e) {}
+        }
+    } else if (normalizedRole === "TEACHER") {
+        let existingTeacher = await prisma.teacher.findFirst({
+            where: {
+                OR: [
+                    { userId: user.id },
+                    { phone: phone || '' }
+                ]
+            }
+        }).catch(() => null);
+
+        let teacher = null;
+        if (existingTeacher) {
+            teacher = await prisma.teacher.update({
+                where: { id: existingTeacher.id },
+                data: { userId: user.id, name: userName, phone: phone || existingTeacher.phone }
+            }).catch(() => existingTeacher);
+        } else {
+            teacher = await prisma.teacher.create({
+                data: {
+                    name: userName,
+                    qualification: "Abacus Certified Instructor",
+                    experience: 2,
+                    phone: phone || null,
+                    userId: user.id,
+                },
+            }).catch(() => null);
+        }
+
+        if (teacher && franchiseId) {
             await prisma.$executeRawUnsafe(`UPDATE Teacher SET franchiseId = ${franchiseId} WHERE id = ${teacher.id}`).catch(() => {});
         }
-    } else if (role === "FRANCHISE") {
-        await prisma.franchise.create({
-            data: {
-                name: fullName,
-                email,
-                phone: phone || null,
-                address: address || null,
-                userId: user.id,
-            },
-        });
+    } else if (normalizedRole === "FRANCHISE") {
+        let existingFranchise = await prisma.franchise.findFirst({
+            where: {
+                OR: [
+                    { userId: user.id },
+                    { email: email }
+                ]
+            }
+        }).catch(() => null);
+
+        if (existingFranchise) {
+            await prisma.franchise.update({
+                where: { id: existingFranchise.id },
+                data: { userId: user.id, name: userName }
+            }).catch(() => {});
+        } else {
+            await prisma.franchise.create({
+                data: {
+                    name: userName,
+                    email,
+                    phone: phone || null,
+                    address: address || null,
+                    userId: user.id,
+                },
+            }).catch(() => null);
+        }
     }
 
     const token = generateToken(user);

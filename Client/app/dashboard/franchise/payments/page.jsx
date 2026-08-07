@@ -1,22 +1,75 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   IndianRupee, Search, CreditCard, ArrowDownLeft, CheckCircle, 
-  Clock, AlertCircle, Filter, Download, Plus, X, Calendar, User
+  Clock, AlertCircle, Filter, Download, Plus, X, Calendar, User, Loader2
 } from "lucide-react";
+import { api } from "@/services/api";
 
 export default function PaymentsManagement() {
   const [payments, setPayments] = useState([]);
+  const [feesList, setFeesList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [isRecordOpen, setIsRecordOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMode, setFilterMode] = useState("All");
 
-  // Form State for Recording New Payment Manual Entry
+  // Form State for Recording New Payment Entry
   const [formData, setFormData] = useState({
-    studentName: "", invoiceId: "", amount: "", mode: "UPI (GPay)", status: "Success"
+    feeId: "",
+    studentName: "", 
+    amount: "", 
+    mode: "UPI (GPay)", 
+    status: "Success",
+    referenceNumber: ""
   });
+
+  // Fetch real payment transactions from backend
+  const fetchPaymentsData = async () => {
+    setLoading(true);
+    setErrorMessage("");
+    try {
+      const res = await api.franchise.getFees();
+      if (res && res.success) {
+        const feesData = res.data || [];
+        setFeesList(feesData);
+
+        const extractedPayments = [];
+        feesData.forEach((fee) => {
+          const studentName = fee.student?.name || `Student #${fee.studentId}`;
+          if (fee.payments && fee.payments.length > 0) {
+            fee.payments.forEach((p) => {
+              extractedPayments.push({
+                id: p.receiptNumber || `TXN-${p.id}`,
+                invoiceId: `INV-${fee.id}`,
+                feeId: fee.id,
+                studentName,
+                amount: Number(p.amount || 0),
+                mode: p.paymentMode || "UPI",
+                status: "Success",
+                date: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+              });
+            });
+          }
+        });
+
+        setPayments(extractedPayments);
+      }
+    } catch (err) {
+      console.error("Failed to load payments:", err);
+      setErrorMessage(err.message || "Failed to load payment records.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPaymentsData();
+  }, []);
 
   // Live Metrics Calculation
   const metrics = useMemo(() => {
@@ -30,8 +83,10 @@ export default function PaymentsManagement() {
   // Filter Pipeline
   const filteredPayments = useMemo(() => {
     return payments.filter(p => {
-      const matchesSearch = p.studentName.toLowerCase().includes(searchQuery.toLowerCase()) || p.id.toLowerCase().includes(searchQuery.toLowerCase()) || p.invoiceId.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesMode = filterMode === "All" || p.mode.includes(filterMode);
+      const matchesSearch = (p.studentName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            (p.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            (p.invoiceId || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesMode = filterMode === "All" || (p.mode || '').includes(filterMode);
       return matchesSearch && matchesMode;
     });
   }, [payments, searchQuery, filterMode]);
@@ -43,14 +98,13 @@ export default function PaymentsManagement() {
     const rows = filteredPayments.map(p => [
       p.id,
       p.invoiceId,
-      `"${p.studentName}"`, // Handling spaces inside name safely
+      `"${p.studentName}"`,
       p.mode,
       p.amount,
       p.date,
       p.status
     ].join(","));
 
-    // \uFEFF forces Excel to render encoding correctly in UTF-8
     const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -58,25 +112,48 @@ export default function PaymentsManagement() {
     link.setAttribute("download", `Payments_Ledger_Export_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     
-    link.click(); // Triggers Chrome's native download trajectory
+    link.click();
     document.body.removeChild(link);
   };
 
-  const handleRecordPayment = (e) => {
+  const handleRecordPayment = async (e) => {
     e.preventDefault();
-    const newTxn = {
-      id: `TXN-${Math.floor(10000 + Math.random() * 90000)}`,
-      studentName: formData.studentName,
-      invoiceId: formData.invoiceId || "DIRECT-DEPOSIT",
-      amount: Number(formData.amount),
-      mode: formData.mode,
-      status: formData.status,
-      date: new Date().toISOString().split('T')[0]
-    };
+    if (!formData.amount || Number(formData.amount) <= 0) {
+      alert("Please enter a valid payment amount.");
+      return;
+    }
 
-    setPayments([newTxn, ...payments]);
-    setIsRecordOpen(false);
-    setFormData({ studentName: "", invoiceId: "", amount: "", mode: "UPI (GPay)", status: "Success" });
+    setSubmitting(true);
+    try {
+      if (formData.feeId) {
+        await api.franchise.recordPayment(formData.feeId, {
+          amount: Number(formData.amount),
+          paymentMode: formData.mode,
+          referenceNumber: formData.referenceNumber || `REF-${Date.now()}`,
+          notes: `Recorded manually via Payment Gateway Ledger`
+        });
+        await fetchPaymentsData();
+      } else {
+        const newTxn = {
+          id: `TXN-${Math.floor(10000 + Math.random() * 90000)}`,
+          studentName: formData.studentName || "Direct Deposit Student",
+          invoiceId: "DIRECT-DEPOSIT",
+          amount: Number(formData.amount),
+          mode: formData.mode,
+          status: formData.status,
+          date: new Date().toISOString().split('T')[0]
+        };
+        setPayments([newTxn, ...payments]);
+      }
+
+      setIsRecordOpen(false);
+      setFormData({ feeId: "", studentName: "", amount: "", mode: "UPI (GPay)", status: "Success", referenceNumber: "" });
+    } catch (err) {
+      console.error("Record payment error:", err);
+      alert(err.message || "Failed to record payment.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -164,26 +241,43 @@ export default function PaymentsManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300 font-medium">
-              {filteredPayments.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group">
-                  <td className="py-4 px-6 font-mono text-indigo-600 dark:text-indigo-400 font-bold">{p.id}</td>
-                  <td className="py-4 px-6 font-mono text-slate-500 dark:text-slate-400">{p.invoiceId}</td>
-                  <td className="py-4 px-6 font-black text-slate-900 dark:text-white">{p.studentName}</td>
-                  <td className="py-4 px-6">
-                    <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
-                      <CreditCard size={13} className="text-slate-500" /> {p.mode}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 font-mono text-right text-slate-900 dark:text-white font-black">₹{p.amount}</td>
-                  <td className="py-4 px-6 font-mono text-center text-slate-500 dark:text-slate-400">{p.date}</td>
-                  <td className="py-4 px-6 text-center">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                      p.status === "Success" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900" :
-                      "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900"
-                    }`}>{p.status}</span>
+              {loading ? (
+                <tr>
+                  <td colSpan="7" className="py-12 text-center text-slate-400 font-mono">
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="animate-spin text-indigo-500" size={18} />
+                      <span>Loading live payment transactions...</span>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              ) : filteredPayments.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="py-12 text-center text-slate-400 font-mono">
+                    No payment transactions recorded yet. Click "Record Payment" to log a transaction.
+                  </td>
+                </tr>
+              ) : (
+                filteredPayments.map((p) => (
+                  <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group">
+                    <td className="py-4 px-6 font-mono text-indigo-600 dark:text-indigo-400 font-bold">{p.id}</td>
+                    <td className="py-4 px-6 font-mono text-slate-500 dark:text-slate-400">{p.invoiceId}</td>
+                    <td className="py-4 px-6 font-black text-slate-900 dark:text-white">{p.studentName}</td>
+                    <td className="py-4 px-6">
+                      <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
+                        <CreditCard size={13} className="text-slate-500" /> {p.mode}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 font-mono text-right text-slate-900 dark:text-white font-black">₹{p.amount}</td>
+                    <td className="py-4 px-6 font-mono text-center text-slate-500 dark:text-slate-400">{p.date}</td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                        p.status === "Success" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900" :
+                        "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900"
+                      }`}>{p.status}</span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -197,6 +291,31 @@ export default function PaymentsManagement() {
             <h3 className="text-xs font-black text-slate-900 dark:text-white mb-5 uppercase font-mono tracking-wider border-b border-slate-200 dark:border-slate-800 pb-2">Log Manual Payment Entry</h3>
             
             <form onSubmit={handleRecordPayment} className="space-y-4 text-xs">
+              {feesList.length > 0 && (
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1.5 font-bold">Select Student / Fee Invoice</label>
+                  <select 
+                    value={formData.feeId} 
+                    onChange={(e) => {
+                      const selectedFee = feesList.find(f => String(f.id) === e.target.value);
+                      setFormData({
+                        ...formData, 
+                        feeId: e.target.value,
+                        studentName: selectedFee ? (selectedFee.student?.name || `Student #${selectedFee.studentId}`) : formData.studentName
+                      });
+                    }} 
+                    className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  >
+                    <option value="">-- Direct Payment (No linked Fee ID) --</option>
+                    {feesList.map((fee) => (
+                      <option key={fee.id} value={fee.id}>
+                        INV-{fee.id} - {fee.student?.name || `Student #${fee.studentId}`} (Due: ₹{fee.dueAmount || 0})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-slate-600 dark:text-slate-400 mb-1.5 font-bold">Payer Student Name</label>
                 <input type="text" required placeholder="e.g. Rahul Patil" value={formData.studentName} onChange={(e) => setFormData({...formData, studentName: e.target.value})} className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500" />
@@ -204,8 +323,8 @@ export default function PaymentsManagement() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 dark:text-slate-400 mb-1.5 font-bold">Linked Invoice ID</label>
-                  <input type="text" placeholder="e.g. INV-2026-001" value={formData.invoiceId} onChange={(e) => setFormData({...formData, invoiceId: e.target.value})} className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-indigo-500" />
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1.5 font-bold">Reference Number</label>
+                  <input type="text" placeholder="e.g. UPI-19827391" value={formData.referenceNumber} onChange={(e) => setFormData({...formData, referenceNumber: e.target.value})} className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-indigo-500" />
                 </div>
                 <div>
                   <label className="block text-slate-600 dark:text-slate-400 mb-1.5 font-bold">Collected Gross (₹)</label>
@@ -234,7 +353,10 @@ export default function PaymentsManagement() {
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800 mt-2">
                 <button type="button" onClick={() => setIsRecordOpen(false)} className="px-4 py-2 rounded-xl bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors font-medium">Cancel</button>
-                <button type="submit" className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold cursor-pointer transition-all shadow-sm"><IndianRupee size={14} /><span>Commit Transaction</span></button>
+                <button type="submit" disabled={submitting} className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold cursor-pointer transition-all shadow-sm disabled:opacity-50">
+                  {submitting ? <Loader2 className="animate-spin" size={14} /> : <IndianRupee size={14} />}
+                  <span>{submitting ? "Processing..." : "Commit Transaction"}</span>
+                </button>
               </div>
             </form>
           </div>

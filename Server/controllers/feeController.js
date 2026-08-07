@@ -45,7 +45,7 @@ const getStudentFromUser = async (user) => {
 
 // Create a new fee record
 export const createFee = asyncHandler(async (req, res) => {
-  const { studentId, franchiseId, batchId, totalFee, paidAmount, dueDate } = req.body;
+  const { studentId, franchiseId, batchId, totalFee, paidAmount = 0, dueDate = null } = req.body || {};
   
   const fee = await feeService.createFee({
     studentId: Number(studentId),

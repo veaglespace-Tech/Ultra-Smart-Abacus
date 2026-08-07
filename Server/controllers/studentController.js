@@ -2,7 +2,7 @@ import prisma from "../config/prisma.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 export const createStudent = asyncHandler(async (req, res) => {
-    let { name, email, password, dateOfBirth, gender, phone, address, fatherName, batchId, profilePhoto } = req.body;
+    let { name, email, password, dateOfBirth, gender, phone, address, fatherName, batchId, profilePhoto, documents } = req.body;
     const hashedPassword = password ? await import("bcrypt").then(({ default: bcrypt }) => bcrypt.hash(password, 10)) : null;
 
     let franchiseId = req.body.franchiseId ? Number(req.body.franchiseId) : null;
@@ -22,6 +22,11 @@ export const createStudent = asyncHandler(async (req, res) => {
         email = `student_${Date.now()}_${Math.floor(Math.random() * 1000)}@abacus.com`;
     }
 
+    let documentsStr = null;
+    if (documents !== undefined && documents !== null) {
+        documentsStr = typeof documents === 'object' ? JSON.stringify(documents) : String(documents);
+    }
+
     const student = await prisma.student.create({
         data: {
             name,
@@ -34,9 +39,18 @@ export const createStudent = asyncHandler(async (req, res) => {
             fatherName: fatherName || null,
             batchId: batchId ? Number(batchId) : null,
             franchiseId: franchiseId ? Number(franchiseId) : null,
-            profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || null
+            profilePhoto: req.file ? `/uploads/students/${req.file.filename}` : profilePhoto || null,
+            documents: documentsStr
         }
     });
+
+    try {
+        await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN documents LONGTEXT NULL`).catch(() => {});
+        if (documentsStr) {
+            const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            await prisma.$executeRawUnsafe(`UPDATE Student SET documents = '${escaped}' WHERE id = ${student.id}`).catch(() => {});
+        }
+    } catch (e) {}
 
     if (franchiseId) {
         await prisma.$executeRawUnsafe(`UPDATE Student SET franchiseId = ${franchiseId} WHERE id = ${student.id}`).catch(() => {});
@@ -46,6 +60,77 @@ export const createStudent = asyncHandler(async (req, res) => {
         success: true,
         message: "Student created successfully",
         data: student
+    });
+});
+
+// Admit an existing student to the Franchise by Student ID, Roll No, or Email
+export const admitStudentById = asyncHandler(async (req, res) => {
+    const { studentIdentifier, batchId } = req.body || {};
+
+    if (!studentIdentifier) {
+        return res.status(400).json({
+            success: false,
+            message: "Student ID, Roll Number, or Email is required for admission."
+        });
+    }
+
+    let franchiseId = req.body.franchiseId ? Number(req.body.franchiseId) : null;
+    if (!franchiseId && req.user && req.user.role === "FRANCHISE") {
+        if (req.user.franchiseId) {
+            franchiseId = Number(req.user.franchiseId);
+        } else {
+            let franchise = await prisma.franchise.findFirst({ where: { userId: Number(req.user.id) } });
+            if (!franchise && req.user.email) {
+                franchise = await prisma.franchise.findFirst({ where: { email: req.user.email } });
+            }
+            if (franchise) franchiseId = franchise.id;
+        }
+    }
+
+    const cleanQuery = String(studentIdentifier).trim();
+    const extractedNum = cleanQuery.replace(/\D/g, "");
+    const parsedId = extractedNum ? Number(extractedNum) : null;
+
+    let student = await prisma.student.findFirst({
+        where: {
+            OR: [
+                ...(parsedId ? [{ id: parsedId }, { userId: parsedId }] : []),
+                { rollNo: cleanQuery },
+                { email: cleanQuery },
+                ...(extractedNum ? [{ rollNo: `STU-${extractedNum}` }, { rollNo: extractedNum }] : [])
+            ]
+        },
+        include: { batch: true }
+    });
+
+    if (!student) {
+        return res.status(200).json({
+            success: false,
+            message: `No registered student found matching ID / Roll No / Email: "${cleanQuery}".`
+        });
+    }
+
+    const updatedData = {};
+    if (batchId) updatedData.batchId = Number(batchId);
+
+    const updatedStudent = await prisma.student.update({
+        where: { id: student.id },
+        data: updatedData,
+        include: { batch: true }
+    }).catch(() => student);
+
+    if (franchiseId) {
+        await prisma.$executeRawUnsafe(`ALTER TABLE Student ADD COLUMN franchiseId INT NULL`).catch(() => {});
+        await prisma.$executeRawUnsafe(`UPDATE Student SET franchiseId = ${franchiseId} WHERE id = ${student.id}`).catch(() => {});
+    }
+    if (batchId) {
+        await prisma.$executeRawUnsafe(`UPDATE Student SET batchId = ${Number(batchId)} WHERE id = ${student.id}`).catch(() => {});
+    }
+
+    res.status(200).json({
+        success: true,
+        message: `Student "${updatedStudent.name}" admitted to franchise successfully.`,
+        data: updatedStudent
     });
 });
 
@@ -197,10 +282,16 @@ export const updateStudent = asyncHandler(async (req, res) => {
     }).catch(async (err) => {
         console.warn("Prisma update fallback for student:", err.message);
         if (documentsStr !== undefined) {
-            await prisma.$executeRawUnsafe(`UPDATE Student SET documents = ? WHERE id = ?`, documentsStr, targetId).catch(() => {});
+            const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            await prisma.$executeRawUnsafe(`UPDATE Student SET documents = '${escaped}' WHERE id = ${targetId}`).catch(() => {});
         }
         return await prisma.student.findUnique({ where: { id: targetId } });
     });
+
+    if (documentsStr !== undefined && targetId) {
+        const escaped = documentsStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        await prisma.$executeRawUnsafe(`UPDATE Student SET documents = '${escaped}' WHERE id = ${targetId}`).catch(() => {});
+    }
 
     let formattedDocs = student?.documents;
     if (typeof formattedDocs === 'string') {
@@ -231,6 +322,8 @@ export const deleteStudent = asyncHandler(async (req, res) => {
             message: "Student not found"
         });
     }
+
+    const linkedUserId = student.userId;
 
     // 1. Delete attendances
     await prisma.attendance.deleteMany({
@@ -270,9 +363,9 @@ export const deleteStudent = asyncHandler(async (req, res) => {
     });
 
     // 6. Delete user record if linked
-    if (existingStudent?.userId) {
+    if (linkedUserId) {
         await prisma.user.delete({
-            where: { id: existingStudent.userId }
+            where: { id: linkedUserId }
         }).catch(() => {});
     }
 

@@ -23,8 +23,49 @@ export default function FranchiseStudents() {
   const [filterFee, setFilterFee] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
-
   const [loading, setLoading] = useState(false);
+
+  // Admission Mode: "id" (Admit by Student ID/RollNo/Email) or "register" (New Registration)
+  const [admissionMode, setAdmissionMode] = useState("id");
+  const [idInput, setIdInput] = useState("");
+  const [idBatchId, setIdBatchId] = useState("");
+  const [idSubmitting, setIdSubmitting] = useState(false);
+  const [idMessage, setIdMessage] = useState({ type: "", text: "" });
+
+  const handleAdmitById = async (e) => {
+    e.preventDefault();
+    if (!idInput || !idInput.trim()) {
+      setIdMessage({ type: "error", text: "Please enter a Student ID, Roll No, or Email." });
+      return;
+    }
+
+    setIdSubmitting(true);
+    setIdMessage({ type: "", text: "" });
+    try {
+      const res = await api.franchise.admitStudentById({
+        studentIdentifier: idInput.trim(),
+        batchId: idBatchId ? Number(idBatchId) : null
+      });
+
+      if (res && res.success) {
+        setIdMessage({ type: "success", text: res.message || "Student admitted successfully!" });
+        await fetchStudents();
+        setTimeout(() => {
+          setIsFormOpen(false);
+          setIdInput("");
+          setIdBatchId("");
+          setIdMessage({ type: "", text: "" });
+        }, 1200);
+      } else {
+        setIdMessage({ type: "error", text: res?.message || "Failed to admit student." });
+      }
+    } catch (err) {
+      console.error("Admit by ID error:", err);
+      setIdMessage({ type: "error", text: err.message || "Failed to admit student by ID." });
+    } finally {
+      setIdSubmitting(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: "",
@@ -477,16 +518,79 @@ export default function FranchiseStudents() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-[#fcfbfa] border border-[#e2dcd0] w-full max-w-md rounded-2xl p-6 shadow-xl relative text-[#2c3539]">
             <button onClick={() => setIsFormOpen(false)} className="absolute top-4 right-4 text-[#8a9485] hover:text-[#1a202c] transition-colors cursor-pointer"><X size={15} /></button>
-            <h3 className="text-xs font-black text-[#1a202c] mb-5 uppercase tracking-wider border-b border-[#e2dcd0] pb-2">{editingStudent ? `Modify Record: ${editingStudent.id}` : "Process New Admission"}</h3>
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-[#5a6455] mb-1.5 font-bold">Student Full Name</label>
-                <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none focus:border-[#4a5d4e]" />
+            <h3 className="text-xs font-black text-[#1a202c] mb-4 uppercase tracking-wider border-b border-[#e2dcd0] pb-2">
+              {editingStudent ? `Modify Record: ${editingStudent.id}` : "Process Student Admission"}
+            </h3>
+
+            {/* ADMISSION MODE TOGGLE SWITCH (ONLY FOR NEW ADMISSION) */}
+            {!editingStudent && (
+              <div className="grid grid-cols-2 gap-1 bg-[#f4f0e6] p-1 rounded-xl mb-4 font-bold text-xs">
+                <button
+                  type="button"
+                  onClick={() => setAdmissionMode("id")}
+                  className={`py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    admissionMode === "id" 
+                      ? "bg-white text-[#4a5d4e] shadow-sm font-black" 
+                      : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <IdCard size={13} />
+                  <span>Admit by ID</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdmissionMode("register")}
+                  className={`py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    admissionMode === "register" 
+                      ? "bg-white text-[#4a5d4e] shadow-sm font-black" 
+                      : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <UserPlus size={13} />
+                  <span>Register New</span>
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+            )}
+
+            {/* OPTION 1: ADMIT EXISTING STUDENT BY ID / ROLL NO / EMAIL */}
+            {!editingStudent && admissionMode === "id" ? (
+              <form onSubmit={handleAdmitById} className="space-y-4 text-xs">
+                {idMessage.text && (
+                  <div className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${
+                    idMessage.type === "success" 
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                      : "bg-rose-50 text-rose-700 border-rose-200"
+                  }`}>
+                    {idMessage.type === "success" ? <CheckCircle2 size={14} /> : <ShieldAlert size={14} />}
+                    <span>{idMessage.text}</span>
+                  </div>
+                )}
+
                 <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Assign Batch</label>
-                  <select value={String(formData.batchId || "")} onChange={(e) => setFormData({...formData, batchId: e.target.value})} className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none">
+                  <label className="block text-[#5a6455] mb-1.5 font-bold">
+                    Student ID / Roll No / Email
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="e.g. STU-101, 101, or student@gmail.com" 
+                      value={idInput} 
+                      onChange={(e) => setIdInput(e.target.value)} 
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] font-mono focus:outline-none focus:border-[#4a5d4e]" 
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">Enter registered Student ID, Roll Number, or Email address to admit to your franchise.</p>
+                </div>
+
+                <div>
+                  <label className="block text-[#5a6455] mb-1.5 font-bold">Assign Batch (Optional)</label>
+                  <select 
+                    value={String(idBatchId || "")} 
+                    onChange={(e) => setIdBatchId(e.target.value)} 
+                    className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none"
+                  >
                     <option value="">-- Select Batch --</option>
                     {batches.map((b) => (
                       <option key={b.id} value={String(b.id)}>
@@ -495,16 +599,45 @@ export default function FranchiseStudents() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Parent Contact</label>
-                  <input type="tel" placeholder="10 digit cell" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] font-mono focus:outline-none" />
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e2dcd0] mt-2">
+                  <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-1.5 rounded-lg bg-[#fcfbfa] text-[#8a9485] border border-[#e2dcd0] cursor-pointer hover:text-[#1a202c] transition-colors">Cancel</button>
+                  <button type="submit" disabled={idSubmitting} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#4a5d4e] text-[#fcfbfa] font-bold cursor-pointer hover:bg-[#3d4d40] transition-all disabled:opacity-50">
+                    <Save size={14} />
+                    <span>{idSubmitting ? "Admitting..." : "Confirm Admission"}</span>
+                  </button>
                 </div>
-              </div>
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e2dcd0] mt-2">
-                <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-1.5 rounded-lg bg-[#fcfbfa] text-[#8a9485] border border-[#e2dcd0] cursor-pointer hover:text-[#1a202c] transition-colors">Cancel</button>
-                <button type="submit" disabled={loading} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#4a5d4e] text-[#fcfbfa] font-bold cursor-pointer hover:bg-[#3d4d40] transition-all disabled:opacity-50"><Save size={14} /><span>{loading ? "Saving..." : "Commit Sync"}</span></button>
-              </div>
-            </form>
+              </form>
+            ) : (
+              /* OPTION 2: REGISTER BRAND NEW STUDENT FORM */
+              <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-[#5a6455] mb-1.5 font-bold">Student Full Name</label>
+                  <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none focus:border-[#4a5d4e]" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[#5a6455] mb-1.5 font-bold">Assign Batch</label>
+                    <select value={String(formData.batchId || "")} onChange={(e) => setFormData({...formData, batchId: e.target.value})} className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none">
+                      <option value="">-- Select Batch --</option>
+                      {batches.map((b) => (
+                        <option key={b.id} value={String(b.id)}>
+                          {b.name} ({b.level || 'General'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[#5a6455] mb-1.5 font-bold">Parent Contact</label>
+                    <input type="tel" placeholder="10 digit cell" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] font-mono focus:outline-none" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e2dcd0] mt-2">
+                  <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-1.5 rounded-lg bg-[#fcfbfa] text-[#8a9485] border border-[#e2dcd0] cursor-pointer hover:text-[#1a202c] transition-colors">Cancel</button>
+                  <button type="submit" disabled={loading} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#4a5d4e] text-[#fcfbfa] font-bold cursor-pointer hover:bg-[#3d4d40] transition-all disabled:opacity-50"><Save size={14} /><span>{loading ? "Saving..." : "Commit Sync"}</span></button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

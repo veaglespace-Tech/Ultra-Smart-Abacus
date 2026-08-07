@@ -1,5 +1,5 @@
 // BigInt JSON serializer initialization (v7)
-// Force Nodemon server module reload (v18)
+// Force Nodemon server module reload (v27)
 BigInt.prototype.toJSON = function () {
   return Number(this);
 };

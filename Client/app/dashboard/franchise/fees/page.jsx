@@ -48,11 +48,12 @@ export default function FranchiseFees() {
         paidAmount: Number(fee.paidAmount || 0),
         pendingAmount: Number(fee.dueAmount || 0),
         dueDate: (() => {
-          const rawDate = fee.dueDate || fee.createdAt;
+          const rawDate = (fee.dueDate && fee.dueDate !== "—" && fee.dueDate !== "null") ? fee.dueDate : (fee.createdAt || fee.updatedAt);
           if (!rawDate) return "—";
           try {
             const d = new Date(rawDate);
-            return isNaN(d.getTime()) ? "—" : d.toISOString().split("T")[0];
+            if (isNaN(d.getTime())) return "—";
+            return d.toISOString().split("T")[0];
           } catch (e) {
             return "—";
           }

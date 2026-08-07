@@ -70,7 +70,7 @@ export default function FranchiseAttendanceView() {
           }
 
           const mappedStudents = batchStudents.map(student => {
-            const record = existingRecords.find(r => r.studentId === student.id);
+            const record = existingRecords.find(r => Number(r.studentId) === Number(student.id));
             return {
               id: student.id.toString(),
               rollNo: student.rollNo || `STU-${student.id}`,

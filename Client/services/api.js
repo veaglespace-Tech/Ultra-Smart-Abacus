@@ -57,6 +57,7 @@ export const api = {
     getDashboardMetrics: () => apiHelper.get('/franchise/metrics'),
     getStudents: () => apiHelper.get('/students'),
     createStudent: (data) => apiHelper.post('/students', data),
+    admitStudentById: (data) => apiHelper.post('/students/admit-by-id', data),
     updateStudent: (id, data) => apiHelper.put(`/students/${id}`, data),
     deleteStudent: (id) => apiHelper.delete(`/students/${id}`),
     getTeachers: () => apiHelper.get('/teachers'),

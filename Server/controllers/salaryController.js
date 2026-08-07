@@ -277,6 +277,10 @@ export const getSalaryHistory = asyncHandler(async (req, res) => {
             id: Number(s.id),
             teacherId: s.teacherId ? Number(s.teacherId) : null,
             franchiseId: s.franchiseId ? Number(s.franchiseId) : null,
+            basicSalary: Number(s.basicSalary ?? s.basic_salary ?? s.basic ?? 0),
+            bonus: Number(s.bonus ?? 0),
+            deductions: Number(s.deductions ?? 0),
+            netSalary: Number(s.netSalary ?? 0),
             teacher: s.teacherName ? { id: Number(s.teacherId), name: s.teacherName } : null,
             franchise: s.franchiseName ? { id: Number(s.franchiseId), name: s.franchiseName } : null
         }));

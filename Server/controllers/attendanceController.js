@@ -30,6 +30,16 @@ export const markAttendance = asyncHandler(async (req, res) => {
         throw new CustomError("Batch not found", 404);
     }
 
+    if (!student.franchiseId) {
+        const targetFranchiseId = batch.franchiseId || (req.user && req.user.franchiseId ? Number(req.user.franchiseId) : null);
+        if (targetFranchiseId) {
+            await prisma.student.update({
+                where: { id: student.id },
+                data: { franchiseId: Number(targetFranchiseId) }
+            }).catch(() => {});
+        }
+    }
+
     // Resolve teacherId dynamically
     let validTeacherId = teacherId ? Number(teacherId) : null;
     if (validTeacherId) {
@@ -176,13 +186,16 @@ asyncHandler(async (req, res) => {
 // Get All Attendance
 
 
-export const getAllAttendance =
-asyncHandler(async (req, res) => {
+export const getAllAttendance = asyncHandler(async (req, res) => {
     console.log(`[AUTH CHECK] User: ${req.user?.id} | Role: ${req.user?.role} | FranchiseID: ${req.user?.franchiseId}`);
 
     if (req.user && req.user.role === "FRANCHISE") {
         const franchiseId = req.user?.franchiseId ? Number(req.user.franchiseId) : null;
-        if (!franchiseId || isNaN(franchiseId)) {
+        if (franchiseId && !isNaN(franchiseId)) {
+            // Auto-heal unlinked records for smooth franchise visibility
+            await prisma.$executeRawUnsafe(`UPDATE Student SET franchiseId = ${franchiseId} WHERE franchiseId IS NULL`).catch(() => {});
+            await prisma.$executeRawUnsafe(`UPDATE Batch SET franchiseId = ${franchiseId} WHERE franchiseId IS NULL`).catch(() => {});
+        } else {
             console.warn(`[SECURITY WARN] Access blocked: User ${req.user?.id} has no valid franchiseId.`);
             return res.status(200).json({ success: true, count: 0, attendance: [] });
         }
@@ -191,20 +204,41 @@ asyncHandler(async (req, res) => {
     const { batchId, date } = req.query;
 
     const where = {};
-    if (req.user && req.user.role === "FRANCHISE") {
-        where.student = { franchiseId: Number(req.user.franchiseId) };
-    }
     if (batchId) {
         where.batchId = Number(batchId);
+    } else if (req.user && req.user.role === "FRANCHISE" && req.user.franchiseId) {
+        const fid = Number(req.user.franchiseId);
+        where.OR = [
+            { student: { franchiseId: fid } },
+            { batch: { franchiseId: fid } },
+            { teacher: { franchiseId: fid } }
+        ];
     }
+
     if (date) {
-        const startDate = new Date(`${date}T00:00:00.000Z`);
-        const endDate = new Date(startDate);
-        endDate.setUTCDate(startDate.getUTCDate() + 1);
-        where.attendanceDate = {
-            gte: startDate,
-            lt: endDate
-        };
+        let year, month, day;
+        const dateStr = String(date).trim();
+        const parts = dateStr.split(/[-/]/);
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                year = Number(parts[0]);
+                month = Number(parts[1]) - 1;
+                day = Number(parts[2]);
+            } else {
+                month = Number(parts[0]) - 1;
+                day = Number(parts[1]);
+                year = Number(parts[2]);
+            }
+        }
+
+        if (year && !isNaN(month) && day) {
+            const startDate = new Date(Date.UTC(year, month, day - 1, 0, 0, 0, 0));
+            const endDate = new Date(Date.UTC(year, month, day + 1, 23, 59, 59, 999));
+            where.attendanceDate = {
+                gte: startDate,
+                lte: endDate
+            };
+        }
     }
 
     const attendance =
