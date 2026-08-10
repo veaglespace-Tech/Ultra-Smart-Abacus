@@ -32,6 +32,7 @@ const DEFAULT_STUDENT_EXAMS = [
   {
     id: "EXAM-2026-001",
     name: "Level 1 Abacus Core Assessment",
+    batch: "Level 1 Core Batch",
     date: "7/25/2026",
     time: "10:00 AM",
     duration: "60 mins",
@@ -45,6 +46,7 @@ const DEFAULT_STUDENT_EXAMS = [
   {
     id: "EXAM-2026-002",
     name: "Mental Arithmetic Speed Challenge",
+    batch: "Level 1 Core Batch",
     date: "7/18/2026",
     time: "11:30 AM",
     duration: "45 mins",
@@ -58,6 +60,7 @@ const DEFAULT_STUDENT_EXAMS = [
   {
     id: "EXAM-2026-003",
     name: "Grand Abacus Level 2 Eligibility Test",
+    batch: "Level 1 Core Batch",
     date: "8/10/2026",
     time: "10:00 AM",
     duration: "60 mins",
@@ -184,13 +187,30 @@ export function StudentDataProvider({ children }) {
               const finalGrade = myResult?.grade || (hasScore ? (myResult.obtainedMarks >= (ex.passingMarks || 40) ? 'A' : 'F') : null);
               const isPass = myResult?.isPassed ?? (hasScore ? myResult.obtainedMarks >= (ex.passingMarks || 40) : false);
 
+              const formatDateStr = (d1, d2) => {
+                if (d1) {
+                  try {
+                    const dt = new Date(d1);
+                    if (!isNaN(dt.getTime())) return dt.toLocaleDateString();
+                  } catch (e) {}
+                }
+                if (d2) {
+                  try {
+                    const dt = new Date(d2);
+                    if (!isNaN(dt.getTime())) return dt.toLocaleDateString();
+                  } catch (e) {}
+                }
+                return new Date().toLocaleDateString();
+              };
+
               return {
                 id: ex.examCode || `EX-${ex.id}`,
                 backendId: ex.id,
                 name: ex.title,
-                date: ex.examDate ? new Date(ex.examDate).toLocaleDateString() : '',
+                batch: ex.batch?.name || (ex.batch?.code ? `Batch ${ex.batch.code}` : 'General Batch'),
+                date: formatDateStr(ex.examDate, ex.createdAt),
                 time: ex.startTime || '10:00 AM',
-                duration: `${ex.duration || 60} mins`,
+                duration: ex.duration ? (typeof ex.duration === 'number' ? `${ex.duration} mins` : ex.duration) : '60 mins',
                 maxMarks: ex.totalMarks || 100,
                 passingMarks: ex.passingMarks || 40,
                 score: finalScore,

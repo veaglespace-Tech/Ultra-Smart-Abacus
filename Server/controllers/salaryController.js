@@ -133,7 +133,7 @@ export const createSalary = asyncHandler(async (req, res) => {
             presentDays,
             dailyRate,
             paymentStatus,
-            paymentDate: paymentDate ? new Date(paymentDate) : null,
+            paymentDate: paymentDate ? new Date(paymentDate) : (paymentStatus === "PAID" ? new Date() : null),
             paymentMode,
             referenceNumber,
             remarks
@@ -182,6 +182,7 @@ export const updateSalary = asyncHandler(async (req, res) => {
     const bon = bonus !== undefined ? parseFloat(bonus) : existingSalary.bonus;
     const ded = deductions !== undefined ? parseFloat(deductions) : existingSalary.deductions;
     const netSalary = Math.max(0, basicSalary + bon - ded);
+    const newStatus = paymentStatus || existingSalary.paymentStatus;
 
     const updated = await prisma.salary.update({
         where: { id: parseInt(id) },
@@ -190,8 +191,8 @@ export const updateSalary = asyncHandler(async (req, res) => {
             bonus: bon,
             deductions: ded,
             netSalary,
-            paymentStatus: paymentStatus || existingSalary.paymentStatus,
-            paymentDate: paymentDate ? new Date(paymentDate) : existingSalary.paymentDate,
+            paymentStatus: newStatus,
+            paymentDate: paymentDate ? new Date(paymentDate) : (newStatus === "PAID" ? (existingSalary.paymentDate || new Date()) : existingSalary.paymentDate),
             paymentMode: paymentMode !== undefined ? paymentMode : existingSalary.paymentMode,
             referenceNumber: referenceNumber !== undefined ? referenceNumber : existingSalary.referenceNumber,
             remarks: remarks !== undefined ? remarks : existingSalary.remarks

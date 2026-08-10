@@ -14,6 +14,7 @@ import {
   ChevronRight,
   FileText,
   Target,
+  Users,
 } from "lucide-react";
 import { useStudentData } from "../StudentContext";
 
@@ -283,6 +284,10 @@ export default function StudentExamsPage() {
                 </th>
 
                 <th className="px-6 py-4">
+                  Target Batch
+                </th>
+
+                <th className="px-6 py-4">
                   Date
                 </th>
 
@@ -317,7 +322,7 @@ export default function StudentExamsPage() {
                 <tr>
 
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     className="py-14 text-center"
                   >
 
@@ -368,11 +373,18 @@ export default function StudentExamsPage() {
 
                     </td>
 
+                    <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
+                      <div className="flex items-center gap-1.5">
+                        <Users size={12} className="text-orange-500 shrink-0" />
+                        <span>{exam.batch || "General Batch"}</span>
+                      </div>
+                    </td>
+
                     <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono">
 
                       <div className="flex items-center gap-1.5">
                         <Calendar size={12} />
-                        {exam.date || "N/A"}
+                        {exam.date || new Date().toLocaleDateString()}
                       </div>
 
                     </td>
@@ -386,8 +398,11 @@ export default function StudentExamsPage() {
 
                     </td>
 
-                    <td className="px-6 py-4 text-center font-mono text-slate-600 dark:text-slate-400">
-                      {exam.duration || "N/A"}
+                    <td className="px-6 py-4 text-center font-mono">
+                      <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg text-xs font-bold">
+                        <Clock size={12} className="text-indigo-500" />
+                        {typeof exam.duration === 'number' ? `${exam.duration} mins` : (exam.duration || "60 mins")}
+                      </span>
                     </td>
 
                     <td className="px-6 py-4 text-center">
@@ -514,12 +529,23 @@ export default function StudentExamsPage() {
                 <div className="grid grid-cols-2 gap-3">
 
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50">
+                    <p className="text-[10px] text-slate-500 flex items-center gap-1 font-bold">
+                      <Users size={12} className="text-orange-500" />
+                      Target Batch
+                    </p>
+
+                    <p className="text-xs font-bold text-slate-800 dark:text-white mt-1">
+                      {selectedExam.batch || "General Batch"}
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50">
                     <p className="text-[10px] text-slate-500">
                       Date
                     </p>
 
                     <p className="text-xs font-bold text-slate-800 dark:text-white mt-1">
-                      {selectedExam.date || "N/A"}
+                      {selectedExam.date || new Date().toLocaleDateString()}
                     </p>
                   </div>
 
@@ -534,12 +560,13 @@ export default function StudentExamsPage() {
                   </div>
 
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50">
-                    <p className="text-[10px] text-slate-500">
+                    <p className="text-[10px] text-slate-500 flex items-center gap-1 font-bold">
+                      <Clock size={12} className="text-indigo-500" />
                       Duration
                     </p>
 
-                    <p className="text-xs font-bold text-slate-800 dark:text-white mt-1">
-                      {selectedExam.duration || "N/A"}
+                    <p className="text-xs font-bold text-slate-800 dark:text-white mt-1 font-mono">
+                      {typeof selectedExam.duration === 'number' ? `${selectedExam.duration} mins` : (selectedExam.duration || "60 mins")}
                     </p>
                   </div>
 
@@ -653,7 +680,7 @@ export default function StudentExamsPage() {
 
                         This examination is scheduled for{" "}
                         <strong>
-                          {selectedExam.date}
+                          {selectedExam.date || new Date().toLocaleDateString()}
                         </strong>{" "}
                         at{" "}
                         <strong>

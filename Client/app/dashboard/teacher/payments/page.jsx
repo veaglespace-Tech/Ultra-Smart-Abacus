@@ -11,6 +11,22 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December"
 ];
 
+const formatSafeDate = (primaryDate, fallbackDate) => {
+  if (primaryDate) {
+    const d = new Date(primaryDate);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+  }
+  if (fallbackDate) {
+    const d = new Date(fallbackDate);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+  }
+  return "N/A";
+};
+
 export default function TeacherPaymentsPage() {
   const [salaries, setSalaries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -66,8 +82,8 @@ export default function TeacherPaymentsPage() {
     return {
       currentMonthSalary: `₹${(latest?.netSalary || 0).toLocaleString()}`,
       currentMonthStatus: latest?.paymentStatus || "PENDING",
-      lastPaymentDate: lastPaidSalary?.paymentDate 
-        ? new Date(lastPaidSalary.paymentDate).toLocaleDateString() 
+      lastPaymentDate: lastPaidSalary 
+        ? formatSafeDate(lastPaidSalary.paymentDate, lastPaidSalary.updatedAt || lastPaidSalary.createdAt) 
         : "N/A",
       totalDisbursed: `₹${totalPaidSum.toLocaleString()}`
     };
@@ -374,9 +390,9 @@ export default function TeacherPaymentsPage() {
                       <td className="py-4 px-6 text-slate-500 dark:text-slate-450 space-y-0.5">
                         {s.paymentStatus === "PAID" ? (
                           <>
-                            <p className="font-bold">{s.paymentMode}</p>
+                            <p className="font-bold">{s.paymentMode || "Bank Transfer"}</p>
                             <p className="text-[10px] font-mono">{s.referenceNumber || "No reference ID"}</p>
-                            <p className="text-[9px] text-slate-400">{new Date(s.paymentDate).toLocaleDateString()}</p>
+                            <p className="text-[9px] text-slate-400">{formatSafeDate(s.paymentDate, s.updatedAt || s.createdAt)}</p>
                           </>
                         ) : (
                           <p className="italic text-slate-400">Pending clearance</p>

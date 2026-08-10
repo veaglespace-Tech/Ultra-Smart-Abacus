@@ -103,6 +103,24 @@ export const feeService = {
       fee.dueDate = parsedDueDate;
     }
 
+    if (Number(paidAmount) > 0) {
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      const receiptNumber = `REC-${dateStr}-${rand}`;
+
+      await prisma.feePayment.create({
+        data: {
+          feeId: fee.id,
+          amount: Number(paidAmount),
+          paymentMode: "Cash / Direct",
+          referenceNumber: `INIT-${fee.id}`,
+          remarks: "Initial Fee Payment upon Enrollment",
+          receivedBy: Number(franchiseId),
+          receiptNumber,
+        },
+      }).catch((err) => console.warn("Failed creating initial FeePayment log:", err.message));
+    }
+
     return fee;
   },
 
@@ -150,6 +168,9 @@ export const feeService = {
           student: true,
           batch: true,
           franchise: true,
+          payments: {
+            orderBy: { createdAt: "desc" },
+          },
         },
       }),
       prisma.fee.count({ where }),
@@ -158,10 +179,20 @@ export const feeService = {
 
     const dueDateMap = new Map((rawDueDates || []).map(r => [Number(r.id), r.dueDate || r.due_date || r.duedate || r.DueDate]));
 
-    const enrichedFees = fees.map(f => ({
-      ...f,
-      dueDate: dueDateMap.get(Number(f.id)) || f.dueDate || f.createdAt
-    }));
+    const enrichedFees = fees.map(f => {
+      let dDate = dueDateMap.get(Number(f.id)) || f.dueDate;
+      if (!dDate && f.createdAt) {
+        const fallbackDate = new Date(f.createdAt);
+        if (!isNaN(fallbackDate.getTime())) {
+          fallbackDate.setDate(fallbackDate.getDate() + 30);
+          dDate = fallbackDate;
+        }
+      }
+      return {
+        ...f,
+        dueDate: dDate || f.createdAt
+      };
+    });
 
     return {
       fees: enrichedFees,
@@ -257,6 +288,25 @@ export const feeService = {
       const formattedIso = parsedDueDate.toISOString().slice(0, 19).replace('T', ' ');
       await prisma.$executeRawUnsafe(`UPDATE Fee SET dueDate = '${formattedIso}' WHERE id = ${Number(id)}`).catch(() => { });
       updated.dueDate = parsedDueDate;
+    }
+
+    const paidDiff = newPaidAmount - existingFee.paidAmount;
+    if (paidDiff > 0) {
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      const receiptNumber = `REC-${dateStr}-${rand}`;
+
+      await prisma.feePayment.create({
+        data: {
+          feeId: existingFee.id,
+          amount: paidDiff,
+          paymentMode: "Cash / Direct",
+          referenceNumber: `UPD-${existingFee.id}`,
+          remarks: "Fee Payment Adjustment",
+          receivedBy: Number(existingFee.franchiseId || 1),
+          receiptNumber,
+        },
+      }).catch((err) => console.warn("Failed creating adjustment FeePayment log:", err.message));
     }
 
     return updated;

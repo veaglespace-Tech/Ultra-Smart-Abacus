@@ -48,15 +48,22 @@ export default function FranchiseFees() {
         paidAmount: Number(fee.paidAmount || 0),
         pendingAmount: Number(fee.dueAmount || 0),
         dueDate: (() => {
-          const rawDate = (fee.dueDate && fee.dueDate !== "—" && fee.dueDate !== "null") ? fee.dueDate : (fee.createdAt || fee.updatedAt);
-          if (!rawDate) return "—";
-          try {
-            const d = new Date(rawDate);
-            if (isNaN(d.getTime())) return "—";
-            return d.toISOString().split("T")[0];
-          } catch (e) {
-            return "—";
+          let val = fee.dueDate;
+          if (!val || String(val).trim() === "" || String(val).includes("—") || (String(val).includes("-") && String(val).trim().length <= 1) || val === "null") {
+            val = null;
           }
+          if (val) {
+            const d = new Date(val);
+            if (!isNaN(d.getTime())) return d.toISOString().split("T")[0];
+          }
+          if (fee.createdAt) {
+            const d = new Date(fee.createdAt);
+            if (!isNaN(d.getTime())) {
+              d.setDate(d.getDate() + 30);
+              return d.toISOString().split("T")[0];
+            }
+          }
+          return "N/A";
         })(),
         status: fee.status,
         receiptNumber: fee.receiptNumber,
@@ -199,11 +206,32 @@ export default function FranchiseFees() {
 
   const handleRecordInstallment = async () => {
     if (!selectedRow) return;
-    const amount = window.prompt(`Enter installment amount for ${selectedRow.student}`);
-    if (!amount) return;
+    const remainingDue = Number(selectedRow.pendingAmount || 0);
+    if (remainingDue <= 0) {
+      alert(`Fee record for ${selectedRow.student} is already fully paid (Remaining Due: ₹0).`);
+      return;
+    }
+    const amountStr = window.prompt(`Enter installment amount for ${selectedRow.student} (Max: ₹${remainingDue}):`, remainingDue.toString());
+    if (!amountStr) return;
+    const amount = Number(amountStr);
+    if (isNaN(amount) || amount <= 0) {
+      alert("Please enter a valid payment amount greater than ₹0.");
+      return;
+    }
+    if (amount > remainingDue) {
+      alert(`Payment amount (₹${amount}) exceeds the remaining due amount (₹${remainingDue}).`);
+      return;
+    }
     try {
-      await api.franchise.recordPayment(selectedRow.id, { amount: Number(amount), paymentMethod: "UPI", notes: "Installment received" });
-      setSelectedRow({ ...selectedRow, status: "PARTIAL" });
+      await api.franchise.recordPayment(selectedRow.id, { amount, paymentMethod: "UPI", notes: "Installment received" });
+      const newPaid = (selectedRow.paidAmount || 0) + amount;
+      const newPending = Math.max(0, (selectedRow.totalAmount || 0) - newPaid);
+      setSelectedRow({ 
+        ...selectedRow, 
+        paidAmount: newPaid, 
+        pendingAmount: newPending, 
+        status: newPending === 0 ? "PAID" : "PARTIAL" 
+      });
       fetchFees();
     } catch (error) {
       console.error(error);

@@ -175,8 +175,8 @@ export const examService = {
         await prisma.$executeRawUnsafe(`ALTER TABLE \`Exam\` ADD COLUMN \`examCode\` VARCHAR(191) NULL;`);
       } catch (alterErr) {}
 
-      const nowStr = new Date().toISOString();
-      const dateStr = validDate.toISOString();
+      const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const dateStr = validDate.toISOString().slice(0, 19).replace('T', ' ');
       try {
         await prisma.$executeRawUnsafe(
           `INSERT INTO \`Exam\` (\`title\`, \`examCode\`, \`curriculumTrack\`, \`examType\`, \`status\`, \`examDate\`, \`startTime\`, \`duration\`, \`totalMarks\`, \`passingMarks\`, \`teacherId\`, \`batchId\`, \`createdAt\`, \`updatedAt\`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,

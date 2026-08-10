@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  FileSpreadsheet, Plus, Search, Calendar, 
+  FileSpreadsheet, Plus, Search, Calendar, Clock,
   Trash2, Edit, Award, UserCheck, X, CheckSquare 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -27,21 +27,26 @@ export default function TeacherExamsPage() {
     level: 'Level 1 Core',
     date: new Date().toISOString().split('T')[0],
     time: '10:00 AM',
+    duration: 60,
     maxMarks: 100,
   });
 
   const [activeMarksExam, setActiveMarksExam] = useState(null);
   const [tempMarks, setTempMarks] = useState({});
 
-function safeFormatDate(rawDate, fallback = "") {
-  if (!rawDate) return fallback;
-  try {
-    const d = new Date(rawDate);
-    if (isNaN(d.getTime())) return fallback;
-    return d.toISOString().split("T")[0];
-  } catch (e) {
-    return fallback;
-  }
+function safeFormatDate(rawDate, secondaryRawDate = null) {
+  const tryParse = (val) => {
+    if (!val) return null;
+    try {
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) {
+        return d.toISOString().split("T")[0];
+      }
+    } catch (e) {}
+    return null;
+  };
+
+  return tryParse(rawDate) || tryParse(secondaryRawDate) || new Date().toISOString().split("T")[0];
 }
 
 function safeFormatISO(rawDate) {
@@ -98,8 +103,9 @@ function safeFormatISO(rawDate) {
             batch: ex.batch?.name || 'Batch',
             batchId: ex.batchId,
             level: ex.curriculumTrack || 'Level 1 Core',
-            date: safeFormatDate(ex.examDate, ''),
+            date: safeFormatDate(ex.examDate, ex.createdAt),
             time: ex.startTime || '10:00 AM',
+            duration: ex.duration || 60,
             maxMarks: ex.totalMarks,
             creator: ex.teacher?.name || 'Teacher',
             status: ex.status === 'PUBLISHED' ? 'Published' : ex.status === 'RESULT_PENDING' ? 'Pending Review' : 'Scheduled',
@@ -143,6 +149,7 @@ function safeFormatISO(rawDate) {
       level: 'Level 1 Core',
       date: new Date().toISOString().split('T')[0],
       time: '10:00 AM',
+      duration: 60,
       maxMarks: 100,
     });
     setIsCreateModalOpen(true);
@@ -170,7 +177,7 @@ function safeFormatISO(rawDate) {
         examType: 'WEEKLY',
         examDate: formattedDate,
         startTime: formData.time,
-        duration: 60,
+        duration: Number(formData.duration) || 60,
         totalMarks: Number(formData.maxMarks),
         passingMarks: Math.round(Number(formData.maxMarks) * 0.4),
         batchId: selectedBatchId,
@@ -191,6 +198,7 @@ function safeFormatISO(rawDate) {
             level: createdObj.curriculumTrack || formData.level,
             date: safeFormatDate(createdObj.examDate, formData.date || ''),
             time: createdObj.startTime || formData.time,
+            duration: createdObj.duration || Number(formData.duration) || 60,
             maxMarks: createdObj.totalMarks || formData.maxMarks,
             creator: createdObj.teacher?.name || 'Teacher',
             status: 'Scheduled',
@@ -368,6 +376,10 @@ function safeFormatISO(rawDate) {
                         <Calendar size={12} className="text-slate-400" />
                         <span>{exam.date} @ {exam.time}</span>
                       </div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5 flex items-center gap-1">
+                        <Clock size={10} className="text-slate-400" />
+                        <span>{exam.duration || 60} mins</span>
+                      </div>
                     </td>
 
                     {/* Actions */}
@@ -467,7 +479,7 @@ function safeFormatISO(rawDate) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Date</label>
                   <input 
@@ -476,6 +488,18 @@ function safeFormatISO(rawDate) {
                     value={formData.date}
                     onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-accent text-xs text-slate-800 dark:text-slate-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Duration (mins)</label>
+                  <input 
+                    type="number" 
+                    required
+                    min="1"
+                    placeholder="60"
+                    value={formData.duration}
+                    onChange={(e) => setFormData(prev => ({ ...prev, duration: Number(e.target.value) || '' }))}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-accent text-xs text-slate-855 dark:text-slate-100"
                   />
                 </div>
                 <div>
