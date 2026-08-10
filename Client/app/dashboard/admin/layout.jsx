@@ -9,7 +9,7 @@ import { AdminDataProvider, useAdminData } from "./AdminContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sun, Moon, LayoutDashboard, Users, Grid, Box,
-  Bell, BarChart3, Settings, LogOut, Menu, X, Search
+  Bell, BarChart3, Settings, LogOut, Menu, X, Search, User
 } from "lucide-react";
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,6 +29,7 @@ function AdminLayoutInner({ children }) {
   const { logout, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [userProfileOpen, setUserProfileOpen] = useState(false);
   const [isClientMounted, setIsClientMounted] = useState(false);
   const { notifications, unreadCount } = useSelector((state) => state.notification);
 
@@ -407,18 +408,76 @@ function AdminLayoutInner({ children }) {
               )}
             </button>
 
-            {/* Profile Avatar */}
-            <Link href="/dashboard/admin" className="flex items-center gap-2 hover:opacity-90">
-              <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 font-black flex items-center justify-center text-xs shadow-sm shadow-orange-500/10">
-                {adminInitials}
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">
-                  {adminName}
-                </p>
-                <span className="text-[9px] text-slate-400 dark:text-slate-450 font-bold">online</span>
-              </div>
-            </Link>
+            {/* Profile Avatar & Interactive Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setUserProfileOpen(!userProfileOpen)}
+                className="flex items-center gap-2 hover:opacity-90 cursor-pointer text-left focus:outline-none"
+              >
+                <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 font-black flex items-center justify-center text-xs shadow-sm shadow-orange-500/10 overflow-hidden shrink-0">
+                  {user?.profilePhoto ? (
+                    <img src={user.profilePhoto} alt={adminName} className="w-full h-full object-cover" />
+                  ) : (
+                    adminInitials
+                  )}
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">
+                    {adminName}
+                  </p>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-450 font-bold">online</span>
+                </div>
+              </button>
+
+              {/* Admin Profile Header Dropdown Menu */}
+              {userProfileOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setUserProfileOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-[#1a1035] border border-slate-200 dark:border-[#3d2a88]/40 rounded-2xl p-3 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center gap-3 p-2 pb-3 border-b border-slate-100 dark:border-[#3d2a88]/30">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2D1B69] to-[#FF6B2B] text-white font-black flex items-center justify-center text-xs shadow-md overflow-hidden shrink-0">
+                        {user?.profilePhoto ? (
+                          <img src={user.profilePhoto} alt={adminName} className="w-full h-full object-cover" />
+                        ) : (
+                          adminInitials
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{adminName}</h4>
+                        {user?.email && <p className="text-[10px] text-slate-400 truncate">{user.email}</p>}
+                        <span className="inline-block mt-0.5 px-2 py-0.5 text-[9px] font-extrabold uppercase rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400">
+                          Super Admin
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="py-2 space-y-1">
+                      <Link
+                        href="/dashboard/admin/settings"
+                        onClick={() => setUserProfileOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2D1B69]/40 rounded-xl transition-colors"
+                      >
+                        <User size={14} className="text-orange-500" />
+                        <span>My Profile</span>
+                      </Link>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-[#3d2a88]/30">
+                      <button
+                        onClick={() => {
+                          setUserProfileOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-2 text-xs font-bold text-rose-500 dark:text-rose-455 px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors text-left cursor-pointer"
+                      >
+                        <LogOut size={14} />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
 

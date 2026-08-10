@@ -79,6 +79,7 @@ export default function FranchiseOverview() {
 
   // Fetch dynamic metrics from backend APIs
   const fetchDashboardData = useCallback(async (showRefreshingSpinner = false) => {
+    const startTime = Date.now();
     if (showRefreshingSpinner) setIsRefreshing(true);
     try {
       const [studentsRes, teachersRes, feesRes, inventoryRes] = await Promise.allSettled([
@@ -173,7 +174,15 @@ export default function FranchiseOverview() {
       console.error("Failed to load franchise dynamic metrics:", err);
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
+      if (showRefreshingSpinner) {
+        const elapsedTime = Date.now() - startTime;
+        const remainingDelay = Math.max(0, 800 - elapsedTime);
+        setTimeout(() => {
+          setIsRefreshing(false);
+        }, remainingDelay);
+      } else {
+        setIsRefreshing(false);
+      }
     }
   }, []);
 
@@ -256,10 +265,17 @@ export default function FranchiseOverview() {
           <button
             onClick={() => fetchDashboardData(true)}
             disabled={isRefreshing}
-            className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-[#1e1445] border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/40 px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+            className="group text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-[#1e1445] border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/40 px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer disabled:opacity-50"
             title="Refresh metrics live"
           >
-            <RefreshCw size={13} className={isRefreshing ? "animate-spin text-orange-500" : "text-slate-500"} />
+            <RefreshCw 
+              size={14} 
+              className={`transition-transform duration-500 ${
+                isRefreshing 
+                  ? "animate-spin text-orange-500" 
+                  : "text-slate-500 group-hover:rotate-180"
+              }`} 
+            />
             <span>{isRefreshing ? "Refreshing..." : "Refresh Stats"}</span>
           </button>
 

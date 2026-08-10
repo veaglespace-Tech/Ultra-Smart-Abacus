@@ -2,13 +2,20 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function StudentPageRedirect() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   
   useEffect(() => {
-    router.push("/dashboard/student");
-  }, [router]);
+    if (loading) return; // Wait for auth state to resolve
+    if (!user || user.role?.toUpperCase() !== "STUDENT") {
+      router.push("/auth/login");
+    } else {
+      router.push("/dashboard/student");
+    }
+  }, [user, loading, router]);
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-[#eceffd] px-4 overflow-hidden font-sans antialiased">

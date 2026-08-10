@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Lock, Mail, AlertTriangle, Eye, EyeOff, ArrowRight, ArrowLeft, Star, Trophy, Users, Brain } from "lucide-react";
@@ -15,7 +15,7 @@ const features = [
 ];
 
 export default function LoginPage() {
-  const { login, user, loading: authLoading } = useAuth();
+  const { login, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -23,10 +23,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (user) redirectByRole(user.role);
-  }, [user]);
 
   const redirectByRole = (role) => {
     if (!role) return;

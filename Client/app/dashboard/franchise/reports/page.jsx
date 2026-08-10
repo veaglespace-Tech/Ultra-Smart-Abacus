@@ -235,10 +235,10 @@ export default function ReportsAnalytics() {
         <div className="flex items-center gap-3 self-start sm:self-center text-xs">
           <button 
             onClick={fetchTelemetryData} 
-            className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="group p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Refresh Telemetry Data"
           >
-            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={14} className={`transition-transform duration-500 ${loading ? "animate-spin text-orange-500" : "group-hover:rotate-180"}`} />
           </button>
 
           <select 

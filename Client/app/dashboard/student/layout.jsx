@@ -26,7 +26,7 @@ function StudentLayoutInner({ children }) {
   const router = useRouter();
   const dispatch = useDispatch();
   const { theme, toggleTheme, mounted } = useTheme();
-  const { logout, user } = useAuth();
+  const { logout, user, loading: authLoading } = useAuth();
   const { profile } = useStudentData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -34,6 +34,14 @@ function StudentLayoutInner({ children }) {
   const [isClientMounted, setIsClientMounted] = useState(false);
 
   const { notifications, unreadCount } = useSelector((state) => state.notification);
+
+  // Auth guard: redirect to login if not authenticated or not a student
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user || user.role?.toUpperCase() !== "STUDENT") {
+      router.push("/auth/login");
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     setIsClientMounted(true);
@@ -90,6 +98,11 @@ function StudentLayoutInner({ children }) {
     : "ST";
   const [userProfileOpen, setUserProfileOpen] = useState(false);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
+
+  // Don't render dashboard content if user is not authenticated / not a student
+  if (authLoading || !user || user.role?.toUpperCase() !== "STUDENT") {
+    return null;
+  }
 
   return (
     <div className="flex h-screen bg-[#FFF8F0] dark:bg-[#150e2a] text-[#1a1035] dark:text-[#f0ebff] font-sans antialiased transition-colors duration-300 w-full overflow-hidden">
