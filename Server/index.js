@@ -1,5 +1,5 @@
 // BigInt JSON serializer initialization (v7)
-// Force Nodemon server module reload (v27)
+// Force Nodemon server module reload (v29)
 BigInt.prototype.toJSON = function () {
   return Number(this);
 };
@@ -23,6 +23,7 @@ import feeRoutes from "./routes/feeRoutes.js";
 import referralRoutes from "./routes/referralRoutes.js";
 import salaryRoutes from "./routes/salaryRoutes.js";
 import examRoutes from "./routes/examRoutes.js";
+import batchRequestRoutes from "./routes/batchRequestRoutes.js";
 import path from "path";
 
 const app = express()
@@ -70,6 +71,7 @@ app.use("/api/franchise", franchiseRoutes)
 app.use("/api/inventory", inventoryRoutes)
 app.use("/api/students", studentRoutes)
 app.use("/api/batches", batchRoutes)
+app.use("/api/batch-requests", batchRequestRoutes);
 app.use("/api/courses", courseRoutes)
 app.use("/api/notifications", notificationRoutes)
 app.use("/api/fees", feeRoutes)

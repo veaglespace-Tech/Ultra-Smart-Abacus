@@ -120,6 +120,13 @@ export const api = {
     delete: (id) => apiHelper.delete(`/batches/${id}`),
     getByCourse: (courseId) => apiHelper.get(`/batches/course/${courseId}`),
   },
+  batchRequests: {
+    create: (data) => apiHelper.post('/batch-requests', data).catch(() => apiHelper.post('/batches/requests', data)),
+    getTeacherRequests: () => apiHelper.get('/batch-requests/teacher').catch(() => apiHelper.get('/batches/requests/teacher')),
+    getFranchiseRequests: () => apiHelper.get('/batch-requests/franchise').catch(() => apiHelper.get('/batches/requests/franchise')),
+    approve: (id, data) => apiHelper.patch(`/batch-requests/${id}/approve`, data || {}).catch(() => apiHelper.patch(`/batches/requests/${id}/approve`, data || {})),
+    reject: (id, data) => apiHelper.patch(`/batch-requests/${id}/reject`, data || {}).catch(() => apiHelper.patch(`/batches/requests/${id}/reject`, data || {})),
+  },
   salary: {
     create: (data) => apiHelper.post('/salary', data),
     update: (id, data) => apiHelper.put(`/salary/${id}`, data),

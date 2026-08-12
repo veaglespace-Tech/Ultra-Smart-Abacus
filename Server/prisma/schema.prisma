@@ -81,6 +81,8 @@ model Teacher {
   attendances Attendance[]
   exams       Exam[]
   salaries    Salary[]
+  batches     Batch[]
+  batchRequests BatchRequest[]
 }
 
 model Franchise {
@@ -105,6 +107,7 @@ model Franchise {
   batches  Batch[]
   inventories Inventory[]
   inventoryTransfers InventoryTransfer[]
+  batchRequests BatchRequest[]
 }
 
 
@@ -250,6 +253,9 @@ model Batch {
 
   maxStudents Int?
 
+  teacherId Int?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+
   notifications Notification[]
 
   students Student[]
@@ -258,9 +264,54 @@ model Batch {
   exams       Exam[]
   fees        Fee[]
 
+  batchRequests BatchRequest[]
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
+}
+
+enum BatchRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model BatchRequest {
+  id              Int                @id @default(autoincrement())
+
+  teacherId       Int
+  teacher         Teacher            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  franchiseId     Int
+  franchise       Franchise          @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+
+  batchName       String
+
+  level           String             @default("Level 1")
+
+  timing          String
+
+  mode            String             @default("Offline")
+
+  maxStudents     Int                @default(15)
+
+  remarks         String?            @db.Text
+
+  status          BatchRequestStatus @default(PENDING)
+
+  rejectionReason String?            @db.Text
+
+  batchId         Int?
+  batch           Batch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime           @default(now())
+
+  updatedAt       DateTime           @updatedAt
+
+  @@index([teacherId])
+  @@index([franchiseId])
+  @@index([status])
 }
 
 enum NotificationType {

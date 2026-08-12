@@ -45,6 +45,7 @@ export default function TeacherOverviewPage() {
   const { user } = useAuth();
   const [classStatus, setClassStatus] = useState({});
   const [batches, setBatches] = useState([]);
+  const [batchRequests, setBatchRequests] = useState([]);
   const [salaries, setSalaries] = useState([]);
   const [attendanceLogs, setAttendanceLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,16 @@ export default function TeacherOverviewPage() {
         const batchRes = await api.batches.getAll().catch(() => null);
         if (batchRes && batchRes.success && batchRes.data) {
           setBatches(batchRes.data);
+        }
+
+        // Load teacher batch requests
+        try {
+          const reqRes = await api.batchRequests.getTeacherRequests();
+          if (reqRes && reqRes.success && reqRes.data) {
+            setBatchRequests(reqRes.data);
+          }
+        } catch (rErr) {
+          console.error("Failed to load batch requests:", rErr);
         }
 
         // Load salary history
