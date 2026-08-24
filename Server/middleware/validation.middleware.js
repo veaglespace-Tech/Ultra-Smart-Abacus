@@ -5,19 +5,32 @@ const validate = (req, res, next) => {
     const errors = validationResult(req);
 
     // check if validation errors exist
-    if (!errors.isEmpty()) {
+    // if (!errors.isEmpty()) {
 
-        return res.status(400).json({
-            success: false,
-            message: "Validation Error",
-            errors: errors.array().map((error) => ({
-                field: error.path,
-                message: error.msg,
-            })),
-        });
-    }
+    //     return res.status(400).json({
+    //         success: false,
+    //         message: "Validation Error",
+    //         errors: errors.array().map((error) => ({
+    //             field: error.path,
+    //             message: error.msg,
+    //         })),
+    //     });
+    // }
+if (!errors.isEmpty()) {
 
-    next();
+    console.log("Validation Errors:");
+    console.log(errors.array());
+
+    return res.status(400).json({
+        success: false,
+        message: "Validation Error",
+        errors: errors.array().map((error) => ({
+            field: error.path,
+            message: error.msg,
+        })),
+    });
+}
+next();
 };
 
 export default validate;

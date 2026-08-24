@@ -1,7 +1,7 @@
 // src/app/dashboard/teacher/settings/page.jsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/context/ThemeContext";
 import { Sun, Moon, Bell, Shield, Eye, Globe, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -17,18 +17,40 @@ export default function TeacherSettingsPage() {
     marketing: false
   });
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("teacher_notif_settings");
+      if (saved) {
+        try {
+          setNotifs(JSON.parse(saved));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }, []);
+
   const [savingSettings, setSavingSettings] = useState(false);
 
   const handleToggleNotif = (key) => {
-    setNotifs(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+    setNotifs(prev => {
+      const updated = {
+        ...prev,
+        [key]: !prev[key]
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("teacher_notif_settings", JSON.stringify(updated));
+      }
+      return updated;
+    });
   };
 
   const handleSaveSettings = (e) => {
     e.preventDefault();
     setSavingSettings(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("teacher_notif_settings", JSON.stringify(notifs));
+    }
     setTimeout(() => {
       setSavingSettings(false);
       confetti({
@@ -37,7 +59,7 @@ export default function TeacherSettingsPage() {
         origin: { y: 0.8 }
       });
       alert("Faculty preferences saved successfully.");
-    }, 1000);
+    }, 600);
   };
 
   return (
@@ -46,7 +68,9 @@ export default function TeacherSettingsPage() {
       {/* HEADER SECTION */}
       <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">SETTINGS & PREFERENCES</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">SETTINGS & PREFERENCES</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-455 mt-0.5">Configure appearance theme, primary system language, and alarm triggers.</p>
         </div>
       </div>
@@ -64,7 +88,7 @@ export default function TeacherSettingsPage() {
               onClick={() => { if (theme === "dark") toggleTheme(); }}
               className={`flex-1 p-4 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
                 theme === 'light'
-                  ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700 font-bold dark:bg-indigo-950/20'
+                  ? 'border-accent bg-accent/5 text-accent font-bold'
                   : 'border-slate-200 dark:border-slate-800 text-slate-655 hover:bg-slate-50'
               }`}
             >
@@ -72,14 +96,14 @@ export default function TeacherSettingsPage() {
                 <Sun size={15} />
                 <span>Light Mode</span>
               </div>
-              {theme === 'light' && <span className="w-2 h-2 rounded-full bg-indigo-600"></span>}
+              {theme === 'light' && <span className="w-2 h-2 rounded-full bg-accent"></span>}
             </button>
             
             <button
               onClick={() => { if (theme === "light") toggleTheme(); }}
               className={`flex-1 p-4 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
                 theme === 'dark'
-                  ? 'border-indigo-500 bg-indigo-950/20 text-indigo-400 font-bold'
+                  ? 'border-accent bg-accent/10 text-accent font-bold'
                   : 'border-slate-200 dark:border-slate-850 text-slate-655 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40'
               }`}
             >
@@ -87,28 +111,12 @@ export default function TeacherSettingsPage() {
                 <Moon size={15} />
                 <span>Dark Mode</span>
               </div>
-              {theme === 'dark' && <span className="w-2 h-2 rounded-full bg-indigo-400"></span>}
+              {theme === 'dark' && <span className="w-2 h-2 rounded-full bg-accent"></span>}
             </button>
           </div>
         </div>
 
-        {/* SYSTEM LANGUAGE */}
-        <div className="space-y-3 pb-5 border-b border-slate-100 dark:border-slate-850">
-          <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-            <Globe size={14} />
-            <span>Primary Language</span>
-          </h3>
-          <select 
-            value={lang} 
-            onChange={(e) => setLang(e.target.value)}
-            className="w-full sm:w-60 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 text-xs font-bold rounded-xl p-3 focus:outline-none focus:border-indigo-500 cursor-pointer text-slate-700 dark:text-slate-200"
-          >
-            <option value="en">English (US)</option>
-            <option value="es">Español (Spanish)</option>
-            <option value="fr">Français (French)</option>
-            <option value="hi">हिन्दी (Hindi)</option>
-          </select>
-        </div>
+        
 
         {/* ALERTS PREFERENCES */}
         <div className="space-y-3.5 pb-5">
@@ -127,7 +135,7 @@ export default function TeacherSettingsPage() {
                 type="checkbox" 
                 checked={notifs.exams}
                 onChange={() => handleToggleNotif('exams')}
-                className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                className="w-4 h-4 accent-accent rounded cursor-pointer"
               />
             </label>
 
@@ -140,7 +148,7 @@ export default function TeacherSettingsPage() {
                 type="checkbox" 
                 checked={notifs.attendance}
                 onChange={() => handleToggleNotif('attendance')}
-                className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                className="w-4 h-4 accent-accent rounded cursor-pointer"
               />
             </label>
 
@@ -153,7 +161,7 @@ export default function TeacherSettingsPage() {
                 type="checkbox" 
                 checked={notifs.payments}
                 onChange={() => handleToggleNotif('payments')}
-                className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                className="w-4 h-4 accent-accent rounded cursor-pointer"
               />
             </label>
           </div>
@@ -164,7 +172,7 @@ export default function TeacherSettingsPage() {
           <button 
             onClick={handleSaveSettings}
             disabled={savingSettings}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10"
+            className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-[#FF6B2B]/25 btn-shine"
           >
             {savingSettings ? 'Saving Settings...' : 'Save Settings'}
           </button>

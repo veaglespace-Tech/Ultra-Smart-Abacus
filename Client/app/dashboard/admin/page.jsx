@@ -3,19 +3,58 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useAdminData } from "./AdminContext";
-import { Share2, Copy, Check } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { 
+  Users, Grid, Box, Settings, Share2, Copy, Check, ShieldAlert,
+  Calendar, Activity, Sparkles, ChevronRight, GraduationCap, CheckCircle2,
+  Clock, Loader2
+} from "lucide-react";
+
+function MetricCard({ title, value, subtext, icon: Icon, color, trend }) {
+  return (
+    <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] card-hover hover:translate-y-[-6px] hover:shadow-[0_20px_40px_rgba(45,27,105,0.12)] hover:border-orange-500/35 transition-all duration-300 flex justify-between items-start relative overflow-hidden group">
+      <div className="space-y-2 relative z-10">
+        <p className="text-[10px] text-slate-500 dark:text-slate-455 uppercase font-black tracking-widest">{title}</p>
+        <div className="flex items-baseline gap-2">
+          <h3 className="text-2xl font-black text-[#2D1B69] dark:text-white tracking-tight">{value}</h3>
+          {trend && (
+            <span className="inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+              {trend}
+            </span>
+          )}
+        </div>
+        <p className="text-[11px] text-slate-550 dark:text-slate-400 font-semibold">{subtext}</p>
+      </div>
+      <div className={`p-3 rounded-xl ${color} relative z-10 transition-transform duration-300 group-hover:scale-110`}>
+        <Icon size={18} />
+      </div>
+      <div className="absolute -right-6 -bottom-6 w-16 h-16 bg-gradient-to-br from-orange-500/5 to-transparent rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
+    </div>
+  );
+}
 
 export default function AdminOverview() {
+  const { user } = useAuth();
   const {
     totalStudents,
     activeFranchisesCount,
     activeTeachersCount,
     lowStockItemsCount,
     users,
-    franchises
+    franchises,
+    loading
   } = useAdminData();
 
   const [copiedRole, setCopiedRole] = useState("");
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 className="animate-spin text-accent" size={32} />
+        <p className="text-xs text-slate-555 dark:text-slate-455 font-bold uppercase tracking-wider">Syncing admin telemetry...</p>
+      </div>
+    );
+  }
   
   const copyInviteLink = (role) => {
     const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3001";
@@ -25,186 +64,193 @@ export default function AdminOverview() {
     setTimeout(() => setCopiedRole(""), 2000);
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const stats = [
+    {
+      title: "Total Students",
+      value: totalStudents.toLocaleString(),
+      subtext: "+12% this month",
+      icon: GraduationCap,
+      color: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-cream",
+      trend: null
+    },
+    {
+      title: "Active Franchises",
+      value: activeFranchisesCount.toString(),
+      subtext: `${franchises.length} total branches`,
+      icon: Grid,
+      color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
+      trend: null
+    },
+    {
+      title: "Certified Instructors",
+      value: activeTeachersCount.toString(),
+      subtext: `${users ? users.filter(u => u.role === "Teacher").length : 0} registered`,
+      icon: Users,
+      color: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
+      trend: null
+    },
+    {
+      title: "Low Stock Items",
+      value: lowStockItemsCount.toString(),
+      subtext: "Action required in inventory",
+      icon: Box,
+      color: "bg-rose-50 text-rose-650 dark:bg-rose-950/40 dark:text-rose-450",
+      trend: null
+    }
+  ];
+
   return (
     <div className="space-y-6">
 
       {/* Info alert confirming security configurations */}
-      <div className="rounded-2xl border border-blue-200 bg-blue-50 dark:border-blue-500/20 dark:bg-blue-500/10 px-5 py-4 flex items-start gap-3.5 shadow-sm dark:shadow-[inset_0_1px_3px_rgba(255,255,255,0.05)] animate-fade-in">
-        <div className="p-2 rounded-xl bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/20">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <div className="rounded-3xl border border-orange-200 bg-[#FFF8F0]/40 dark:border-[#3d2a88]/30 dark:bg-[#1a1035]/40 px-5 py-4 flex items-start gap-3.5 shadow-sm animate-fade-in">
+        <div className="p-2 rounded-xl bg-orange-50 text-orange-600 border border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900/50">
+          <ShieldAlert size={20} />
         </div>
         <div>
-          <h4 className="text-sm font-extrabold text-blue-900 dark:text-blue-100">
+          <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
             Restricted Signup Security Policy Active
           </h4>
-          <p className="text-xs text-blue-800 dark:text-slate-300 mt-1 leading-relaxed">
-            Public registration has been successfully disabled. Accounts can only be created by system administrators through the <strong>User Management</strong> tab.
+          <p className="text-[11px] text-slate-550 dark:text-slate-400 mt-1 leading-relaxed">
+            Public registration has been successfully disabled. Accounts can only be created by system administrators through the <strong className="text-[#FF6B2B]">User Management</strong> tab.
           </p>
         </div>
       </div>
 
-      {/* KPI Stat Grid */}
+      {/* Header Banner */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
+        <div>
+          <h2 className="text-xl font-black text-slate-900 dark:text-slate-55 tracking-tight">
+            {getGreeting()}, <span className="gradient-text">{user?.name || "Administrator"}</span>
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-455 mt-0.5">Observe system-wide metrics, franchise lists, and administrative log streams below.</p>
+        </div>
+        <div className="text-xs font-bold text-[#2D1B69] dark:text-[#f0ebff] bg-primary/10 dark:bg-[#2D1B69]/50 px-3 py-1.5 rounded-xl border border-primary/20 dark:border-[#3d2a88]/40">
+          ⚙️ ERP System Node: Active
+        </div>
+      </div>
+
+      {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {[
-          {
-            title: "Total Students",
-            value: totalStudents.toLocaleString(),
-            subtitle: "+12% this month",
-            icon: "M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 017.382 5.84c-1.84.532-3.613 1.185-5.291 1.956m-8.351 0a54.12 54.12 0 018.35 0M12 10.147v-4.14",
-            border: "border-blue-500/20 dark:border-blue-500/15"
-          },
-          {
-            title: "Active Franchises",
-            value: activeFranchisesCount,
-            subtitle: `${franchises.length} total branches`,
-            icon: "M2.25 21h19.5m-18-10.5h16.5M2.25 9h19.5M2.25 15h19.5M2.25 18h19.5M3 3h18M3 6h18",
-            border: "border-amber-500/20 dark:border-amber-500/15"
-          },
-          {
-            title: "Certified Instructors",
-            value: activeTeachersCount,
-            subtitle: `${users.filter(u => u.role === "Teacher").length} registered`,
-            icon: "M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0110.089 20",
-            border: "border-rose-500/20 dark:border-rose-500/15"
-          },
-          {
-            title: "Low Stock Items",
-            value: lowStockItemsCount,
-            subtitle: "Action required in inventory",
-            icon: "M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z",
-            border: lowStockItemsCount > 0 ? "border-rose-500/50 text-rose-600 dark:text-rose-300 animate-pulse" : "border-slate-200 dark:border-slate-500/15"
-          }
-        ].map((stat, i) => (
-          <div key={i} className={`rounded-2xl border bg-white p-5 shadow-sm dark:bg-white/[0.03] dark:shadow-md backdrop-blur-md transition-all hover:bg-slate-50/55 dark:hover:bg-white/[0.05] hover:scale-[1.02] ${stat.border}`}>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{stat.title}</span>
-              <svg className="w-5 h-5 text-slate-400 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d={stat.icon} />
-              </svg>
-            </div>
-            <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-3 font-mono">
-              {stat.value}
-            </div>
-            <span className="text-[10px] text-slate-450 dark:text-slate-500 font-semibold block mt-1">
-              {stat.subtitle}
-            </span>
-          </div>
+        {stats.map((stat, idx) => (
+          <MetricCard key={idx} {...stat} />
         ))}
       </div>
 
-      {/* Quick Actions & Recent Logins */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Quick Actions & Recent Logins Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
-        {/* Quick actions panel */}
-        <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 p-6 backdrop-blur-md shadow-sm dark:shadow-none">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-wide uppercase border-b border-slate-100 dark:border-slate-850 pb-3 mb-4">
-            Quick Operations
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <Link
-              href="/dashboard/admin/users?add=true"
-              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-850/60 text-left transition-all duration-300 cursor-pointer block"
-            >
-              <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 dark:border-blue-500/20 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-3">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-9 1.5h.008v.008H7.5V12zm.008 3h.008v.008H7.5v-.008zm0 3h.008v.008H7.5v-.008zM12 7.5h.008v.008H12V7.5zm.008 3h.008v.008H12v-.008zm0 3h.008v.008H12v-.008zm0 3h.008v.008H12v-.008z" />
-                </svg>
-              </div>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Create Account</span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-400 block mt-0.5">Add teacher/student</span>
-            </Link>
+        {/* Left Column: Quick Actions & Referrals (5 columns) */}
+        <div className="lg:col-span-5 space-y-5 flex flex-col justify-between">
+          
+          {/* Quick operations panel */}
+          <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h4 className="text-xs font-black uppercase text-slate-555 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
+                <Sparkles size={14} className="text-orange-500" />
+                <span>Quick Operations</span>
+              </h4>
+            </div>
 
-            <Link
-              href="/dashboard/admin/franchise?add=true"
-              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-850/60 text-left transition-all duration-300 cursor-pointer block"
-            >
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 dark:border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-              </div>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Add Franchise</span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-400 block mt-0.5">Approve new branch</span>
-            </Link>
-
-            <Link
-              href="/dashboard/admin/inventory"
-              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-850/60 text-left transition-all duration-300 cursor-pointer block"
-            >
-              <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/30 dark:border-rose-500/20 flex items-center justify-center text-rose-500 dark:text-rose-400 mb-3">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Check Stock</span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-400 block mt-0.5">{lowStockItemsCount} items at alert limit</span>
-            </Link>
-
-            <Link
-              href="/dashboard/admin/settings"
-              className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-100/50 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:bg-slate-850/60 text-left transition-all duration-300 cursor-pointer block"
-            >
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 dark:border-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400 mb-3">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.34 15.84c-.68-.68-.86-1.72-.4-2.59M13.66 8.16c.68.68.86 1.72.4 2.59M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87" />
-                </svg>
-              </div>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">Access Settings</span>
-            </Link>
+            <div className="grid grid-cols-1 gap-2.5">
+              {[
+                { href: "/dashboard/admin/users?add=true", title: "Create Account", desc: "Add new teacher or student profile", icon: Users, color: "text-blue-500 bg-blue-50 dark:bg-blue-950/40" },
+                { href: "/dashboard/admin/franchise?add=true", title: "Add Franchise", desc: "Approve and setup new branch", icon: Grid, color: "text-amber-600 bg-amber-50 dark:bg-amber-950/40" },
+                { href: "/dashboard/admin/inventory", title: "Check Stock", desc: `${lowStockItemsCount} items at alert limit`, icon: Box, color: "text-rose-500 bg-rose-50 dark:bg-rose-950/40" },
+                { href: "/dashboard/admin/settings", title: "System Settings", desc: "Access ERP configurations", icon: Settings, color: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40" }
+              ].map((link, idx) => {
+                const Icon = link.icon;
+                return (
+                  <Link 
+                    key={idx} 
+                    href={link.href} 
+                    className="p-3 rounded-2xl bg-slate-50/50 dark:bg-[#150e2a]/55 border border-slate-150/60 dark:border-slate-800 hover:bg-[#FFF8F0]/30 dark:hover:bg-[#1e1445]/50 transition-all flex items-center justify-between group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-xl ${link.color} flex items-center justify-center shrink-0`}>
+                        <Icon size={16} />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-orange-500 transition-colors">
+                          {link.title}
+                        </span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 block mt-0.5">
+                          {link.desc}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight size={14} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
           {/* Share Referral Links */}
-          <div className="mt-6 border-t border-slate-100 dark:border-white/5 pt-5">
-            <h4 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <Share2 className="w-4 h-4 text-blue-500" />
-              Referral / Invite Links
-            </h4>
+          <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h4 className="text-xs font-black uppercase text-slate-555 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
+                <Share2 size={14} className="text-indigo-650" />
+                <span>Referral / Invite Links</span>
+              </h4>
+            </div>
+            
             <div className="space-y-2">
               {[
                 { name: "Student", val: "STUDENT" },
                 { name: "Teacher", val: "TEACHER" },
                 { name: "Franchise", val: "FRANCHISE" },
               ].map((roleObj) => (
-                <div key={roleObj.val} className="flex items-center justify-between p-2 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.01]">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Invite {roleObj.name}</span>
+                <div key={roleObj.val} className="flex items-center justify-between p-2 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#150e2a]/55">
+                  <span className="text-xs font-bold text-slate-655 dark:text-slate-300">Invite {roleObj.name}</span>
                   <button
                     type="button"
                     onClick={() => copyInviteLink(roleObj.val)}
-                    className="p-1.5 px-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer border-0"
+                    className="p-1.5 px-3.5 rounded-xl bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-90 text-white text-[10px] font-black transition-all flex items-center gap-1 cursor-pointer border-0 shadow-sm"
                   >
-                    {copiedRole === roleObj.val ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    {copiedRole === roleObj.val ? <Check size={12} /> : <Copy size={12} />}
                     {copiedRole === roleObj.val ? "Copied" : "Copy Link"}
                   </button>
                 </div>
               ))}
             </div>
           </div>
+
         </div>
 
-        {/* Audit trail / Recent updates log */}
-        <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/40 p-6 backdrop-blur-md shadow-sm dark:shadow-none">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-wide uppercase border-b border-slate-100 dark:border-white/5 pb-3 mb-4 flex items-center justify-between">
-            <span>Administrative Logs</span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 tracking-normal font-mono">Real-time Feed</span>
-          </h3>
-          <div className="space-y-3.5 max-h-[220px] overflow-y-auto pr-1">
+        {/* Right Column: Administrative Logs (7 columns) */}
+        <div className="lg:col-span-7 bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-5 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)] space-y-4">
+          <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800 mb-2">
+            <h4 className="text-xs font-black uppercase text-slate-555 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
+              <Activity size={14} className="text-orange-500 animate-pulse" />
+              <span>Administrative Logs</span>
+            </h4>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">Real-time Feed</span>
+          </div>
+
+          <div className="space-y-3.5 max-h-[380px] overflow-y-auto pr-1 divide-y divide-slate-100 dark:divide-slate-800">
             {[
-              { action: "Registration Restricted", user: "Saideep (Admin)", details: "Public account creation disabled in configurations", time: "10 mins ago", badge: "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20" },
-              { action: "Stock Adjusted", user: "Delhi Central", details: "Standard Student Abacus increased by +100 units", time: "1 hour ago", badge: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20" },
-              { action: "Account Registered", user: "Saideep (Admin)", details: "Created Franchise profile for Mumbai West Center", time: "2 hours ago", badge: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" },
-              { action: "Workbook Re-order Alert", user: "System", details: "Level 1 Workbooks stock fell below target limit (150)", time: "4 hours ago", badge: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" }
+              { action: "Registration Restricted", user: "Saideep (Admin)", details: "Public account creation disabled in configurations", time: "10 mins ago", badge: "bg-rose-50 text-rose-700 border-rose-250 dark:bg-rose-955/20 dark:text-rose-450 dark:border-rose-900/30" },
+              { action: "Stock Adjusted", user: "Delhi Central", details: "Standard Student Abacus increased by +100 units", time: "1 hour ago", badge: "bg-blue-50 text-blue-750 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/30" },
+              { action: "Account Registered", user: "Saideep (Admin)", details: "Created Franchise profile for Mumbai West Center", time: "2 hours ago", badge: "bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30" },
+              { action: "Workbook Re-order Alert", user: "System", details: "Level 1 Workbooks stock fell below target limit (150)", time: "4 hours ago", badge: "bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/30" }
             ].map((log, idx) => (
-              <div key={idx} className="flex items-start justify-between text-xs py-2.5 border-b border-slate-100 dark:border-white/5 last:border-b-0">
+              <div key={idx} className="flex items-start justify-between text-xs py-3 first:pt-0">
                 <div className="flex flex-col gap-0.5">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{log.action}</span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-light">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{log.action}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-455 font-semibold">
                     By {log.user} • {log.details}
                   </span>
                 </div>
-                <div className="text-right flex flex-col items-end gap-1.5">
-                  <span className="text-[10px] text-slate-450 dark:text-slate-500">{log.time}</span>
+                <div className="text-right flex flex-col items-end gap-1.5 ml-2">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono font-bold">{log.time}</span>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${log.badge}`}>
                     Audit
                   </span>

@@ -21,21 +21,52 @@ export default function StudentFeeDetail() {
   const [paymentMode, setPaymentMode] = useState("Cash");
   const [reminderChannel, setReminderChannel] = useState("WhatsApp");
 
-  // सर्व विद्यार्थ्यांचा मॉक डेटा लेजर
-  const [studentDetails, setStudentDetails] = useState({
-    "TXN-701": { id: "TXN-701", name: "Isha Sharma", parent: "Rajesh Sharma", phone: "+91 98765 43210", email: "isha@email.com", level: "Level 2", batch: "Weekend Super Kids", totalFees: 15000, paidFees: 11500, balance: 3500, status: "Overdue" },
-    "TXN-699": { id: "TXN-699", name: "Rohan Deshmukh", parent: "Anil Deshmukh", phone: "+91 91234 56789", email: "rohan@email.com", level: "Level 1", batch: "Morning Standard", totalFees: 15000, paidFees: 10500, balance: 4500, status: "Overdue" },
-    "TXN-654": { id: "TXN-654", name: "Aditya Patil", parent: "Sanjay Patil", phone: "+91 99887 76655", email: "aditya@email.com", level: "Level 4", batch: "Evening Advance", totalFees: 15000, paidFees: 15000, balance: 0, status: "Paid" },
-    "TXN-642": { id: "TXN-642", name: "Ananya Joshi", parent: "Sanjay Joshi", phone: "+91 98901 23456", email: "ananya@email.com", level: "Level 3", batch: "Evening Advance", totalFees: 15000, paidFees: 15000, balance: 0, status: "Paid" }
-  });
+  const [studentDetails, setStudentDetails] = useState({});
+  const [pastPayments, setPastPayments] = useState([]);
 
-  // पास्ट ट्रान्झॅक्शन्स
-  const [pastPayments, setPastPayments] = useState([
-    { receiptNo: "RCP-9021", title: "Term 1 Tuition Fees", date: "2026-05-12", amount: 5000, mode: "UPI", handler: "Center Admin" },
-    { receiptNo: "RCP-8843", title: "Admission & Abacus Kit Charges", date: "2026-05-02", amount: 6500, mode: "Cash", handler: "Franchise Owner" }
-  ]);
+  React.useEffect(() => {
+    const fetchFeeDetail = async () => {
+      try {
+        const res = await api.franchise.getFees();
+        const feeList = (res && res.data) || [];
+        const found = feeList.find(f => String(f.id) === String(id));
+        if (found) {
+          setStudentDetails({
+            [id]: {
+              id: `FEE-${found.id}`,
+              name: found.student?.name || "Student",
+              parent: found.student?.fatherName || "Parent",
+              phone: found.student?.phone || "—",
+              email: found.student?.user?.email || "—",
+              level: found.student?.batch?.level || "Level 1",
+              batch: found.student?.batch?.name || "Standard Batch",
+              totalFees: Number(found.totalFee || 0),
+              paidFees: Number(found.paidAmount || 0),
+              balance: Number(found.dueAmount || 0),
+              status: found.status === "PAID" ? "Paid" : "Overdue"
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("Failed fetching fee detail:", err);
+      }
+    };
+    if (id) fetchFeeDetail();
+  }, [id]);
 
-  const currentStudent = studentDetails[id] || studentDetails["TXN-701"];
+  const currentStudent = studentDetails[id] || {
+    id: id || "FEE-0",
+    name: "Record Not Found",
+    parent: "—",
+    phone: "—",
+    email: "—",
+    level: "—",
+    batch: "—",
+    totalFees: 0,
+    paidFees: 0,
+    balance: 0,
+    status: "Clean"
+  };
 
   // फी अपडेट लॉजिक
   const handleUpdateStatusSubmit = (e) => {

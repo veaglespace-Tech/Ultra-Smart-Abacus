@@ -27,33 +27,23 @@ express.Router()
 
 
 
-// Admin/Franchise create teacher
-
 router.post(
-
-"/register",
-
-authMiddleware,
-
-authorize(
-"ADMIN",
-"FRANCHISE"
-),
-
-registerTeacher
-
-)
+  "/register",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE"),
+  registerTeacher
+);
 
 
 
 
 
-// Teacher profile
+// Teacher list / profile
 router.get(
 "/",
 authMiddleware,
 
-authorize("ADMIN", "FRANCHISE", "TEACHER"),
+authorize("ADMIN", "FRANCHISE", "TEACHER", "STUDENT"),
 
 getTeachers
 )
@@ -61,17 +51,17 @@ getTeachers
 
 
 router.put(
-"/:id",
-authMiddleware,
-authorize("ADMIN"),
-updateTeacher
-)
+  "/:id",
+  authMiddleware,
+  authorize("ADMIN", "FRANCHISE", "TEACHER"),
+  updateTeacher
+);
 
 
 router.delete(
 "/:id",
 authMiddleware,
-authorize("ADMIN"),
+authorize("ADMIN", "FRANCHISE"),
 deleteTeacher
 )
 

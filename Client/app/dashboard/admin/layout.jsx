@@ -1,122 +1,146 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { AdminDataProvider, useAdminData } from "./AdminContext";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from "@/context/ThemeContext";
-import { Sun, Moon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { AdminDataProvider, useAdminData } from "./AdminContext";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Sun, Moon, LayoutDashboard, Users, Grid, Box,
+  Bell, BarChart3, Settings, LogOut, Menu, X, Search, User
+} from "lucide-react";
+
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchNotifications, 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead,
+  markReadOptimistic,
+  markAllReadOptimistic
+} from '@/store/notificationSlice';
 
 function AdminLayoutInner({ children }) {
-  const router = useRouter();
   const pathname = usePathname();
-  const { notifications } = useAdminData();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
+  const dispatch = useDispatch();
   const { theme, toggleTheme, mounted } = useTheme();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [userProfileOpen, setUserProfileOpen] = useState(false);
+  const [isClientMounted, setIsClientMounted] = useState(false);
+  const { notifications, unreadCount } = useSelector((state) => state.notification);
+
+  useEffect(() => {
+    setIsClientMounted(true);
+    dispatch(fetchNotifications('ADMIN'));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (notificationOpen && unreadCount > 0) {
+      dispatch(markAllReadOptimistic());
+      dispatch(markAllNotificationsAsRead());
+    }
+  }, [notificationOpen, unreadCount, dispatch]);
 
   const handleLogout = () => {
-    logout();
+    if (logout) {
+      logout();
+    }
     router.push("/auth/login");
   };
 
-  // Determine active route name and active breadcrumb
-  let activeTabName = "Overview";
-  let activeTabId = "overview";
-  if (pathname.endsWith("/users")) {
-    activeTabName = "User Management";
-    activeTabId = "users";
-  } else if (pathname.endsWith("/franchise")) {
-    activeTabName = "Franchise List";
-    activeTabId = "franchise";
-  } else if (pathname.endsWith("/inventory")) {
-    activeTabName = "Inventory";
-    activeTabId = "inventory";
-  } else if (pathname.endsWith("/notifications")) {
-    activeTabName = "Notifications";
-    activeTabId = "notifications";
-  } else if (pathname.endsWith("/reports")) {
-    activeTabName = "Reports";
-    activeTabId = "reports";
-  } else if (pathname.endsWith("/settings")) {
-    activeTabName = "System Settings";
-    activeTabId = "settings";
-  }
+  const handleToggleNotifications = () => {
+    const nextState = !notificationOpen;
+    setNotificationOpen(nextState);
+    if (nextState && notifications && notifications.length > 0) {
+      dispatch(markAllReadOptimistic());
+      dispatch(markAllNotificationsAsRead());
+    }
+  };
 
-  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
-
-  const navLinks = [
-    { id: "overview", label: "Overview", href: "/dashboard/admin", icon: "M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" },
-    { id: "users", label: "User Management", href: "/dashboard/admin/users", icon: "M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0110.089 20c-2.296 0-4.47-.679-6.305-1.848v-.005c0-2.243 4.072-4.022 9.08-4.022 1.247 0 2.447.11 3.565.32M13.81 12.036A4.47 4.47 0 0015 8.75c0-2.485-2.015-4.5-4.5-4.5S6 6.265 6 8.75c0 1.25.51 2.38 1.332 3.193m6.48 0a4.47 4.47 0 01-6.48 0m6.48 0a3.075 3.075 0 01-1.042.036m-4.396-.036a3.075 3.075 0 00-1.042-.036" },
-    { id: "franchise", label: "Franchise List", href: "/dashboard/admin/franchise", icon: "M2.25 21h19.5m-18-10.5h16.5M2.25 9h19.5M2.25 15h19.5M2.25 18h19.5M3 3h18M3 6h18" },
-    { id: "inventory", label: "Inventory", href: "/dashboard/admin/inventory", icon: "M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" },
-    { id: "notifications", label: "Notifications", href: "/dashboard/admin/notifications", icon: "M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" },
-    { id: "reports", label: "Reports", href: "/dashboard/admin/reports", icon: "M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" },
-    { id: "settings", label: "System Settings", href: "/dashboard/admin/settings", icon: "M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.767a1.123 1.123 0 00-.417 1.03c.004.074.006.148.006.222 0 .074-.002.148-.006.222a1.123 1.123 0 00.417 1.03l1.003.767c.379.29.507.82.26 1.43l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.216-.456a1.125 1.125 0 00-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281a1.125 1.125 0 00-.646-.87a6.57 6.57 0 01-.22-.127a1.126 1.126 0 00-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.43l1.003-.767a1.122 1.122 0 00.417-1.03a6.57 6.57 0 01-.006-.222c0-.074.002-.148.006-.222a1.122 1.122 0 00-.417-1.03l-1.003-.767a1.125 1.125 0 01-.26-1.43l1.296-2.247a1.125 1.125 0 011.37-.49l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128c.332-.183.582-.495.645-.869l.214-1.28zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" }
+  const sidebarItems = [
+    { name: 'Overview', href: '/dashboard/admin', icon: LayoutDashboard },
+    { name: 'User Management', href: '/dashboard/admin/users', icon: Users },
+    { name: 'Franchise List', href: '/dashboard/admin/franchise', icon: Grid },
+    { name: 'Inventory', href: '/dashboard/admin/inventory', icon: Box },
+    { name: 'Notifications', href: '/dashboard/admin/notifications', icon: Bell },
+    { name: 'Reports', href: '/dashboard/admin/reports', icon: BarChart3 },
+    { name: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
   ];
 
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+
+  const unreadNotificationsCount = notifications ? notifications.filter(n => !n.isRead && !n.read).length : 0;
+  const adminName = isClientMounted && user?.name ? user.name : "Saideep Admin";
+  const adminInitials = isClientMounted && adminName
+    ? adminName.split(" ").filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2)
+    : "AD";
+
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans flex relative overflow-hidden transition-colors duration-300">
-      
-      {/* Background Glowing Blobs */}
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-blue-600/5 dark:bg-blue-600/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[130px] pointer-events-none" />
+    <div className="flex h-screen bg-[#FFF8F0] dark:bg-[#150e2a] text-[#1a1035] dark:text-[#f0ebff] font-sans antialiased transition-colors duration-300 w-full overflow-hidden">
 
-      {/* MOBILE SIDEBAR DRAWER OVERLAY */}
-      {sidebarOpen && (
-        <div 
-          onClick={() => setSidebarOpen(false)}
-          className="lg:hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm"
-        />
-      )}
-
-      {/* SIDEBAR PANEL */}
-      <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-64 border-r border-slate-200 dark:border-white/5 bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl p-5 flex flex-col justify-between transition-all duration-300 lg:transform-none ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      }`}>
-        
-        {/* Sidebar Header / Logo */}
+      {/* SIDEBAR FOR DESKTOP */}
+      <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-[#150e2a] border-r border-[#3d2a88]/15 dark:border-[#3d2a88]/30 p-6 justify-between shrink-0 shadow-sm">
         <div>
-          <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-5 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 px-2 mb-8 group">
+            <div className="relative flex-shrink-0 w-8 h-8 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#2D1B69] to-[#FF6B2B] rounded-lg opacity-90 transition-opacity shadow-md" />
+              <svg viewBox="0 0 32 32" className="relative w-5 h-5" fill="none">
+                <rect x="3" y="4" width="26" height="24" rx="2" stroke="white" strokeWidth="2" fill="none"/>
+                <line x1="10" y1="4" x2="10" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                <line x1="16" y1="4" x2="16" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                <line x1="22" y1="4" x2="22" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                <line x1="3" y1="16" x2="29" y2="16" stroke="white" strokeWidth="1" strokeDasharray="1.5 1"/>
+                <circle cx="10" cy="11" r="2" fill="#FFCA28"/>
+                <circle cx="16" cy="13" r="2" fill="#FF6B2B"/>
+                <circle cx="22" cy="11" r="2" fill="#FFCA28"/>
+                <circle cx="10" cy="22" r="2" fill="white" fillOpacity="0.7"/>
+                <circle cx="16" cy="21" r="2" fill="white" fillOpacity="0.7"/>
+                <circle cx="22" cy="22" r="2" fill="white" fillOpacity="0.7"/>
               </svg>
             </div>
-            <div>
-              <h1 className="font-extrabold text-sm tracking-wider uppercase text-slate-800 dark:text-white">
-                Smart Abacus
-              </h1>
-              <span className="text-[10px] text-blue-500 dark:text-blue-400 font-semibold uppercase tracking-widest">
+            <div className="flex flex-col leading-none">
+              <span className="font-black text-sm tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
+                <span className="text-[#2D1B69] dark:text-violet-300">SMART</span>{" "}
+                <span className="text-[#FF6B2B]">ABACUS</span>
+              </span>
+              <span className="text-[9px] font-semibold tracking-wider text-[#2D1B69]/60 dark:text-violet-400/60 uppercase mt-0.5" style={{ fontFamily: "Outfit, sans-serif" }}>
                 ERP Admin
               </span>
             </div>
-          </div>
+          </Link>
 
-          {/* Navigation Links */}
-          <nav className="space-y-1.5">
-            {navLinks.map((tab) => {
-              const active = activeTabId === tab.id;
+          {/* Nav Links */}
+          <nav className="space-y-1">
+            {sidebarItems.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
               return (
                 <Link
-                  key={tab.id}
-                  href={tab.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                    active
-                      ? "bg-blue-500/10 dark:bg-gradient-to-r dark:from-blue-500/25 dark:to-indigo-600/25 border border-blue-500/20 dark:border-blue-500/30 text-blue-600 dark:text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.05)] dark:shadow-[0_0_15px_rgba(59,130,246,0.1)]"
-                      : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-slate-200 border border-transparent"
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-250 ${
+                    isActive
+                      ? "bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20"
+                      : "text-slate-655 dark:text-slate-400 hover:bg-accent/10 dark:hover:bg-accent/15 hover:text-[#FF6B2B] dark:hover:text-accent"
                   }`}
                 >
-                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d={tab.icon} />
-                  </svg>
-                  <span>{tab.label}</span>
-                  {tab.id === "notifications" && unreadNotificationsCount > 0 && (
-                    <span className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-500 text-white animate-pulse">
-                      {unreadNotificationsCount}
+                  <div className="flex items-center space-x-3">
+                    <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
+                    <span>{item.name}</span>
+                  </div>
+                  {item.name === 'Notifications' && unreadCount > 0 && (
+                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black leading-none ${isActive ? 'bg-white text-orange-600' : 'bg-[#FF6B2B] text-white'}`}>
+                      {unreadCount}
                     </span>
                   )}
                 </Link>
@@ -125,94 +149,347 @@ function AdminLayoutInner({ children }) {
           </nav>
         </div>
 
-        {/* Sidebar Footer / Logout */}
-        <div className="border-t border-slate-100 dark:border-white/5 pt-4">
-          <div className="rounded-2xl bg-slate-50 dark:bg-white/[0.03] p-3 border border-slate-150 dark:border-white/5 mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-slate-800 border border-blue-500/30 flex items-center justify-center font-black text-xs text-blue-600 dark:text-blue-300">
-                AD
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Saideep Admin</p>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">Super Administrator</span>
-              </div>
+        {/* Footer */}
+        <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
+          <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
+              {adminInitials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{adminName}</p>
+              <p className="text-[9px] text-slate-455 dark:text-slate-500 font-bold uppercase truncate">Super Administrator</p>
             </div>
           </div>
-
-          <button
+          <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border border-transparent hover:border-rose-250 dark:hover:border-rose-500/25 transition-all duration-300"
+            className="w-full flex items-center gap-2 text-left text-xs text-rose-500 dark:text-rose-455 font-bold px-4 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-            </svg>
-            Sign Out
+            <LogOut size={14} />
+            <span>Logout</span>
           </button>
         </div>
       </aside>
 
-      {/* MAIN WINDOW CONTAINER */}
-      <div className="flex-1 flex flex-col min-h-screen relative z-10 overflow-y-auto">
-        
-        {/* HEADER BAR */}
-        <header className="border-b border-slate-250/60 dark:border-white/5 bg-white/40 dark:bg-slate-950/50 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
-          <div className="flex items-center gap-3">
-            {/* Hamburger for mobile */}
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+      {/* MOBILE HEADER & SIDEBAR */}
+      <div className="lg:hidden">
+        {/* Toggle Hamburger */}
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="fixed top-4 left-4 z-40 p-2 rounded-xl bg-white dark:bg-[#150e2a] border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 shadow-md text-slate-700 dark:text-slate-350"
+        >
+          <Menu size={20} />
+        </button>
 
-            {/* Breadcrumb */}
-            <div className="hidden sm:block">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold flex items-center gap-1.5">
-                <span>Dashboard</span>
-                <span>/</span>
-                <span>Admin</span>
-                <span>/</span>
-                <span className="text-blue-500 dark:text-blue-400">{activeTabId}</span>
-              </div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-wide capitalize mt-0.5">
-                {activeTabName}
-              </h2>
-            </div>
+        {/* Drawer backdrop & panel wrapped in AnimatePresence */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMobileMenuOpen(false)}
+                className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-45"
+              />
+
+              {/* Drawer Panel */}
+              <motion.aside
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "spring", stiffness: 320, damping: 30 }}
+                className="fixed top-0 bottom-0 left-0 w-64 bg-white dark:bg-[#150e2a] z-50 p-6 flex flex-col justify-between shadow-2xl"
+              >
+                <div>
+                  <div className="flex justify-between items-center mb-8">
+                    <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2.5 group">
+                      <div className="relative flex-shrink-0 w-8 h-8 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#2D1B69] to-[#FF6B2B] rounded-lg opacity-90 transition-opacity shadow-md" />
+                        <svg viewBox="0 0 32 32" className="relative w-5 h-5" fill="none">
+                          <rect x="3" y="4" width="26" height="24" rx="2" stroke="white" strokeWidth="2" fill="none"/>
+                          <line x1="10" y1="4" x2="10" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                          <line x1="16" y1="4" x2="16" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                          <line x1="22" y1="4" x2="22" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1"/>
+                          <line x1="3" y1="16" x2="29" y2="16" stroke="white" strokeWidth="1" strokeDasharray="1.5 1"/>
+                          <circle cx="10" cy="11" r="2" fill="#FFCA28"/>
+                          <circle cx="16" cy="13" r="2" fill="#FF6B2B"/>
+                          <circle cx="22" cy="11" r="2" fill="#FFCA28"/>
+                          <circle cx="10" cy="22" r="2" fill="white" fillOpacity="0.7"/>
+                          <circle cx="16" cy="21" r="2" fill="white" fillOpacity="0.7"/>
+                          <circle cx="22" cy="22" r="2" fill="white" fillOpacity="0.7"/>
+                        </svg>
+                      </div>
+                      <div className="flex flex-col leading-none">
+                        <span className="font-black text-sm tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
+                          <span className="text-[#2D1B69] dark:text-violet-300">SMART</span>{" "}
+                          <span className="text-[#FF6B2B]">ABACUS</span>
+                        </span>
+                        <span className="text-[9px] font-semibold tracking-wider text-[#2D1B69]/60 dark:text-violet-400/60 uppercase mt-0.5" style={{ fontFamily: "Outfit, sans-serif" }}>
+                          ERP Admin
+                        </span>
+                      </div>
+                    </Link>
+                    <button 
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-350"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  <nav className="space-y-1">
+                    {sidebarItems.map((item) => {
+                      const isActive = pathname === item.href;
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                            isActive
+                              ? "bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] text-white shadow-md shadow-[#FF6B2B]/20"
+                              : "text-slate-655 dark:text-slate-400 hover:bg-accent/10 dark:hover:bg-accent/15 hover:text-[#FF6B2B] dark:hover:text-accent"
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <Icon size={16} className={`${isActive ? 'scale-110 text-white' : 'text-accent opacity-90'}`} />
+                            <span>{item.name}</span>
+                          </div>
+                          {item.name === 'Notifications' && unreadCount > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-[#FF6B2B] text-white">
+                              {unreadCount}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </nav>
+                </div>
+
+                <div className="border-t border-[#3d2a88]/15 dark:border-[#3d2a88]/30 pt-4">
+                  <div className="flex items-center space-x-3 p-2 bg-[#FFF8F0]/80 dark:bg-[#2D1B69]/30 border border-[#3d2a88]/15 dark:border-[#3d2a88]/30 rounded-xl mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary-light/30 text-primary dark:text-cream flex items-center justify-center text-xs font-black border border-primary/20 dark:border-[#3d2a88]/40">
+                      {adminInitials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{adminName}</p>
+                      <p className="text-[9px] text-slate-455 dark:text-slate-500 font-bold uppercase truncate text-left">Super Administrator</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 text-left text-xs text-rose-500 dark:text-rose-455 font-bold px-4 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors"
+                  >
+                    <LogOut size={14} />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* MAIN CONTAINER */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        {/* HEADER / TOP NAVBAR */}
+        <header className="h-16 shrink-0 bg-white/90 dark:bg-[#0f0a1e]/90 border-b border-slate-200 dark:border-[#3d2a88]/30 px-4 md:px-8 flex items-center justify-between shadow-sm relative z-30 text-slate-800 dark:text-white backdrop-blur-md">
+          {/* Left spacer for mobile menu */}
+          <div className="w-12 lg:hidden"></div>
+
+          {/* Search bar */}
+          <div className="hidden sm:flex items-center gap-2 bg-slate-50 dark:bg-[#1a1035]/60 border border-slate-200 dark:border-[#3d2a88]/45 px-3 py-1.5 rounded-xl w-64 md:w-80">
+            <Search size={14} className="text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search users, franchises, inventory..."
+              className="bg-transparent border-none text-xs focus:outline-none w-full placeholder-slate-400 text-slate-700 dark:text-slate-200"
+            />
           </div>
 
-          {/* Live Date/Clock & Quick Stats */}
-          <div className="flex items-center gap-4">
-            {/* Theme Toggle Button */}
+          {/* Right items */}
+          <div className="flex items-center gap-4 ml-auto">
+            {/* Current Date */}
+            <span className="hidden md:inline text-xs font-semibold text-slate-655 dark:text-slate-300 bg-slate-50 dark:bg-[#2D1B69]/50 border border-slate-200 dark:border-[#3d2a88]/30 px-3 py-1.5 rounded-xl">
+              {currentDate}
+            </span>
+
+            {/* Notification bell */}
+            <div className="relative z-50">
+              <button
+                onClick={() => setNotificationOpen(!notificationOpen)}
+                className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-905/30 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors relative cursor-pointer"
+              >
+                <Bell size={15} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse"></span>
+                )}
+              </button>
+
+              {/* Notification Dropdown */}
+              {notificationOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setNotificationOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1a1035] border border-slate-200 dark:border-[#3d2a88]/40 rounded-2xl p-4 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100 dark:border-[#3d2a88]/30">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">Recent Alerts</h4>
+                      <div className="flex items-center gap-2">
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={() => {
+                              dispatch(markAllReadOptimistic());
+                              dispatch(markAllNotificationsAsRead());
+                            }}
+                            className="text-[10px] text-orange-600 dark:text-orange-400 hover:underline font-bold"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                        <Link
+                          href="/dashboard/admin/notifications"
+                          onClick={() => setNotificationOpen(false)}
+                          className="text-[10px] text-accent dark:text-accent hover:underline font-bold"
+                        >
+                          View All
+                        </Link>
+                      </div>
+                    </div>
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {notifications && notifications.length > 0 ? (
+                        notifications.slice(0, 5).map((notif) => (
+                          <Link
+                            key={notif.id}
+                            href="/dashboard/admin/notifications"
+                            onClick={() => {
+                              if (!notif.isRead) {
+                                dispatch(markReadOptimistic(notif.id));
+                                dispatch(markNotificationAsRead(notif.id));
+                              }
+                              setNotificationOpen(false);
+                            }}
+                            className={`block text-xs border-b border-slate-100 dark:border-[#3d2a88]/20 pb-2 last:border-0 last:pb-0 p-1.5 rounded-lg transition-colors cursor-pointer ${
+                              !notif.isRead ? "bg-orange-50/80 dark:bg-orange-950/30 font-bold" : "hover:bg-slate-50 dark:hover:bg-[#2D1B69]/40"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <p className="text-slate-900 dark:text-slate-100">{notif.title || notif.message}</p>
+                              {!notif.isRead && (
+                                <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 mt-1"></span>
+                              )}
+                            </div>
+                            {notif.message && notif.title && notif.message !== notif.title && (
+                              <p className="text-slate-600 dark:text-slate-400 font-medium mt-0.5 line-clamp-2">{notif.message}</p>
+                            )}
+                            <span className="text-[9px] text-slate-400 font-semibold">{notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : "Recent"}</span>
+                          </Link>
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-455 text-center py-4 font-semibold">No notifications</p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 transition-colors cursor-pointer"
               aria-label="Toggle Theme"
-              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {mounted && theme === "dark" ? (
-                <Sun size={18} className="text-amber-400" />
+                <Sun size={15} className="text-amber-500" />
               ) : (
-                <Moon size={18} />
+                <Moon size={15} />
               )}
             </button>
-            
-            <div className="w-px h-6 bg-slate-200 dark:bg-white/10 hidden md:block" />
 
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Admin Portal</span>
+            {/* Profile Avatar & Interactive Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setUserProfileOpen(!userProfileOpen)}
+                className="flex items-center gap-2 hover:opacity-90 cursor-pointer text-left focus:outline-none"
+              >
+                <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/50 text-orange-600 dark:text-orange-400 font-black flex items-center justify-center text-xs shadow-sm shadow-orange-500/10 overflow-hidden shrink-0">
+                  {user?.profilePhoto ? (
+                    <img src={user.profilePhoto} alt={adminName} className="w-full h-full object-cover" />
+                  ) : (
+                    adminInitials
+                  )}
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-none">
+                    {adminName}
+                  </p>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-450 font-bold">online</span>
+                </div>
+              </button>
+
+              {/* Admin Profile Header Dropdown Menu */}
+              {userProfileOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setUserProfileOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-[#1a1035] border border-slate-200 dark:border-[#3d2a88]/40 rounded-2xl p-3 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center gap-3 p-2 pb-3 border-b border-slate-100 dark:border-[#3d2a88]/30">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2D1B69] to-[#FF6B2B] text-white font-black flex items-center justify-center text-xs shadow-md overflow-hidden shrink-0">
+                        {user?.profilePhoto ? (
+                          <img src={user.profilePhoto} alt={adminName} className="w-full h-full object-cover" />
+                        ) : (
+                          adminInitials
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{adminName}</h4>
+                        {user?.email && <p className="text-[10px] text-slate-400 truncate">{user.email}</p>}
+                        <span className="inline-block mt-0.5 px-2 py-0.5 text-[9px] font-extrabold uppercase rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400">
+                          Super Admin
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="py-2 space-y-1">
+                      <Link
+                        href="/dashboard/admin/settings"
+                        onClick={() => setUserProfileOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2D1B69]/40 rounded-xl transition-colors"
+                      >
+                        <User size={14} className="text-orange-500" />
+                        <span>My Profile</span>
+                      </Link>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-[#3d2a88]/30">
+                      <button
+                        onClick={() => {
+                          setUserProfileOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-2 text-xs font-bold text-rose-500 dark:text-rose-455 px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-955/20 transition-colors text-left cursor-pointer"
+                      >
+                        <LogOut size={14} />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </header>
 
-        {/* VIEW SCENARIOS (CONTENT BODY) */}
-        <div className="p-6 md:p-8 flex-1">
-          {children}
-        </div>
+        {/* PAGE CONTENT */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-br from-[#f8f6ff] to-white dark:from-[#150e2a] dark:to-[#0f0a1e] text-slate-800 dark:text-slate-100">
+          <div className="max-w-6xl mx-auto space-y-6">
+            {children}
+          </div>
+        </main>
       </div>
-    </main>
+
+    </div>
   );
 }
 

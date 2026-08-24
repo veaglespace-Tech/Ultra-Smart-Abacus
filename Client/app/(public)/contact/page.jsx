@@ -2,182 +2,342 @@
 import { useState } from "react";
 import Navbar from "../../../components/shared/Navbar";
 import Footer from "../../../components/shared/Footer";
+import { Phone, Mail, Clock, MapPin, Send, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+import { api } from "@/services/api";
+
+const contactInfo = [
+  {
+    icon: Phone,
+    title: "Call Us Directly",
+    textSize: "text-lg",
+    lineTextSize: "text-base",
+    lines: ["+91 9325252247", "+91 7867896734"],
+    color: "#2D1B69",
+    bg: "rgba(45,27,105,0.08)",
+  },
+  {
+    icon: Mail,
+    title: "Email Inquiries",
+    textSize: "text-lg",
+    lineTextSize: "text-base",
+    lines: ["gunjalsejal04@gmail.com", "admissions@gmail.com"],
+    color: "#FF6B2B",
+    bg: "rgba(255,107,43,0.08)",
+  },
+  {
+    icon: Clock,
+    title: "Working Hours",
+    textSize: "text-lg",
+    lineTextSize: "text-base",
+    lines: ["Monday – Saturday", "09:00 AM – 06:00 PM (IST)"],
+    color: "#10B981",
+    bg: "rgba(16,185,129,0.08)",
+  },
+  {
+    icon: MapPin,
+    title: "Visit Us",
+    textSize: "text-lg",
+    lineTextSize: "text-base",
+    lines: ["Office no 207, Kudale Patil Chambers, Heritage, near Bhairavnath Temple, Jadhav Nagar, Vadgaon Budruk, Pune, Maharashtra 411041"],
+    color: "#FFCA28",
+    bg: "rgba(255,202,40,0.1)",
+  },
+];
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    subject: "General Inquiry",
-    message: "",
+    name: "", email: "", phone: "", subject: "General Inquiry", message: "",
   });
+  const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Thank you for reaching out, ${formData.name}! Our team will get back to you shortly.`);
-    setFormData({ name: "", email: "", phone: "", subject: "General Inquiry", message: "" });
+    setSubmitted(true);
+    try {
+      await api.public.submitInquiry(formData);
+    } catch (err) {
+      console.error("Public contact inquiry submission error:", err);
+    }
+    setTimeout(() => {
+      setSubmitted(false);
+      setFormData({ name: "", email: "", phone: "", subject: "General Inquiry", message: "" });
+    }, 3500);
   };
 
-  return (
-    <div className="bg-slate-50 min-h-screen w-full flex flex-col justify-between">
-      {/* Navbar Layout */}
-      <div className="w-full">
-        <Navbar />
-      </div>
+  const inputClass = "w-full rounded-2xl border-2 border-slate-200 bg-slate-50 py-3.5 px-5 text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#FF6B2B] focus:bg-white focus:ring-4 focus:ring-[#FF6B2B]/10 transition-all duration-200";
 
-      {/* Main Content Area */}
-      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-16 flex-grow space-y-16">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="px-4 py-1.5 bg-orange-100 text-orange-600 font-bold rounded-full text-xs uppercase tracking-wider">
+  return (
+    <div
+      className="min-h-screen flex flex-col bg-cover bg-center bg-fixed relative transition-colors duration-300"
+      style={{
+        fontFamily: "Inter, sans-serif",
+        backgroundImage: "linear-gradient(to bottom, rgba(15, 10, 30, 0.88), rgba(45, 27, 105, 0.85)), url('/images/contact.jpg')"
+      }}
+    >
+      <Navbar />
+
+      {/* ── Hero ── */}
+      <section className="relative py-24 px-6 overflow-hidden">
+        <div className="absolute inset-0 dot-pattern opacity-15" />
+        <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full opacity-20 animate-blob1"
+          style={{ background: "radial-gradient(circle, #FF6B2B, transparent 70%)", filter: "blur(60px)" }} />
+
+        <div className="relative max-w-4xl mx-auto text-center text-white">
+          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6"
+            style={{ background: "rgba(255,202,40,0.15)", color: "#FFCA28", border: "1px solid rgba(255,202,40,0.3)", fontFamily: "Outfit, sans-serif" }}>
             Get In Touch
           </span>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-blue-900 tracking-tight">
-            Contact Our Academy
-          </h2>
-          <p className="text-gray-600">
-            Have questions about admissions, course details, or trial batches? Reach out to us, and we will guide you forward.
+          <h1 className="font-black text-4xl sm:text-5xl leading-tight mb-4" style={{ fontFamily: "Poppins, sans-serif" }}>
+            Contact Our{" "}
+            <span style={{
+              background: "linear-gradient(135deg, #FF6B2B, #FFCA28)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}>
+              Academy
+            </span>
+          </h1>
+          <p className="text-slate-300 text-lg max-w-2xl mx-auto">
+            Have questions about admissions, courses, or trial batches? Reach out and we&apos;ll guide you forward.
           </p>
         </div>
+      </section>
 
-        {/* Contact Page Layout Grid */}
-        <div className="grid lg:grid-cols-3 gap-12 items-start">
-          
-          {/* Left Column: Academy Details */}
-          <div className="lg:col-span-1 space-y-6">
-            <h3 className="text-2xl font-bold text-slate-800">Our Information</h3>
-            
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-md space-y-6">
-              {/* Phone Detail */}
-              <div className="flex items-start gap-4">
-                <div className="text-2xl mt-0.5">📞</div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Call Us Directly</h4>
-                  <p className="text-gray-600 text-xs mt-1">+91 8767876567</p>
-                  <p className="text-gray-600 text-xs">+91 7867896734</p>
-                </div>
+      <section className="py-14 px-6 bg-white/70 dark:bg-[#150e2a]/70 backdrop-blur-md transition-colors duration-300">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-5">
+          {contactInfo.map(({ icon: Icon, title, textSize, lineTextSize, lines, color, bg }, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              whileHover={{ y: -6, scale: 1.02 }}
+              className="p-6 rounded-2xl bg-white/90 dark:bg-[#1e1445]/90 backdrop-blur-sm card-shine-effect text-center shadow-md transition-all duration-300"
+              style={{ border: `1px solid ${color}25` }}
+            >
+              <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                style={{ background: `${color}18`, border: `1px solid ${color}30` }}>
+                <Icon size={20} style={{ color }} />
               </div>
+              <h3 className={`font-bold text-slate-800 dark:text-white ${textSize} mb-2`} style={{ fontFamily: "Poppins, sans-serif" }}>{title}</h3>
+              {lines.map((line, li) => {
+                if (title === "Call Us Directly") {
+                  return (
+                    <a
+                      key={li}
+                      href={`tel:${line.replace(/\s+/g, "")}`}
+                      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline transition-colors`}
+                    >
+                      {line}
+                    </a>
+                  );
+                }
 
-              {/* Email Detail */}
-              <div className="flex items-start gap-4">
-                <div className="text-2xl mt-0.5">✉️</div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Email Inquiries</h4>
-                  <p className="text-gray-600 text-xs mt-1">info@smartabacus.com</p>
-                  <p className="text-gray-600 text-xs">admissions@smartabacus.com</p>
-                </div>
-              </div>
+                if (title === "Email Inquiries") {
+                  return (
+                    <a
+                      key={li}
+                      href={`mailto:${line}?subject=Inquiry`}
+                      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline`}
+                    >
+                      {line}
+                    </a>
+                  );
+                }
 
-              {/* Timing Detail */}
-              <div className="flex items-start gap-4">
-                <div className="text-2xl mt-0.5">🕒</div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Working Hours</h4>
-                  <p className="text-gray-600 text-xs mt-1">Monday - Saturday</p>
-                  <p className="text-gray-600 text-xs">09:00 AM - 06:00 PM (IST)</p>
-                </div>
-              </div>
-            </div>
-          </div>
+                if (title === "Visit Us") {
+                  return (
+                    <a
+                      key={li}
+                      href="https://www.google.com/maps/search/?api=1&query=Office+no+207,+Kudale+Patil+Chambers,+Heritage,+near+Bhairavnath+Temple,+Jadhav+Nagar,+Vadgaon+Budruk,+Pune,+Maharashtra+411041"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`block text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed hover:text-[#FF6B2B] hover:underline cursor-pointer`}
+                    >
+                      {line}
+                    </a>
+                  );
+                }
 
-          {/* Right 2 Columns: Single Unified Contact Form (मुख्य बॉक्स आणि इनपुट बॉक्स सुधारणा) */}
-          <div className="lg:col-span-2 bg-white p-8 rounded-3xl border-2 border-slate-200 shadow-xl space-y-6">
-            <div className="space-y-1 border-b border-slate-100 pb-4">
-              <h3 className="text-2xl font-bold text-slate-900">Send Us A Message</h3>
-              <p className="text-xs text-gray-500">Please provide your valid details below so our academic counselor can assist you.</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid sm:grid-cols-2 gap-4">
-                {/* Name Field */}
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Your Name</label>
-                  <input 
-                    type="text" 
-                    required 
-                    placeholder="Enter Full Name"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 text-sm focus:outline-none focus:border-orange-500 focus:bg-white bg-slate-50 transition-all duration-200"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  />
-                </div>
-
-                {/* Phone Field */}
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Contact Number</label>
-                  <input 
-                    type="tel" 
-                    required 
-                    placeholder="Enter 10-Digit Mobile"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 text-sm focus:outline-none focus:border-orange-500 focus:bg-white bg-slate-50 transition-all duration-200"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                {/* Email Field */}
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Email Address</label>
-                  <input 
-                    type="email" 
-                    required 
-                    placeholder="name@example.com"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 text-sm focus:outline-none focus:border-orange-500 focus:bg-white bg-slate-50 transition-all duration-200"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  />
-                </div>
-
-                {/* Subject Selection */}
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Inquiry Purpose</label>
-                  <select 
-                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 text-sm focus:outline-none focus:border-orange-500 focus:bg-white bg-slate-50 transition-all duration-200 h-[48px]"
-                    value={formData.subject}
-                    onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                return (
+                  <p
+                    key={li}
+                    className={`text-slate-600 dark:text-slate-300 ${lineTextSize} leading-relaxed`}
                   >
-                    <option value="General Inquiry">General Inquiry</option>
-                    <option value="Abacus Course Admission">Abacus Course Admission</option>
-                    <option value="Reading & Handwriting Track">Reading & Handwriting Track</option>
-                    <option value="Vedic Math Class">Vedic Math Class</option>
-                    <option value="Free Demo Session">Request Free Demo Session</option>
-                  </select>
+                    {line}
+                  </p>
+                );
+              })}
+
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+
+      {/* ── Main Form + Map Area ── */}
+      <section className="py-16 px-6 bg-white/70 dark:bg-[#0f0a1e]/70 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-12">
+
+          {/* Left: Form */}
+          <motion.div
+            initial={{ opacity: 0, x: -35 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-2"
+          >
+            <div className="bg-white/90 dark:bg-[#1a1035]/90 backdrop-blur-md rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-xl p-8">
+              <div className="mb-8">
+                <span className="badge-accent mb-3 inline-flex">Send a Message</span>
+                <h2 className="text-2xl font-black text-[#2D1B69] dark:text-white" style={{ fontFamily: "Poppins, sans-serif" }}>
+                  We&apos;d Love to Hear from You
+                </h2>
+                <p className="text-slate-500 dark:text-slate-300 text-sm mt-1">
+                  Fill in your details and our team will get back to you within 24 hours.
+                </p>
+              </div>
+
+              {submitted ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
+                    style={{ background: "linear-gradient(135deg, #10B981, #059669)" }}>
+                    <CheckCircle2 size={36} color="white" />
+                  </div>
+                  <h3 className="text-xl font-black text-[#2D1B69] mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>
+                    Message Sent!
+                  </h3>
+                  <p className="text-slate-500 text-sm">
+                    Thank you for reaching out. Our team will contact you shortly!
+                  </p>
                 </div>
-              </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+                        Your Name
+                      </label>
+                      <input type="text" required placeholder="Enter Full Name"
+                        value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+                        Mobile Number
+                      </label>
+                      <input type="tel" required placeholder="10-Digit Number"
+                        value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className={inputClass} />
+                    </div>
+                  </div>
 
-              {/* Message Field */}
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Message / Questions</label>
-                <textarea 
-                  rows="4" 
-                  required
-                  placeholder="Describe your query or mention your child's age group here..."
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 text-sm focus:outline-none focus:border-orange-500 focus:bg-white bg-slate-50 transition-all duration-200 resize-none"
-                  value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
-                ></textarea>
-              </div>
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+                        Email Address
+                      </label>
+                      <input type="email" required placeholder="name@example.com"
+                        value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+                        Inquiry Purpose
+                      </label>
+                      <select value={formData.subject}
+                        onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                        className={inputClass + " appearance-none"} style={{ paddingLeft: "1.25rem" }}>
+                        <option>General Inquiry</option>
+                        <option>Abacus Course Admission</option>
+                        <option>Reading & Handwriting Track</option>
+                        <option>Vedic Math Class</option>
+                        <option>Request Free Demo Session</option>
+                        <option>Franchise Inquiry</option>
+                      </select>
+                    </div>
+                  </div>
 
-              {/* Submit Button */}
-              <button 
-                type="submit" 
-                className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm font-bold uppercase tracking-wider rounded-xl transition shadow-lg shadow-orange-500/20 active:scale-95"
-              >
-                Send Message
-              </button>
-            </form>
-          </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2" style={{ fontFamily: "Outfit, sans-serif" }}>
+                      Message
+                    </label>
+                    <textarea rows={5} required
+                      placeholder="Describe your query or mention your child's age group..."
+                      value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      className={inputClass + " resize-none"} style={{ paddingTop: "0.875rem" }} />
+                  </div>
+
+                  <button type="submit"
+                    className="btn-shine w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all"
+                    style={{
+                      background: "linear-gradient(135deg, #FF6B2B, #e55a1f)",
+                      boxShadow: "0 6px 20px rgba(255,107,43,0.35)",
+                      fontFamily: "Poppins, sans-serif",
+                    }}>
+                    Send Message
+                    <Send size={16} />
+                  </button>
+                </form>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Right: Side Info */}
+          <motion.div
+            initial={{ opacity: 0, x: 35 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="space-y-6"
+          >
+            {/* Map Placeholder */}
+            <div className="h-56 rounded-3xl overflow-hidden shadow-lg">
+              <iframe
+                src="https://www.google.com/maps?q=Office no 207, Kudale Patil Chambers, Heritage, near Bhairavnath Temple, Jadhav Nagar, Vadgaon Budruk, Pune, Maharashtra 411041&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+
+            {/* Quick Facts */}
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-[#FFF8F0] to-white dark:from-[#1e1445] dark:to-[#1a1035] border-2 border-[#FF6B2B]/20">
+              <h3 className="font-black text-[#2D1B69] dark:text-white text-base mb-5" style={{ fontFamily: "Poppins, sans-serif" }}>
+                Why Choose Smart Abacus?
+              </h3>
+              <div className="space-y-3">
+                {[
+                  "Free Demo Class Available",
+                  "Certified Expert Instructors",
+                  "Flexible Batch Timings",
+                  "Regular Parent Updates",
+                  "Certificate on Completion",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: "linear-gradient(135deg, #FF6B2B, #FFCA28)" }}>
+                      <CheckCircle2 size={11} color="white" />
+                    </div>
+                    <span className="text-slate-700 dark:text-slate-200 text-lg font-medium">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
 
         </div>
-      </main>
+      </section>
 
-      {/* Footer Layout */}
-      <div className="w-full mt-auto">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 }

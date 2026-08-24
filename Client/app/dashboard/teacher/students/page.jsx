@@ -1,22 +1,62 @@
 // src/app/dashboard/teacher/students/page.jsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Eye, Filter, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { api } from '@/services/api';
 
 export default function TeacherStudentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState('All');
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [students] = useState([
-    { id: 'STU-101', name: 'Abhishek Kulkarni', batch: 'Batch Alpha', level: 'Level 1 Core', attendance: 95.8, progress: 75, email: 'abhishek@gmail.com', phone: '+1 234 567 8901', enrollment: 'Jan 2026' },
-    { id: 'STU-102', name: 'Pranjal Patil', batch: 'Batch Alpha', level: 'Level 1 Core', attendance: 91.2, progress: 68, email: 'pranjal@gmail.com', phone: '+1 234 567 8902', enrollment: 'Feb 2026' },
-    { id: 'STU-103', name: 'Siddharth Joshi', batch: 'Batch Beta', level: 'Level 3 Advanced', attendance: 97.4, progress: 92, email: 'siddharth@gmail.com', phone: '+1 234 567 8903', enrollment: 'Nov 2025' },
-    { id: 'STU-104', name: 'Rohan Deshmukh', batch: 'Batch Beta', level: 'Level 3 Advanced', attendance: 88.0, progress: 54, email: 'rohan@gmail.com', phone: '+1 234 567 8904', enrollment: 'Dec 2025' },
-    { id: 'STU-105', name: 'Neha Patel', batch: 'Batch Gamma', level: 'Level 2 Foundations', attendance: 92.5, progress: 80, email: 'neha@gmail.com', phone: '+1 234 567 8905', enrollment: 'Jan 2026' },
-    { id: 'STU-106', name: 'Ananya Rao', batch: 'Batch Gamma', level: 'Level 2 Foundations', attendance: 78.4, progress: 42, email: 'ananya@gmail.com', phone: '+1 234 567 8906', enrollment: 'Mar 2026' }
-  ]);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [studentsRes, batchesRes] = await Promise.all([
+        api.admin.getStudents(),
+        api.batches.getAll()
+      ]);
+
+      let loadedBatches = [];
+      if (batchesRes && batchesRes.success) {
+        loadedBatches = batchesRes.data.map(b => ({
+          dbId: b.id,
+          name: b.name || `Batch - ${b.code}`,
+          level: b.level || "Level 1"
+        }));
+        setBatches(loadedBatches);
+      }
+
+      if (studentsRes && studentsRes.success) {
+        const mapped = studentsRes.data.map(s => ({
+          id: s.rollNo || `STU-${s.id}`,
+          dbId: s.id,
+          name: s.name,
+          batchId: s.batchId,
+          batch: s.batch ? (s.batch.name || `Batch - ${s.batch.code}`) : 'Unassigned',
+          level: s.batch ? (s.batch.level || 'Level 1 Core') : 'Level 1 Core',
+          attendance: 95.8,
+          progress: 75,
+          email: s.email,
+          phone: s.phone || 'N/A',
+          enrollment: new Date(s.createdAt).toLocaleDateString()
+        }));
+        setStudents(mapped);
+      }
+    } catch (error) {
+      console.error("Failed to load students and batches", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const filteredStudents = students.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.id.toLowerCase().includes(searchQuery.toLowerCase());
@@ -30,13 +70,15 @@ export default function TeacherStudentsPage() {
       {/* HEADER */}
       <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">STUDENTS ROSTER</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">STUDENTS ROSTER</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Observe details, enrollment milestones, and tracking parameters of all pupils.</p>
         </div>
       </div>
 
       {/* FILTER PANEL */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 p-4 rounded-3xl shadow-[0_2px_20px_rgba(45,27,105,0.06)]">
         <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl w-full sm:w-80">
           <Search size={14} className="text-slate-400" />
           <input 
@@ -64,7 +106,7 @@ export default function TeacherStudentsPage() {
       </div>
 
       {/* Roster Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-[#1e1445] border border-slate-150 dark:border-slate-850 rounded-3xl overflow-hidden shadow-[0_2px_20px_rgba(45,27,105,0.06)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -86,7 +128,7 @@ export default function TeacherStudentsPage() {
                   
                   <td className="py-4 px-6">
                     <span className="font-bold text-slate-800 dark:text-slate-300 block">{s.batch}</span>
-                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-wide font-black">{s.level}</span>
+                    <span className="text-[10px] text-accent dark:text-accent uppercase tracking-wide font-black">{s.level}</span>
                   </td>
 
                   <td className="py-4 px-6">
@@ -110,7 +152,7 @@ export default function TeacherStudentsPage() {
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-200/40 dark:border-slate-800/40">
                         <div 
-                          className="bg-indigo-600 dark:bg-indigo-450 h-full rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-primary to-accent h-full rounded-full transition-all duration-300"
                           style={{ width: `${s.progress}%` }}
                         />
                       </div>
@@ -150,7 +192,7 @@ export default function TeacherStudentsPage() {
             </button>
 
             <div className="border-b border-slate-100 dark:border-slate-850 pb-3">
-              <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold tracking-widest uppercase">Student Profile Card</span>
+              <span className="text-[10px] text-accent dark:text-accent font-extrabold tracking-widest uppercase">Student Profile Card</span>
               <h3 className="text-base font-black text-slate-900 dark:text-slate-50 mt-0.5">{selectedStudent.name}</h3>
               <p className="text-[10px] text-slate-450 font-mono">Roll Ref: {selectedStudent.id}</p>
             </div>
@@ -192,12 +234,42 @@ export default function TeacherStudentsPage() {
                   <span className="text-slate-800 dark:text-slate-200 text-xs font-bold">{selectedStudent.enrollment}</span>
                 </div>
               </div>
+
+              <div className="border-t border-slate-100 dark:border-slate-850 pt-3">
+                <label className="block text-[9px] uppercase tracking-wider text-slate-400 mb-1 font-bold">Reassign to Batch</label>
+                <select 
+                  value={selectedStudent.batchId || ''} 
+                  onChange={async (e) => {
+                    const newBatchId = e.target.value ? Number(e.target.value) : null;
+                    try {
+                      await api.admin.updateStudent(selectedStudent.dbId, { batchId: newBatchId });
+                      // Reload students
+                      fetchData();
+                      // Update modal view
+                      setSelectedStudent(prev => ({
+                        ...prev,
+                        batchId: newBatchId,
+                        batch: newBatchId ? (batches.find(b => b.dbId === newBatchId)?.name || 'Assigned') : 'Unassigned'
+                      }));
+                    } catch (error) {
+                      console.error("Failed to reassign batch", error);
+                      alert(error.message || "Error updating student batch");
+                    }
+                  }}
+                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none cursor-pointer text-slate-700 dark:text-slate-200 w-full"
+                >
+                  <option value="">-- Select Batch (Unassigned) --</option>
+                  {batches.map((b) => (
+                    <option key={b.dbId} value={b.dbId}>{b.name} ({b.level})</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="flex gap-2 justify-end pt-3 border-t border-slate-100 dark:border-slate-850">
               <button 
                 onClick={() => setSelectedStudent(null)}
-                className="bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-indigo-750 cursor-pointer shadow-md shadow-indigo-600/10"
+                className="bg-gradient-to-r from-primary to-primary-light hover:from-accent hover:to-accent-dark text-white text-xs font-bold px-5 py-2.5 rounded-xl cursor-pointer shadow-md shadow-primary/20 transition-all duration-300"
               >
                 Close Profile
               </button>

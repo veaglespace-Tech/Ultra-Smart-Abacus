@@ -1,0 +1,18 @@
+-- AlterTable
+ALTER TABLE `fee` ADD COLUMN `remarks` VARCHAR(191) NULL,
+    ADD COLUMN `txId` VARCHAR(191) NULL;
+
+-- CreateTable
+CREATE TABLE `FeePayment` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `feeId` INTEGER NOT NULL,
+    `amount` DOUBLE NOT NULL,
+    `txId` VARCHAR(191) NULL,
+    `createdBy` INTEGER NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `FeePayment` ADD CONSTRAINT `FeePayment_feeId_fkey` FOREIGN KEY (`feeId`) REFERENCES `Fee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

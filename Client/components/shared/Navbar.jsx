@@ -1,18 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { usePathname } from "next/navigation"; // 💡 Active Page check krnyasathi
-import { Menu, X, ChevronDown, Sun, Moon } from "lucide-react"; // Icons
-import Logo from "./Logo";
+import { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, X, Sun, Moon, ChevronRight } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname(); // Get current URL path
+  const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
   const { theme, toggleTheme, mounted } = useTheme();
 
-  // Navigation Items Dynamic Array
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },
@@ -23,148 +30,196 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-md dark:shadow-slate-950/20 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+    <nav
+      className={`sticky top-0 z-50 transition-all duration-500 ${
+        scrolled
+          ? "bg-white/90 dark:bg-[#0f0a1e]/90 backdrop-blur-xl shadow-lg shadow-[#2D1B69]/10"
+          : "bg-white/80 dark:bg-[#0f0a1e]/80 backdrop-blur-md shadow-sm"
+      }`}
+    >
+      <div className="mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
 
-        {/* 🏢 Logo and Brand Name Container */}
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex-shrink-0 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-            <Logo />
+          {/* Abacus SVG Icon */}
+          <div className="relative flex-shrink-0 w-10 h-10 flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#2D1B69] to-[#FF6B2B] rounded-xl opacity-90 group-hover:opacity-100 transition-opacity shadow-lg" />
+            <svg viewBox="0 0 32 32" className="relative w-6 h-6" fill="none">
+              {/* Abacus frame */}
+              <rect x="3" y="4" width="26" height="24" rx="3" stroke="white" strokeWidth="2" fill="none"/>
+              {/* Rods */}
+              <line x1="10" y1="4" x2="10" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1.5"/>
+              <line x1="16" y1="4" x2="16" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1.5"/>
+              <line x1="22" y1="4" x2="22" y2="28" stroke="rgba(255,202,40,0.8)" strokeWidth="1.5"/>
+              {/* Divider */}
+              <line x1="3" y1="16" x2="29" y2="16" stroke="white" strokeWidth="1.5" strokeDasharray="2 1"/>
+              {/* Beads */}
+              <circle cx="10" cy="11" r="3" fill="#FFCA28"/>
+              <circle cx="16" cy="13" r="3" fill="#FF6B2B"/>
+              <circle cx="22" cy="11" r="3" fill="#FFCA28"/>
+              <circle cx="10" cy="22" r="3" fill="white" fillOpacity="0.7"/>
+              <circle cx="16" cy="21" r="3" fill="white" fillOpacity="0.7"/>
+              <circle cx="22" cy="22" r="3" fill="white" fillOpacity="0.7"/>
+            </svg>
           </div>
-          
-          <div className="flex flex-col justify-center">
-            <span className="text-2xl sm:text-3xl font-bold text-pink-500 leading-none tracking-tight">
-              SMART <span className="text-purple-500 dark:text-purple-400">ABACUS</span>
+
+          <div className="flex flex-col leading-none">
+            <span className="font-black text-xl tracking-tight" style={{ fontFamily: "Poppins, sans-serif" }}>
+              <span className="text-[#2D1B69] dark:text-violet-300">SMART</span>{" "}
+              <span className="text-[#FF6B2B]">ABACUS</span>
             </span>
-            <span className="text-[10px] sm:text-xs text-purple-500 dark:text-purple-400 tracking-widest mt-1 leading-none font-medium">
+            <span className="text-[10px] font-semibold tracking-widest text-[#2D1B69]/50 dark:text-violet-400/60 uppercase mt-0.5" style={{ fontFamily: "Outfit, sans-serif" }}>
               Empowering Young Minds
             </span>
           </div>
         </Link>
 
-        {/* 💻 Desktop Menu */}
-        <div className="hidden lg:flex items-center gap-6">
-          <ul className="flex items-center gap-8 text-gray-700 dark:text-gray-300 font-semibold text-sm">
+        {/* Desktop Menu */}
+        <div className="hidden lg:flex items-center mx-auto gap-8">
+          <ul className="flex items-center gap-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
-                <li key={link.href} className="relative group/link py-1">
-                  <Link 
-                    href={link.href} 
-                    className={`transition-colors duration-200 ${
-                      isActive ? "text-blue-900 dark:text-blue-400 font-bold" : "hover:text-blue-900 dark:hover:text-blue-400"
+                <li key={link.href} className="relative">
+                  <Link
+                    href={link.href}
+                    className={`relative z-10 px-3.5 py-2 text-sm font-semibold rounded-lg transition-colors duration-300 group flex items-center gap-1 ${
+                      isActive
+                        ? "text-[#FF6B2B]"
+                        : "text-slate-600 dark:text-slate-300 hover:text-[#2D1B69] dark:hover:text-violet-300"
                     }`}
+                    style={{ fontFamily: "Inter, sans-serif" }}
                   >
                     {link.name}
                   </Link>
-                  {/* ✨ Smooth Hover or Active Border Line Effect */}
-                  <span 
-                    className={`absolute bottom-0 left-0 h-[2px] bg-blue-500 transition-all duration-300 ${
-                      isActive ? "w-full" : "w-0 group-hover/link:w-full"
-                    }`}
-                  ></span>
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute inset-0 bg-[#FF6B2B]/8 dark:bg-[#FF6B2B]/12 rounded-lg"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </li>
               );
             })}
           </ul>
 
-          {/* 🔐 Authentication & Theme Buttons */}
-          <div className="flex items-center gap-4 pl-4 border-l border-gray-200 dark:border-slate-800">
-            {/* Theme Toggle Button */}
+          {/* Right Actions */}
+          <div className="flex items-center gap-5 pl-9 border-l border-slate-200 dark:border-slate-700">
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-700 dark:text-gray-300"
+              className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               aria-label="Toggle Theme"
-              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {mounted && theme === "dark" ? (
-                <Sun size={20} className="text-amber-400" />
+                <Sun size={18} className="text-[#FFCA28]" />
               ) : (
-                <Moon size={20} className="text-slate-700 dark:text-slate-300" />
+                <Moon size={18} className="text-[#2D1B69]" />
               )}
             </button>
 
-            {/* Sign In Button */}
+            {/* Login */}
             <Link
               href="/auth/login"
-              className="bg-[#1e3a8a] hover:bg-[#172554] dark:bg-blue-600 dark:hover:bg-blue-700 hover:scale-105 text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md shadow-blue-900/20 transition-all duration-200"
+              className="px-5 py-2.5 text-sm font-bold text-[#2D1B69] dark:text-violet-300 border-2 border-[#2D1B69]/30 dark:border-violet-500/40 rounded-full hover:border-[#2D1B69] dark:hover:border-violet-400 hover:bg-[#2D1B69]/5 transition-all duration-200"
+              style={{ fontFamily: "Poppins, sans-serif" }}
             >
-              Sign In
+              Login
             </Link>
-            
-            {/* Register Button */}
+
+            {/* Register CTA */}
             <Link
               href="/auth/register"
-              className="bg-blue-500 hover:bg-blue-600 dark:bg-slate-700 dark:hover:bg-slate-650 hover:scale-105 text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md shadow-blue-500/20 transition-all duration-200"
+              className="btn-shine px-5 py-2.5 text-sm font-bold text-white rounded-full transition-all duration-200 flex items-center gap-1.5"
+              style={{
+                background: "linear-gradient(135deg, #FF6B2B, #e55a1f)",
+                boxShadow: "0 4px 15px rgba(255,107,43,0.35)",
+                fontFamily: "Poppins, sans-serif",
+              }}
             >
               Register
+              <ChevronRight size={15} />
             </Link>
           </div>
         </div>
 
-        {/* 📱 Mobile Menu & Theme Button */}
+        {/* Mobile Controls */}
         <div className="flex items-center gap-2 lg:hidden">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-700 dark:text-gray-300"
-            aria-label="Toggle Theme"
+            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             {mounted && theme === "dark" ? (
-              <Sun size={20} className="text-amber-400" />
+              <Sun size={18} className="text-[#FFCA28]" />
             ) : (
-              <Moon size={20} className="text-slate-700 dark:text-slate-300" />
+              <Moon size={18} className="text-[#2D1B69]" />
             )}
           </button>
-          
           <button
-            className="text-[#1e3a8a] dark:text-blue-400 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-[#2D1B69] dark:text-violet-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             onClick={() => setIsOpen(!isOpen)}
           >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
-      {/* 📱 Mobile Dropdown Menu */}
-      {isOpen && (
-        <div className="lg:hidden bg-white dark:bg-slate-900 border-t dark:border-slate-800 shadow-inner animate-in slide-in-from-top duration-200">
-          <ul className="flex flex-col p-4 space-y-3 text-gray-700 dark:text-gray-300 font-medium">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <li key={link.href}>
-                  <Link 
-                    href={link.href}
-                    onClick={() => setIsOpen(false)} // Menu close krayla click vr
-                    className={`block p-2 rounded-lg transition-colors ${
-                      isActive ? "bg-blue-50 dark:bg-blue-950/50 text-blue-950 dark:text-blue-200 font-bold" : "hover:bg-gray-50 dark:hover:bg-slate-800"
-                    }`}
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              );
-            })}
+      {/* Mobile Dropdown */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 26 }}
+            className="lg:hidden overflow-hidden"
+          >
+            <div className="px-4 pb-6 pt-2 bg-white/95 dark:bg-[#0f0a1e]/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800">
+              <ul className="space-y-1 mb-4">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        onClick={() => setIsOpen(false)}
+                        className={`flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                          isActive
+                            ? "bg-gradient-to-r from-[#2D1B69]/10 to-[#FF6B2B]/10 text-[#FF6B2B] border border-[#FF6B2B]/20"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                        }`}
+                      >
+                        <span>{link.name}</span>
+                        {isActive && <ChevronRight size={14} className="text-[#FF6B2B]" />}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
 
-            <div className="pt-4 border-t border-gray-100 dark:border-slate-800 flex flex-col gap-2">
-              <Link
-                href="/auth/login"
-                onClick={() => setIsOpen(false)}
-                className="w-full text-center py-2.5 rounded-full font-bold text-blue-900 dark:text-blue-400 border border-blue-900 dark:border-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/auth/register"
-                onClick={() => setIsOpen(false)}
-                className="w-full bg-blue-500 text-white text-center py-2.5 rounded-full font-bold hover:bg-blue-600 transition-colors"
-              >
-                Join Now
-              </Link>
+              <div className="flex flex-col gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <Link
+                  href="/auth/login"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full text-center py-3 rounded-full font-bold text-sm text-[#2D1B69] dark:text-violet-300 border-2 border-[#2D1B69]/30 hover:border-[#2D1B69] hover:bg-[#2D1B69]/5 transition-all"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/auth/register"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full text-center py-3 rounded-full font-bold text-sm text-white transition-all flex items-center justify-center gap-1.5"
+                  style={{ background: "linear-gradient(135deg, #FF6B2B, #e55a1f)" }}
+                >
+                  Register
+                  <ChevronRight size={15} />
+                </Link>
+              </div>
             </div>
-          </ul>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

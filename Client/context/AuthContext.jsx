@@ -16,9 +16,10 @@ export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const dispatch = useDispatch();
-  const [user, setUser] = useState(() => {
-    return storageService.getUser();
-  });
+  // Keep the server and the first client render identical. Browser storage is
+  // only available on the client, so reading it here can make hydrated markup
+  // differ from the HTML rendered by the server.
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Sync state on mount

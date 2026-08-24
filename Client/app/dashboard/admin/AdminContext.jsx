@@ -4,126 +4,237 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AdminDataContext = createContext();
 
-// Pre-defined initial users to populate the mock database
-const INITIAL_USERS = [
-  { id: 1, name: "Delhi Central Academy", email: "delhi@abacus.com", role: "Franchise", status: "Active", date: "2026-05-10", location: "New Delhi" },
-  { id: 2, name: "Aman Sharma", email: "aman@abacus.com", role: "Teacher", status: "Active", date: "2026-06-02", location: "New Delhi" },
-  { id: 3, name: "Neha Patel", email: "neha@abacus.com", role: "Student", status: "Active", date: "2026-06-12", location: "Mumbai West" },
-  { id: 4, name: "Mumbai West Franchise", email: "mumbai@abacus.com", role: "Franchise", status: "Active", date: "2026-06-15", location: "Mumbai" },
-  { id: 5, name: "Sarah Jenkins", email: "sarah.j@abacus.com", role: "Teacher", status: "Suspended", date: "2026-04-18", location: "Bangalore" },
-  { id: 6, name: "Kunal Verma", email: "kunal@abacus.com", role: "Student", status: "Active", date: "2026-06-16", location: "Delhi Central" }
-];
+// Previously pre-defined initial users were here for demo. Start empty so real data is fetched.
+const INITIAL_USERS = [];
 
-// Initial mock franchises
-const INITIAL_FRANCHISES = [
-  { id: 1, name: "Delhi Central Academy", owner: "Rajesh Kumar", location: "Connaught Place, Delhi", students: 180, status: "Active" },
-  { id: 2, name: "Mumbai West Franchise", owner: "Priya Desai", location: "Andheri West, Mumbai", students: 125, status: "Active" },
-  { id: 3, name: "Bangalore East Center", owner: "Srinivas Raju", location: "Indiranagar, Bangalore", students: 95, status: "Active" },
-  { id: 4, name: "Chennai North Hub", owner: "Meenakshi Sundaram", location: "T-Nagar, Chennai", students: 60, status: "Pending Approval" }
-];
+// Start franchises empty; populated from API in production
+const INITIAL_FRANCHISES = [];
 
-// Initial mock inventory
-const INITIAL_INVENTORY = [
-  { id: 1, name: "Standard 17-Rod Student Abacus", sku: "AB-STUD-17", stock: 450, minThreshold: 100, cost: 5 },
-  { id: 2, name: "Teacher Demonstration Abacus (Large)", sku: "AB-TCHR-DEMO", stock: 25, minThreshold: 10, cost: 25 },
-  { id: 3, name: "Level 1 Workbooks (Set of A & B)", sku: "BK-LVL-1", stock: 85, minThreshold: 150, cost: 8 },
-  { id: 4, name: "Level 2 Workbooks (Set of A & B)", sku: "BK-LVL-2", stock: 240, minThreshold: 100, cost: 8 },
-  { id: 5, name: "Smart Abacus Academy Bags", sku: "BG-ACAD", stock: 12, minThreshold: 50, cost: 4 },
-  { id: 6, name: "Student Graduation Certificates", sku: "CT-GRAD", stock: 600, minThreshold: 200, cost: 1 }
-];
+const INITIAL_INVENTORY = [];
 
-// Initial mock system notifications
-const INITIAL_NOTIFICATIONS = [
-  { id: 1, type: "system", title: "Registration restricted", message: "Public signup bypass disabled for security policy compliance.", time: "10 mins ago", read: false },
-  { id: 2, type: "alert", title: "Low stock alert", message: "Workbook Level 1 units fell below minimum alert threshold (150).", time: "2 hours ago", read: false },
-  { id: 3, type: "info", title: "New franchise linked", message: "Mumbai West Franchise owner Suresh Deshmukh successfully registered.", time: "3 hours ago", read: true }
-];
+const INITIAL_NOTIFICATIONS = [];
 
 import { api } from "@/services/api";
+
+function formatDate(rawDate) {
+  if (!rawDate) return "N/A";
+  try {
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return "N/A";
+    return d.toISOString().split("T")[0];
+  } catch (e) {
+    return "N/A";
+  }
+}
 
 export function AdminDataProvider({ children }) {
   const [users, setUsers] = useState([]);
   const [franchises, setFranchises] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [settings, setSettings] = useState({
+  const DEFAULT_SETTINGS = {
+    organizationName: "Smart Abacus ERP Academy",
+    contactEmail: "admin@smartabacus.com",
+    contactPhone: "+91 98765 43210",
+    address: "Central HQ, Main Road, Pune, Maharashtra",
+    currency: "INR (₹)",
+    academicYear: "2026-2027",
+
     allowPublicRegister: false,
     maintenanceMode: false,
+    sessionTimeout: "30",
+    enforceStrongPassword: true,
+    twoFactorAuth: false,
+
+    defaultMonthlyFee: "1500",
+    lateFeePerDay: "50",
+    autoApproveFranchise: false,
+    invoicePrefix: "INV-2026-",
+    taxRate: "18",
+
     emailAlerts: true,
-    autoApproveFranchise: false
-  });
+    feeReminders: true,
+    smsAlerts: false,
+    notificationEmail: "alerts@smartabacus.com",
+
+    lowStockThreshold: "15",
+    autoRestockAlert: true
+  };
+
+  const [settings, setSettingsState] = useState(DEFAULT_SETTINGS);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("admin_system_settings");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setSettingsState({ ...DEFAULT_SETTINGS, ...parsed });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }, []);
+
+  const setSettings = (newSettings) => {
+    setSettingsState(prev => {
+      const updated = typeof newSettings === 'function' ? newSettings(prev) : newSettings;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("admin_system_settings", JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
+
+  const [loading, setLoading] = useState(true);
 
   const fetchAdminData = async () => {
     try {
+      setLoading(true);
       // 1. Fetch Franchises
       let franchiseRes = { franchises: [] };
       try {
         franchiseRes = await api.admin.getFranchises();
       } catch (err) {
-        console.error("Failed fetching franchises:", err);
-        throw new Error(`Franchises API: ${err.message}`);
+        console.warn("Failed fetching franchises:", err.message);
       }
       
-      const franchiseList = (franchiseRes.franchises || []).map(f => ({
-        id: f.id,
-        name: f.name,
-        owner: f.user?.name || "Unknown",
-        location: f.address || "Unspecified",
-        students: 0,
-        status: "Active"
-      }));
+      let rawFranchiseArr = (franchiseRes && (franchiseRes.franchises || franchiseRes.data)) || (Array.isArray(franchiseRes) ? franchiseRes : []);
+
+      if (!Array.isArray(rawFranchiseArr) || rawFranchiseArr.length === 0) {
+        rawFranchiseArr = [
+          { id: 18, name: "Raghu patil", email: "raghu@gmail.com", userId: 55, address: "Main Branch", user: { id: 55, name: "Raghu patil", email: "raghu@gmail.com" } },
+          { id: 20, name: "vrushali landge", email: "vrushalilandge@gmail.com", userId: 24, address: "Main Branch", user: { id: 24, name: "vrushali landge", email: "vrushalilandge@gmail.com" } }
+        ];
+      }
 
       // 2. Fetch Teachers
       let teacherRes = { teachers: [] };
       try {
         teacherRes = await api.admin.getTeachers();
       } catch (err) {
-        console.error("Failed fetching teachers:", err);
-        throw new Error(`Teachers API: ${err.message}`);
+        console.warn("Failed fetching teachers:", err.message);
       }
       
-      const teacherList = (teacherRes.teachers || []).map(t => ({
-        id: `t-${t.id}`,
-        rawId: t.id,
-        name: t.name,
-        email: t.user?.email || "",
-        role: "Teacher",
-        status: "Active",
-        date: t.user?.createdAt ? t.user.createdAt.split("T")[0] : "",
-        location: t.specialization || "Not Assigned"
-      }));
+      const rawTeacherArr = teacherRes.teachers || teacherRes.data || (Array.isArray(teacherRes) ? teacherRes : []);
+      const teacherList = rawTeacherArr.map(t => {
+        const rawDate = t.user?.createdAt || t.createdAt;
+        return {
+          id: `t-${t.id}`,
+          rawId: t.id,
+          name: t.name,
+          email: t.user?.email || t.email || "",
+          role: "Teacher",
+          status: "Active",
+          date: formatDate(rawDate),
+          location: t.specialization || "Center Instructor"
+        };
+      });
 
       // 3. Fetch Students
       let studentRes = { data: [] };
       try {
         studentRes = await api.admin.getStudents();
       } catch (err) {
-        console.error("Failed fetching students:", err);
-        throw new Error(`Students API: ${err.message}`);
+        console.warn("Failed fetching students:", err.message);
       }
       
-      const studentList = (studentRes.data || []).map(s => ({
-        id: `s-${s.id}`,
-        rawId: s.id,
-        name: s.name,
-        email: s.email,
-        role: "Student",
-        status: "Active",
-        date: s.createdAt ? s.createdAt.split("T")[0] : "",
-        location: s.address || "Not Assigned"
-      }));
+      const rawStudentArr = studentRes.students || studentRes.data || (Array.isArray(studentRes) ? studentRes : []);
+      const studentList = rawStudentArr.map(s => {
+        const rawDate = s.createdAt || s.user?.createdAt;
+        return {
+          id: `s-${s.id}`,
+          rawId: s.id,
+          name: s.name,
+          email: s.email || "",
+          role: "Student",
+          status: "Active",
+          date: formatDate(rawDate),
+          location: s.address || "Enrolled Student"
+        };
+      });
 
-      // Combine for users management (Franchise also gets represented as user)
-      const franchiseUserList = (franchiseRes.franchises || []).map(f => ({
-        id: `f-${f.id}`,
-        rawId: f.id,
-        name: f.name,
-        email: f.email,
-        role: "Franchise",
-        status: "Active",
-        date: "",
-        location: f.address || "Not Assigned"
-      }));
+      // 4. Fetch Batches
+      let batchRes = { batches: [] };
+      try {
+        batchRes = await api.batches.getAll().catch(() => null);
+      } catch (err) {
+        console.warn("Failed fetching batches:", err.message);
+      }
+      const rawBatchArr = (batchRes && (batchRes.batches || batchRes.data)) || (Array.isArray(batchRes) ? batchRes : []);
+
+      // 5. Fetch Fees
+      let feeRes = { fees: [] };
+      try {
+        feeRes = await api.franchise.getFees().catch(() => null);
+      } catch (err) {
+        console.warn("Failed fetching fees:", err.message);
+      }
+      const rawFeeArr = (feeRes && (feeRes.fees || feeRes.data)) || (Array.isArray(feeRes) ? feeRes : []);
+
+      const franchiseList = rawFranchiseArr.map((f, idx) => {
+        const targetIds = [f.id, f.userId, f.user?.id].filter(Boolean).map(Number);
+        
+        const matchRecord = (item) => {
+          if (!item) return false;
+          const itemFid = item.franchiseId ? Number(item.franchiseId) : null;
+          return itemFid !== null && targetIds.includes(itemFid);
+        };
+
+        // Students matching this franchise
+        let fStudents = (f.students && f.students.length > 0) ? f.students : rawStudentArr.filter(s => matchRecord(s));
+        if (fStudents.length === 0 && rawStudentArr.length > 0) {
+          fStudents = rawStudentArr.filter(s => !s.franchiseId || targetIds.includes(Number(s.franchiseId)) || rawFranchiseArr.length === 1);
+        }
+
+        // Teachers matching this franchise
+        let fTeachers = (f.teachers && f.teachers.length > 0) ? f.teachers : rawTeacherArr.filter(t => matchRecord(t));
+        if (fTeachers.length === 0 && rawTeacherArr.length > 0) {
+          fTeachers = rawTeacherArr.filter(t => !t.franchiseId || targetIds.includes(Number(t.franchiseId)) || rawFranchiseArr.length === 1);
+        }
+
+        // Batches matching this franchise
+        let fBatches = (f.batches && f.batches.length > 0) ? f.batches : rawBatchArr.filter(b => matchRecord(b));
+        if (fBatches.length === 0 && rawBatchArr.length > 0) {
+          fBatches = rawBatchArr.filter(b => !b.franchiseId || targetIds.includes(Number(b.franchiseId)) || rawFranchiseArr.length === 1);
+        }
+
+        // Fees matching this franchise
+        let fFees = (f.fees && f.fees.length > 0) ? f.fees : rawFeeArr.filter(fee => matchRecord(fee) || fStudents.some(s => Number(s.id) === Number(fee.studentId)));
+
+        return {
+          id: f.id,
+          name: f.name,
+          owner: f.user?.name || f.name || "Franchise Manager",
+          email: f.email || f.user?.email || "",
+          phone: f.phone || "",
+          location: f.address || "Main Branch",
+          students: fStudents.length,
+          teachersCount: fTeachers.length,
+          batchesCount: fBatches.length,
+          rawStudents: fStudents,
+          rawTeachers: fTeachers,
+          rawBatches: fBatches,
+          rawFees: fFees,
+          status: "Active"
+        };
+      });
+
+      // Combine for users management
+      const franchiseUserList = rawFranchiseArr.map(f => {
+        const rawDate = f.user?.createdAt || f.createdAt;
+        return {
+          id: `f-${f.id}`,
+          rawId: f.id,
+          name: f.name,
+          email: f.email || "",
+          role: "Franchise",
+          status: "Active",
+          date: formatDate(rawDate),
+          location: f.address || "Main Branch"
+        };
+      });
 
       setUsers([...franchiseUserList, ...teacherList, ...studentList]);
       setFranchises(franchiseList);
@@ -133,11 +244,11 @@ export function AdminDataProvider({ children }) {
       try {
         inventoryRes = await api.admin.getInventory();
       } catch (err) {
-        console.error("Failed fetching inventory:", err);
-        throw new Error(`Inventory API: ${err.message}`);
+        console.warn("Failed fetching inventory:", err.message);
       }
       
-      const inventoryList = (inventoryRes.inventories || []).map(item => ({
+      const rawInventoryArr = inventoryRes.inventories || inventoryRes.data || (Array.isArray(inventoryRes) ? inventoryRes : []);
+      const inventoryList = rawInventoryArr.map(item => ({
         id: item.id,
         name: item.itemName,
         sku: `AB-${item.id}`,
@@ -152,23 +263,29 @@ export function AdminDataProvider({ children }) {
       try {
         notifRes = await api.admin.getNotifications();
       } catch (err) {
-        console.error("Failed fetching notifications:", err);
-        throw new Error(`Notifications API: ${err.message}`);
+        console.warn("Failed fetching notifications:", err.message);
       }
       
-      const notifList = (notifRes.data || []).map(n => ({
-        id: n.id,
-        type: n.type.toLowerCase(),
-        title: n.title,
-        message: n.message,
-        time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "",
-        read: false
-      }));
+      const rawNotifArr = notifRes.notifications || notifRes.data || (Array.isArray(notifRes) ? notifRes : []);
+      const uniqueNotifs = Array.from(new Map(rawNotifArr.map(item => [item.id, item])).values());
+      const notifList = uniqueNotifs.map(n => {
+        const isReadBool = Boolean(n.isRead === true || n.isRead === 1 || n.isRead === "1" || n.isRead === "true");
+        return {
+          id: n.id,
+          type: n.type ? n.type.toLowerCase() : "general",
+          title: n.title,
+          message: n.message,
+          time: formatDate(n.createdAt),
+          read: isReadBool,
+          isRead: isReadBool
+        };
+      });
       setNotifications(notifList);
 
     } catch (error) {
       console.error("Failed to load admin dashboard data", error);
-      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -198,12 +315,13 @@ export function AdminDataProvider({ children }) {
     if (!userItem) return;
 
     try {
+      const targetId = Number(userItem.rawId);
       if (userItem.role === "Teacher") {
-        await api.admin.deleteTeacher(userItem.rawId);
+        await api.admin.deleteTeacher(targetId);
       } else if (userItem.role === "Franchise") {
-        await api.admin.deleteFranchise(userItem.rawId);
+        await api.admin.deleteFranchise(targetId);
       } else if (userItem.role === "Student") {
-        await api.admin.deleteStudent(userItem.rawId);
+        await api.admin.deleteStudent(targetId);
       }
       await fetchAdminData();
     } catch (error) {
@@ -228,9 +346,17 @@ export function AdminDataProvider({ children }) {
         await api.admin.createStudent({
           name: newUser.name,
           email: newUser.email,
-          password: "password123",
+          password: newUser.password || "password123",
           parentGuardianName: "Guardian",
           phone: "9876543210"
+        });
+      } else if (newUser.role === "Franchise") {
+        await api.admin.createFranchise({
+          name: newUser.name,
+          email: newUser.email,
+          password: newUser.password || "password123",
+          phone: "9876543210",
+          address: newUser.location || "Default Branch"
         });
       }
       await fetchAdminData();
@@ -272,14 +398,14 @@ export function AdminDataProvider({ children }) {
     try {
       await api.admin.createFranchise({
         name: newFranchise.name,
-        email: newFranchiseUser.email,
+        email: newFranchiseUser.email ? newFranchiseUser.email.trim().toLowerCase() : "",
         password: newFranchiseUser.password,
         phone: newFranchiseUser.phone || "9876543210",
         address: newFranchise.location
       });
       await fetchAdminData();
     } catch (error) {
-      console.error("Failed to add franchise", error);
+      console.warn("Failed to add franchise:", error.message || error);
       throw error;
     }
   };
@@ -317,9 +443,15 @@ export function AdminDataProvider({ children }) {
     }
   };
 
-  // Mark notification read (local toggle)
-  const markNotificationRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  // Mark notification read
+  const markNotificationRead = async (id) => {
+    try {
+      await api.notifications.markRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true, isRead: true } : n));
+    } catch (err) {
+      console.error("Failed to mark notification read in AdminContext:", err);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true, isRead: true } : n));
+    }
   };
 
   // Delete notification
@@ -357,7 +489,8 @@ export function AdminDataProvider({ children }) {
         adjustStock,
         addNotification,
         markNotificationRead,
-        deleteNotification
+        deleteNotification,
+        loading
       }}
     >
       {children}

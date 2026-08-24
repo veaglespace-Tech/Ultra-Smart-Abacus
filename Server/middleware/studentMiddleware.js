@@ -5,7 +5,10 @@ export const validate = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
+    const errorMsg = errors.array().map(e => `${e.path || e.param}: ${e.msg}`).join(", ");
     return res.status(400).json({
+      success: false,
+      message: errorMsg,
       errors: errors.array()
     });
   }

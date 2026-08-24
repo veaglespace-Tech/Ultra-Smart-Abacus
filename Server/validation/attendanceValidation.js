@@ -9,8 +9,7 @@ export const attendanceValidation = [
         .withMessage("Student Id must be a number"),
 
     body("teacherId")
-        .notEmpty()
-        .withMessage("Teacher Id is required")
+        .optional({ checkFalsy: true })
         .isInt()
         .withMessage("Teacher Id must be a number"),
 

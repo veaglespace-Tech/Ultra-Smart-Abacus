@@ -7,25 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model attendance {
-  id             Int               @id @default(autoincrement())
-  studentId      Int
-  teacherId      Int
-  batchId        Int
-  attendanceDate DateTime          @default(now())
-  status         attendance_status
-  remarks        String?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @default(now())
-  batch          batch             @relation(fields: [batchId], references: [id], map: "Attendance_batchId_fkey")
-  student        student           @relation(fields: [studentId], references: [id], map: "Attendance_studentId_fkey")
-  teacher        teacher           @relation(fields: [teacherId], references: [id], map: "Attendance_teacherId_fkey")
+enum Role {
+  ADMIN
 
-<<<<<<< HEAD
-  @@unique([studentId, attendanceDate], map: "Attendance_studentId_attendanceDate_key")
-  @@index([batchId], map: "Attendance_batchId_fkey")
-  @@index([teacherId], map: "Attendance_teacherId_fkey")
-=======
   FRANCHISE
 
   TEACHER
@@ -45,7 +29,13 @@ model User {
 
   otpExpiry DateTime?
 
+  gender String?
+  phone String?
+  city String?
+  address String?
+  profilePhoto String? @db.LongText
 
+  
   role Role
 
   parentGuardianName String?
@@ -56,30 +46,20 @@ model User {
 
   student Student?
 
+  notificationReads NotificationRead[]
+  createdInventories Inventory[] @relation("InventoryCreator")
+  transfersSent      InventoryTransfer[] @relation("TransferSender")
+
   createdAt DateTime @default(now())
->>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
 }
 
-model batch {
-  id           Int            @id @default(autoincrement())
-  name         String
-  courseId     Int?
-  code         String         @unique(map: "Batch_code_key")
-  description  String?
-  level        String?
-  startDate    DateTime?
-  endDate      DateTime?
-  maxStudents  Int?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @default(now())
-  attendance   attendance[]
-  course       course?        @relation(fields: [courseId], references: [id], map: "Batch_courseId_fkey")
-  notification notification[]
-  student      student[]
+model Teacher {
+  id Int @id @default(autoincrement())
 
-<<<<<<< HEAD
-  @@index([courseId], map: "Batch_courseId_fkey")
-=======
+  profilePhoto  String?
+  documents     String? @db.LongText
+
+
   qualification String
 
   name String
@@ -95,75 +75,106 @@ model batch {
 
   user User @relation(fields: [userId], references: [id])
 
+  franchiseId Int?
+  franchise   Franchise? @relation(fields: [franchiseId], references: [id])
+
   attendances Attendance[]
   exams       Exam[]
->>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
+  salaries    Salary[]
+  batches     Batch[]
+  batchRequests BatchRequest[]
 }
 
-model course {
-  id          Int      @id @default(autoincrement())
-  name        String
-  code        String   @unique(map: "Course_code_key")
-  description String?
-  duration    Int?
-  fees        Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-  batch       batch[]
-}
+model Franchise {
+  id Int @id @default(autoincrement())
 
-model fee {
-  id            Int        @id @default(autoincrement())
-  studentId     Int
-  totalAmount   Float
-  paidAmount    Float      @default(0)
-  pendingAmount Float
-  status        fee_status @default(PENDING)
-  paymentDate   DateTime?
-  createdAt     DateTime   @default(now())
-}
-
-model franchise {
-  id      Int     @id @default(autoincrement())
-  name    String
-  email   String  @unique(map: "Franchise_email_key")
-  phone   String?
-  address String?
-  userId  Int     @unique(map: "Franchise_userId_key")
-  user    user    @relation(fields: [userId], references: [id], map: "Franchise_userId_fkey")
-}
-
-model inventory {
-  id          Int      @id @default(autoincrement())
-  itemName    String
-  description String?
-  quantity    Int
-  price       Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-}
-
-model notification {
-  id            Int                        @id @default(autoincrement())
-  title         String
-  message       String
-  type          notification_type          @default(GENERAL)
-  recipientType notification_recipientType
-  batchId       Int?
-  studentId     Int?
-  createdBy     Int?
-  createdAt     DateTime                   @default(now())
-  updatedAt     DateTime                   @default(now())
-  batch         batch?                     @relation(fields: [batchId], references: [id], map: "Notification_batchId_fkey")
-  student       student?                   @relation(fields: [studentId], references: [id], map: "Notification_studentId_fkey")
-
-<<<<<<< HEAD
-  @@index([batchId], map: "Notification_batchId_fkey")
-  @@index([studentId], map: "Notification_studentId_fkey")
-=======
   name String
 
   email String @unique
+
+  phone String?
+
+  address String?
+  profilePhoto String? @db.LongText
+
+  userId Int @unique
+
+  user User @relation(fields: [userId], references: [id])
+  salaries Salary[]
+  fees     Fee[]
+  teachers Teacher[]
+  students Student[]
+  batches  Batch[]
+  inventories Inventory[]
+  inventoryTransfers InventoryTransfer[]
+  batchRequests BatchRequest[]
+}
+
+
+
+model Inventory {
+  id Int @id @default(autoincrement())
+
+  itemName String
+
+  category String @default("General")
+
+  sku String? @unique
+
+  description String?
+
+  quantity Int @default(0)
+
+  minimumStock Int @default(10)
+
+  unitPrice Float @default(0)
+
+  price Float @default(0)
+
+  status String @default("ACTIVE")
+
+  createdBy Int?
+  creator User? @relation("InventoryCreator", fields: [createdBy], references: [id])
+
+  franchiseId Int?
+  franchise Franchise? @relation(fields: [franchiseId], references: [id])
+
+  transfers InventoryTransfer[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+model InventoryTransfer {
+  id Int @id @default(autoincrement())
+
+  inventoryId Int
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  franchiseId Int
+  franchise Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+
+  quantity Int
+
+  remarks String?
+
+  transferredBy Int
+  user User @relation("TransferSender", fields: [transferredBy], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Student {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  email String @unique
+
+  profilePhoto  String?
+  documents     String? @db.LongText
+
 
   password  String?
 
@@ -183,6 +194,9 @@ model notification {
 
   batch Batch? @relation(fields: [batchId], references: [id])
 
+  franchiseId Int?
+  franchise   Franchise? @relation(fields: [franchiseId], references: [id])
+
   notifications Notification[]
 
   attendances Attendance[]
@@ -192,51 +206,115 @@ model notification {
 
   user User? @relation(fields: [userId], references: [id])
 
+  fees      Fee[]
+
   createdAt DateTime @default(now())
->>>>>>> a86a63ca8c8bdb49513a1def91d54bc7c9b89978
 }
 
-model student {
-  id           Int            @id @default(autoincrement())
-  name         String
-  email        String         @unique(map: "Student_email_key")
-  rollNo       String         @unique(map: "Student_rollNo_key")
-  createdAt    DateTime       @default(now())
-  batchId      Int?
-  attendance   attendance[]
-  notification notification[]
-  batch        batch?         @relation(fields: [batchId], references: [id], map: "Student_batchId_fkey")
+model Course {
+  id Int @id @default(autoincrement())
 
-  @@index([batchId], map: "Student_batchId_fkey")
+  name String
+  code String @unique
+
+  description String?
+
+  duration Int? // months
+
+  fees Float?
+
+  Batches Batch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model teacher {
-  id            Int          @id @default(autoincrement())
-  name          String
-  qualification String
-  experience    Int
-  userId        Int          @unique(map: "Teacher_userId_key")
-  attendance    attendance[]
-  user          user         @relation(fields: [userId], references: [id], map: "Teacher_userId_fkey")
+model Batch {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  courseId Int?
+
+  course Course? @relation(fields: [courseId], references: [id])
+
+  franchiseId Int?
+  franchise   Franchise? @relation(fields: [franchiseId], references: [id])
+
+  code String @unique
+
+  description String?
+
+  level String?
+
+  startDate DateTime?
+
+  endDate DateTime?
+
+  maxStudents Int?
+
+  teacherId Int?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+
+  notifications Notification[]
+
+  students Student[]
+
+  attendances Attendance[]
+  exams       Exam[]
+  fees        Fee[]
+
+  batchRequests BatchRequest[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 }
 
-model user {
-  id        Int         @id @default(autoincrement())
-  email     String      @unique(map: "User_email_key")
-  createdAt DateTime    @default(now())
-  password  String
-  role      user_role
-  address   String?
-  city      String
-  fullName  String
-  gender    user_gender
-  phone     String      @unique(map: "User_phone_key")
-  updatedAt DateTime    @default(now())
-  franchise franchise?
-  teacher   teacher?
+enum BatchRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
-enum notification_type {
+model BatchRequest {
+  id              Int                @id @default(autoincrement())
+
+  teacherId       Int
+  teacher         Teacher            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  franchiseId     Int
+  franchise       Franchise          @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+
+  batchName       String
+
+  level           String             @default("Level 1")
+
+  timing          String
+
+  mode            String             @default("Offline")
+
+  maxStudents     Int                @default(15)
+
+  remarks         String?            @db.Text
+
+  status          BatchRequestStatus @default(PENDING)
+
+  rejectionReason String?            @db.Text
+
+  batchId         Int?
+  batch           Batch?             @relation(fields: [batchId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime           @default(now())
+
+  updatedAt       DateTime           @updatedAt
+
+  @@index([teacherId])
+  @@index([franchiseId])
+  @@index([status])
+}
+
+enum NotificationType {
   GENERAL
   EXAM
   FEE
@@ -244,14 +322,7 @@ enum notification_type {
   ANNOUNCEMENT
 }
 
-enum user_role {
-  ADMIN
-  FRANCHISE
-  TEACHER
-  STUDENT
-}
-
-enum notification_recipientType {
+enum RecipientType {
   ALL
   STUDENTS
   TEACHERS
@@ -260,20 +331,240 @@ enum notification_recipientType {
   STUDENT
 }
 
-enum fee_status {
+model Notification {
+  id Int @id @default(autoincrement())
+
+  title   String
+  message String
+
+  type NotificationType @default(GENERAL)
+
+  recipientType RecipientType
+
+  batchId Int?
+  batch   Batch? @relation(fields: [batchId], references: [id])
+
+  studentId Int?
+  student   Student? @relation(fields: [studentId], references: [id])
+
+  createdBy Int?
+
+  isRead Boolean @default(false)
+
+  reads NotificationRead[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationRead {
+  id             Int          @id @default(autoincrement())
+  notificationId Int
+  userId         Int
+  readAt         DateTime     @default(now())
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+}
+
+model Fee {
+  id           Int          @id @default(autoincrement())
+  studentId    Int
+  student      Student      @relation(fields: [studentId], references: [id])
+  franchiseId  Int
+  franchise    Franchise    @relation(fields: [franchiseId], references: [id])
+  batchId      Int
+  batch        Batch        @relation(fields: [batchId], references: [id])
+  totalFee     Float
+  paidAmount   Float        @default(0)
+  dueAmount    Float
+  dueDate      DateTime?
+  status       FeeStatus    @default(PENDING)
+  isActive     Boolean      @default(true)
+  payments     FeePayment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model FeePayment {
+  id              Int        @id @default(autoincrement())
+  feeId           Int
+  fee             Fee        @relation(fields: [feeId], references: [id])
+  amount          Float
+  paymentDate     DateTime   @default(now())
+  paymentMode     String     // Cash, UPI, Bank Transfer, Cheque
+  referenceNumber String?
+  remarks         String?
+  receivedBy      Int        // Franchise User ID / Franchise ID
+  receiptNumber   String     @unique
+  createdAt       DateTime   @default(now())
+}
+
+enum FeeStatus {
   PAID
   PARTIAL
   PENDING
 }
 
-enum attendance_status {
+enum AttendanceStatus {
   PRESENT
   ABSENT
   LEAVE
 }
 
-enum user_gender {
-  MALE
-  FEMALE
-  OTHER
+model Attendance {
+  id Int @id @default(autoincrement())
+
+  studentId Int
+
+  teacherId Int
+
+  batchId Int
+
+  attendanceDate DateTime @default(now())
+
+  status AttendanceStatus
+
+  remarks String?
+
+  student Student @relation(fields: [studentId], references: [id])
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  batch Batch @relation(fields: [batchId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, attendanceDate])
+}
+
+enum ExamType {
+  WEEKLY
+  MONTHLY
+  LEVEL
+  FINAL
+}
+enum ExamStatus {
+  DRAFT
+  SCHEDULED
+  COMPLETED
+  RESULT_PENDING
+  PUBLISHED
+  CANCELLED
+}
+
+model Exam {
+
+  id Int @id @default(autoincrement())
+
+  title String
+
+  examCode String @unique
+
+  description String?
+
+  curriculumTrack String
+
+  examType ExamType
+
+  status ExamStatus @default(DRAFT)
+
+  examDate DateTime
+
+  startTime String?
+
+  duration Int?
+
+  totalMarks Int
+
+  passingMarks Int
+
+  
+
+  teacherId Int
+
+  batchId Int
+
+  teacher Teacher @relation(fields:[teacherId],references:[id])
+
+  batch Batch @relation(fields:[batchId],references:[id])
+
+  results ExamResult[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([teacherId])
+
+  @@index([batchId])
+
+  @@index([examDate])
+
+  @@index([status])
+}
+
+model ExamResult {
+  id Int @id @default(autoincrement())
+
+  examId Int
+
+  studentId Int
+
+  obtainedMarks Int
+
+  percentage Float?
+
+  grade String?
+
+  isPassed Boolean @default(false)
+
+  isAbsent Boolean @default(false)
+
+  remarks String?
+
+  publishedAt DateTime?
+
+  exam Exam @relation(fields: [examId], references: [id])
+
+  student Student @relation(fields: [studentId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+
+  @@index([examId])
+
+  @@unique([examId, studentId])
+}
+
+model Salary {
+  id                Int       @id @default(autoincrement())
+  teacherId         Int
+  teacher           Teacher   @relation(fields: [teacherId], references: [id])
+  franchiseId       Int?
+  franchise         Franchise? @relation(fields: [franchiseId], references: [id])
+  month             Int
+  year              Int
+  basicSalary       Float
+  presentDays       Int       @default(0)
+  dailyRate         Float     @default(500)
+  bonus             Float     @default(0)
+  deductions        Float     @default(0)
+  netSalary         Float
+  paymentStatus     String    @default("PENDING") // PENDING, PAID
+  paymentDate       DateTime?
+  paymentMode       String?   // Bank Transfer, UPI, Cash, Cheque, Other
+  referenceNumber   String?
+  remarks           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([teacherId, month, year])
 }

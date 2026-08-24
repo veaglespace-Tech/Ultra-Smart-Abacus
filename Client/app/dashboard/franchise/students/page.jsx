@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { api } from "@/services/api";
 import { 
   UserPlus, GraduationCap, Users, ShieldAlert, CheckCircle2, 
   MessageSquare, Clock, Pencil, Trash, X, Save, ArrowLeft, 
-  Search, Download, CheckSquare, Square, History, User
+  Search, Download, CheckSquare, Square, History, User,
+  Camera, FileText, IdCard, Home, ClipboardList, Receipt, FileCheck
 } from "lucide-react";
 
 export default function FranchiseStudents() {
-  const [students, setStudents] = useState([
-    { id: "STU-99", name: "Rohan Deshmukh", level: "Level 1", teacher: "Aman Sharma", status: "Active", feeStatus: "Paid", batch: "Sat | 04:00 PM", phone: "9876543210", logs: ["Admission completed (2026-03-12)", "Fee status updated to Paid"] },
-    { id: "STU-102", name: "Isha Sharma", level: "Level 2", teacher: "Neha Patel", status: "Active", feeStatus: "Pending", batch: "Sun | 10:30 AM", phone: "9545123456", logs: ["Admission completed (2026-01-15)"] },
-    { id: "STU-88", name: "Aditya Patil", level: "Level 4", teacher: "Sarah Jenkins", status: "Suspended", feeStatus: "Overdue", batch: "Sat | 05:30 PM", phone: "8888777766", logs: ["Admission completed (2025-11-10)", "Account suspended due to non-payment"] },
-  ]);
+  const [students, setStudents] = useState([]);
+  const [batches, setBatches] = useState([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false); 
   const [isViewOpen, setIsViewOpen] = useState(false); 
@@ -24,10 +23,73 @@ export default function FranchiseStudents() {
   const [filterFee, setFilterFee] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Admission Mode: "id" (Admit by Student ID/RollNo/Email) or "register" (New Registration)
+  const [admissionMode, setAdmissionMode] = useState("id");
+  const [idInput, setIdInput] = useState("");
+  const [idBatchId, setIdBatchId] = useState("");
+  const [idSubmitting, setIdSubmitting] = useState(false);
+  const [idMessage, setIdMessage] = useState({ type: "", text: "" });
+
+  const handleAdmitById = async (e) => {
+    e.preventDefault();
+    if (!idInput || !idInput.trim()) {
+      setIdMessage({ type: "error", text: "Please enter a Student ID, Roll No, or Email." });
+      return;
+    }
+
+    setIdSubmitting(true);
+    setIdMessage({ type: "", text: "" });
+    try {
+      const res = await api.franchise.admitStudentById({
+        studentIdentifier: idInput.trim(),
+        batchId: idBatchId ? Number(idBatchId) : null
+      });
+
+      if (res && res.success) {
+        setIdMessage({ type: "success", text: res.message || "Student admitted successfully!" });
+        await fetchStudents();
+        setTimeout(() => {
+          setIsFormOpen(false);
+          setIdInput("");
+          setIdBatchId("");
+          setIdMessage({ type: "", text: "" });
+        }, 1200);
+      } else {
+        setIdMessage({ type: "error", text: res?.message || "Failed to admit student." });
+      }
+    } catch (err) {
+      console.error("Admit by ID error:", err);
+      setIdMessage({ type: "error", text: err.message || "Failed to admit student by ID." });
+    } finally {
+      setIdSubmitting(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
-    name: "", level: "Level 1", teacher: "Aman Sharma", status: "Active", feeStatus: "Paid", batch: "Sat | 04:00 PM", phone: ""
-  });
+    name: "",
+    email: "",
+    password: "",
+    dateOfBirth: "",
+    gender: "male",
+    phone: "",
+    address: "",
+    fatherName: "",
+    batchId: "",
+    level: "Level 1",
+    batch: "",
+    teacher: "",
+    profilePhoto: null,
+  }); 
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const metrics = useMemo(() => {
     return {
@@ -39,7 +101,7 @@ export default function FranchiseStudents() {
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
-      const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) || student.id.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (student.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || (student.id || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesLevel = filterLevel === "All" || student.level === filterLevel;
       const matchesFee = filterFee === "All" || student.feeStatus === filterFee;
       const matchesStatus = filterStatus === "All" || student.status === filterStatus;
@@ -89,37 +151,91 @@ export default function FranchiseStudents() {
 
   const handleBulkFeeMark = (status) => {
     setStudents(students.map(s => 
-      selectedStudentIds.includes(s.id) ? { ...s, feeStatus: status, logs: [...s.logs, `Bulk status updated to ${status}`] } : s
+      selectedStudentIds.includes(s.id) ? { ...s, feeStatus: status, logs: [...(s.logs || []), `Bulk status updated to ${status}`] } : s
     ));
     setSelectedStudentIds([]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingStudent) {
-        setStudents(students.map(s => s.id === editingStudent.id ? { 
-        ...s, ...formData, logs: [...s.logs, `Profile updated on ${new Date().toISOString().split('T')[0]}`] 
-      } : s));
-      setEditingStudent(null);
-    } else {
-      const newId = `STU-${Math.floor(100 + Math.random() * 900)}`;
-      setStudents([...students, { id: newId, ...formData, logs: [`Admission registered (${new Date().toISOString().split('T')[0]})`] }]);
+    setLoading(true);
+    try {
+      if (editingStudent) {
+        const payload = {
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email || undefined,
+          batchId: formData.batchId ? Number(formData.batchId) : undefined,
+          fatherName: formData.fatherName || undefined,
+          address: formData.address || undefined,
+        };
+        await api.franchise.updateStudent(editingStudent.rawId, payload);
+      } else {
+        const payload = {
+          name: formData.name,
+          phone: formData.phone || "9876543210",
+          email: formData.email || `student_${Date.now()}_${Math.floor(Math.random() * 1000)}@abacus.com`,
+          password: formData.password || "student123",
+          dateOfBirth: formData.dateOfBirth || "2015-01-01",
+          gender: formData.gender || "male",
+          address: formData.address || "Main Branch",
+          fatherName: formData.fatherName || "Parent",
+          batchId: formData.batchId ? Number(formData.batchId) : null,
+        };
+        await api.franchise.createStudent(payload);
+      }
+      await fetchStudents();
+      setIsFormOpen(false);
+      resetForm();
+    } catch (err) {
+      console.error("Failed to save student:", err);
+      alert(err?.response?.data?.message || err?.message || "Failed to save student");
+    } finally {
+      setLoading(false);
     }
-    setIsFormOpen(false);
-    resetForm();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (student) => {
+    const rawId = typeof student === 'object' ? student.rawId || student.id : student;
     if (confirm("Are you sure you want to delete this student?")) {
-      setStudents(students.filter(student => student.id !== id));
-      setIsViewOpen(false);
+      try {
+        await api.franchise.deleteStudent(rawId);
+        await fetchStudents();
+        setIsViewOpen(false);
+      } catch (err) {
+        console.error("Failed to delete student:", err);
+        alert(err?.response?.data?.message || err?.message || "Failed to delete student");
+      }
+    }
+  };
+
+  const formatDateForInput = (dateVal) => {
+    if (!dateVal) return "";
+    try {
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return "";
+      return d.toISOString().split("T")[0];
+    } catch (e) {
+      return "";
     }
   };
 
   const handleEdit = (student) => {
     setIsViewOpen(false);
     setEditingStudent(student);
-    setFormData(student);
+    setFormData({
+      name: student.name || "",
+      email: student.email || "",
+      phone: student.phone || "",
+      fatherName: student.fatherName || "",
+      address: student.address || "",
+      batchId: student.batchId ? String(student.batchId) : "",
+      level: student.level || "Level 1",
+      teacher: student.teacher || "",
+      dateOfBirth: formatDateForInput(student.dateOfBirth),
+      gender: student.gender || "male",
+      profilePhoto: null
+    });
     setIsFormOpen(true);
   };
 
@@ -131,7 +247,7 @@ export default function FranchiseStudents() {
 
   const toggleFeeStatus = (id, currentStatus) => {
     const nextStatus = currentStatus === "Paid" ? "Pending" : currentStatus === "Pending" ? "Overdue" : "Paid";
-    setStudents(students.map(s => s.id === id ? { ...s, feeStatus: nextStatus, logs: [...s.logs, `Fee toggled to ${nextStatus}`] } : s));
+    setStudents(students.map(s => s.id === id ? { ...s, feeStatus: nextStatus, logs: [...(s.logs || []), `Fee toggled to ${nextStatus}`] } : s));
     if (selectedStudent && selectedStudent.id === id) {
       setSelectedStudent(prev => ({ ...prev, feeStatus: nextStatus }));
     }
@@ -139,30 +255,93 @@ export default function FranchiseStudents() {
 
   const toggleAccountStatus = (id, currentStatus) => {
     const nextStatus = currentStatus === "Active" ? "Suspended" : "Active";
-    setStudents(students.map(s => s.id === id ? { ...s, status: nextStatus, logs: [...s.logs, `Status toggled to ${nextStatus}`] } : s));
+    setStudents(students.map(s => s.id === id ? { ...s, status: nextStatus, logs: [...(s.logs || []), `Status toggled to ${nextStatus}`] } : s));
     if (selectedStudent && selectedStudent.id === id) {
       setSelectedStudent(prev => ({ ...prev, status: nextStatus }));
     }
   };
 
   const resetForm = () => {
-    setFormData({ name: "", level: "Level 1", teacher: "Aman Sharma", status: "Active", feeStatus: "Paid", batch: "Sat | 04:00 PM", phone: "" });
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      dateOfBirth: "",
+      gender: "male",
+      phone: "",
+      address: "",
+      fatherName: "",
+      batchId: "",
+      level: "Level 1",
+      teacher: "",
+      profilePhoto: null,
+    });
+    setEditingStudent(null);
   };
 
+  const fetchStudents = async () => {
+    setLoading(true);
+    try {
+      const res = await api.franchise.getStudents();
+      const rawList = (res && res.data) || (res && res.students) || (Array.isArray(res) ? res : []);
+      const list = rawList.map(s => ({
+        id: `STU-${s.id}`,
+        rawId: s.id,
+        name: s.name,
+        email: s.email || '',
+        level: s.batch?.level || 'Level 1',
+        batch: s.batch?.name || 'Unassigned',
+        batchId: s.batchId || s.batch?.id || '',
+        teacher: s.batch?.teacherName || 'TBD',
+        phone: s.phone || '',
+        fatherName: s.fatherName || '',
+        address: s.address || '',
+        dateOfBirth: s.dateOfBirth || '',
+        gender: s.gender || '',
+        feeStatus: s.feeStatus || 'Paid',
+        status: 'Active',
+        logs: s.logs || [`Admission registered`]
+      }));
+      setStudents(list);
+    } catch (err) {
+      console.warn('Failed to fetch students:', err.message);
+      setStudents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBatches = async () => {
+    try {
+      const res = await api.franchise.getBatches();
+      const rawList = (res && res.data) || (res && res.batches) || (Array.isArray(res) ? res : []);
+      setBatches(rawList);
+    } catch (err) {
+      console.warn('Failed to fetch batches:', err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+    fetchBatches();
+  }, []);
+
   return (
-    <div className="space-y-6 w-full text-[#2c3539]">
+    <div className="space-y-6 w-full text-slate-800">
       
       {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e2dcd0] pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-base font-black tracking-tight text-[#1a202c] uppercase">Student Roster Hub</h2>
-          <p className="text-[11px] text-[#8a9485] mt-0.5 font-medium">Enterprise-grade center analytics, automated triggers, and bulk control.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">STUDENT ROSTER HUB</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Enterprise-grade center analytics, automated triggers, and bulk control.</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-center">
-          <button onClick={exportToCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f4f0e6] border border-[#e2dcd0] text-[11px] font-bold rounded-lg text-[#5a6455] hover:bg-[#e2dcd0]/50 transition-all cursor-pointer">
+          <button onClick={exportToCSV} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1.5">
             <Download size={13} /><span>Export CSV</span>
           </button>
-          <button onClick={() => { setEditingStudent(null); resetForm(); setIsFormOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4a5d4e] text-[11px] font-bold rounded-lg text-[#fcfbfa] hover:bg-[#3d4d40] transition-all cursor-pointer shadow-sm">
+          <button onClick={() => { setEditingStudent(null); resetForm(); setIsFormOpen(true); }} className="bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-[#FF6B2B]/25 btn-shine">
             <UserPlus size={13} /><span>New Admission</span>
           </button>
         </div>
@@ -170,34 +349,34 @@ export default function FranchiseStudents() {
 
       {/* METRICS BLOCKS */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
-          <div className="text-[10px] uppercase font-bold tracking-wider text-[#8a9485]">Total Enrolled</div>
-          <div className="text-xl font-black text-[#1a202c] mt-1">{metrics.total}</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Total Enrolled</div>
+          <div className="text-xl font-black text-slate-900 mt-1">{metrics.total}</div>
         </div>
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
-          <div className="text-[10px] uppercase font-bold tracking-wider text-[#4a5d4e]">Active Students</div>
-          <div className="text-xl font-black text-[#4a5d4e] mt-1">{metrics.active}</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] uppercase font-bold tracking-wider text-indigo-650">Active Students</div>
+          <div className="text-xl font-black text-indigo-600 mt-1">{metrics.active}</div>
         </div>
-        <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl p-4 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
           <div className="text-[10px] uppercase font-bold tracking-wider text-amber-800">Dues Pending</div>
           <div className="text-xl font-black text-amber-800 mt-1">{metrics.pendingFees}</div>
         </div>
       </div>
 
       {/* SEARCH AND CONTROL BAR */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] p-3 rounded-xl flex flex-col lg:flex-row gap-3 items-center shadow-sm">
+      <div className="bg-white border border-slate-200 p-3 rounded-xl flex flex-col lg:flex-row gap-3 items-center shadow-sm">
         <div className="relative w-full lg:max-w-xs">
-          <Search className="absolute left-3 top-2.5 text-[#8a9485]" size={14} />
-          <input type="text" placeholder="Search by Name or ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#f4f0e6]/40 text-xs text-[#1a202c] rounded-lg pl-9 pr-4 py-1.5 border border-[#e2dcd0] focus:outline-none focus:border-[#4a5d4e]" />
+          <Search className="absolute left-3 top-2.5 text-slate-450" size={14} />
+          <input type="text" placeholder="Search by Name or ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-50 text-xs text-slate-900 rounded-lg pl-9 pr-4 py-1.5 border border-slate-200 focus:outline-none focus:border-indigo-500" />
         </div>
         <div className="grid grid-cols-3 gap-2 w-full lg:w-auto text-[11px]">
-          <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="bg-[#fcfbfa] px-2 py-1.5 rounded-lg border border-[#e2dcd0] text-[#5a6455] font-medium focus:outline-none">
+          <select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="bg-white px-2 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-medium focus:outline-none">
             <option value="All">All Levels</option><option value="Level 1">Level 1</option><option value="Level 2">Level 2</option><option value="Level 4">Level 4</option>
           </select>
-          <select value={filterFee} onChange={(e) => setFilterFee(e.target.value)} className="bg-[#fcfbfa] px-2 py-1.5 rounded-lg border border-[#e2dcd0] text-[#5a6455] font-medium focus:outline-none">
+          <select value={filterFee} onChange={(e) => setFilterFee(e.target.value)} className="bg-white px-2 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-medium focus:outline-none">
             <option value="All">All Fees</option><option value="Paid">Paid</option><option value="Pending">Pending</option><option value="Overdue">Overdue</option>
           </select>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-[#fcfbfa] px-2 py-1.5 rounded-lg border border-[#e2dcd0] text-[#5a6455] font-medium focus:outline-none">
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-white px-2 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-medium focus:outline-none">
             <option value="All">All Status</option><option value="Active">Active</option><option value="Suspended">Suspended</option>
           </select>
         </div>
@@ -210,20 +389,20 @@ export default function FranchiseStudents() {
           <div className="flex items-center gap-2">
             <button onClick={() => handleBulkFeeMark("Paid")} className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px] rounded-md cursor-pointer hover:bg-emerald-100 transition-colors">Mark Paid</button>
             <button onClick={() => handleBulkFeeMark("Overdue")} className="px-3 py-1 bg-rose-50 border border-rose-200 text-rose-700 font-bold text-[10px] rounded-md cursor-pointer hover:bg-rose-100 transition-colors">Mark Overdue</button>
-            <button onClick={() => setSelectedStudentIds([])} className="text-xs text-[#8a9485] hover:text-[#1a202c] px-2 cursor-pointer font-medium">Clear</button>
+            <button onClick={() => setSelectedStudentIds([])} className="text-xs text-slate-500 hover:text-slate-800 px-2 cursor-pointer font-medium">Clear</button>
           </div>
         </div>
       )}
 
       {/* COMPACT DATA ROSTER BOARD */}
-      <div className="bg-[#fcfbfa] border border-[#e2dcd0] rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs min-w-[900px]">
             <thead>
-              <tr className="border-b border-[#e2dcd0] bg-[#f4f0e6] text-[10px] uppercase font-bold tracking-wider text-[#7a8475]">
+              <tr className="border-b border-slate-200 bg-slate-50 text-[10px] uppercase font-bold tracking-wider text-slate-500">
                 <th className="py-3 px-4 w-12 text-center">
-                  <button onClick={handleSelectAll} className="text-[#8a9485] hover:text-[#1a202c] transition-colors cursor-pointer flex items-center justify-center w-full">
-                    {selectedStudentIds.length === filteredStudents.length ? <CheckSquare size={14} className="text-[#4a5d4e]" /> : <Square size={14} />}
+                  <button onClick={handleSelectAll} className="text-slate-400 hover:text-slate-800 transition-colors cursor-pointer flex items-center justify-center w-full">
+                    {selectedStudentIds.length === filteredStudents.length ? <CheckSquare size={14} className="text-indigo-600" /> : <Square size={14} />}
                   </button>
                 </th>
                 <th className="py-3 px-4">ID</th>
@@ -236,32 +415,32 @@ export default function FranchiseStudents() {
                 <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2dcd0]/40 text-[#2c3539] font-medium">
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
               {filteredStudents.map((student) => (
-                <tr key={student.id} onClick={(e) => handleRowClick(student, e)} className={`hover:bg-[#f5f2eb]/30 cursor-pointer transition-colors group ${selectedStudentIds.includes(student.id) ? 'bg-[#4a5d4e]/5' : ''}`}>
+                <tr key={student.id} onClick={(e) => handleRowClick(student, e)} className={`hover:bg-slate-50/50 cursor-pointer transition-colors group ${selectedStudentIds.includes(student.id) ? 'bg-indigo-50/40' : ''}`}>
                   <td className="py-3 px-4 text-center">
-                    <button onClick={(e) => handleSelectStudent(student.id, e)} className="text-[#8a9485] hover:text-[#1a202c] transition-colors cursor-pointer flex items-center justify-center w-full">
-                      {selectedStudentIds.includes(student.id) ? <CheckSquare size={14} className="text-[#4a5d4e]" /> : <Square size={14} />}
+                    <button onClick={(e) => handleSelectStudent(student.id, e)} className="text-slate-400 hover:text-slate-800 transition-colors cursor-pointer flex items-center justify-center w-full">
+                      {selectedStudentIds.includes(student.id) ? <CheckSquare size={14} className="text-indigo-600" /> : <Square size={14} />}
                     </button>
                   </td>
-                  <td className="py-3 px-4 font-mono text-[#4a5d4e] font-bold">{student.id}</td>
-                  <td className="py-3 px-6 font-bold text-[#1a202c] group-hover:text-[#4a5d4e] transition-colors">{student.name}</td>
-                  <td className="py-3 px-6"><span className="flex items-center gap-1.5 text-[#4a5d4e] font-bold"><GraduationCap size={14} /> {student.level}</span></td>
-                  <td className="py-3 px-6"><span className="flex items-center gap-1.5 text-[#5a6455] font-mono"><Clock size={13} className="text-[#8a9485]" /> {student.batch}</span></td>
-                  <td className="py-3 px-6 text-[#2c3539] font-semibold"><span className="flex items-center gap-1.5"><Users size={13} className="text-[#8a9485]" /> {student.teacher}</span></td>
+                  <td className="py-3 px-4 font-mono text-indigo-600 font-bold">{student.id}</td>
+                  <td className="py-3 px-6 font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{student.name}</td>
+                  <td className="py-3 px-6"><span className="flex items-center gap-1.5 text-indigo-600 font-bold"><GraduationCap size={14} /> {student.level}</span></td>
+                  <td className="py-3 px-6"><span className="flex items-center gap-1.5 text-slate-600 font-mono"><Clock size={13} className="text-slate-450" /> {student.batch}</span></td>
+                  <td className="py-3 px-6 text-slate-800 font-semibold"><span className="flex items-center gap-1.5"><Users size={13} className="text-slate-450" /> {student.teacher}</span></td>
                   <td className="py-3 px-6">
-                    <button onClick={() => toggleFeeStatus(student.id, student.feeStatus)} className={`px-2.5 py-0.5 rounded text-[10px] font-bold border transition-all active:scale-95 cursor-pointer ${student.feeStatus === "Paid" ? "text-emerald-700 bg-emerald-50 border-emerald-200" : student.feeStatus === "Pending" ? "text-amber-700 bg-amber-50 border-amber-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>{student.feeStatus}</button>
+                    <button onClick={() => toggleFeeStatus(student.id, student.feeStatus)} className={`px-2.5 py-0.5 rounded text-[10px] font-bold border transition-all active:scale-[0.96] cursor-pointer ${student.feeStatus === "Paid" ? "text-emerald-700 bg-emerald-50 border-emerald-200" : student.feeStatus === "Pending" ? "text-amber-700 bg-amber-50 border-amber-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>{student.feeStatus}</button>
                   </td>
                   <td className="py-3 px-6">
-                    <button onClick={() => toggleAccountStatus(student.id, student.status)} className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold inline-flex items-center gap-1 border transition-all active:scale-95 cursor-pointer ${student.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"}`}>
+                    <button onClick={() => toggleAccountStatus(student.id, student.status)} className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold inline-flex items-center gap-1 border transition-all active:scale-[0.96] cursor-pointer ${student.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"}`}>
                       {student.status === "Active" ? <CheckCircle2 size={10} /> : <ShieldAlert size={10} />}{student.status}
                     </button>
                   </td>
                   <td className="py-3 px-4 text-center">
                     <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => window.open(`https://wa.me/91${student.phone}`, "_blank")} className="p-1.5 text-[#8a9485] hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"><MessageSquare size={13} /></button>
-                      <button onClick={() => handleEdit(student)} className="p-1.5 text-[#8a9485] hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
-                      <button onClick={() => handleDelete(student.id)} className="p-1.5 text-[#8a9485] hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
+                      <button onClick={() => window.open(`https://wa.me/91${student.phone}`, "_blank")} className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"><MessageSquare size={13} /></button>
+                      <button onClick={() => handleEdit(student)} className="p-1.5 text-slate-400 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"><Pencil size={13} /></button>
+                      <button onClick={() => handleDelete(student)} className="p-1.5 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"><Trash size={13} /></button>
                     </div>
                   </td>
                 </tr>
@@ -274,28 +453,58 @@ export default function FranchiseStudents() {
       {/* POP-UP DETAILED STUDENT ACCOUNT LOG VIEW */}
       {isViewOpen && selectedStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-[#fcfbfa] border border-[#e2dcd0] w-full max-w-md rounded-2xl p-6 shadow-xl relative overflow-hidden text-[#2c3539]">
+          <div className="bg-[#fcfbfa] border border-[#e2dcd0] w-full max-w-lg rounded-2xl p-6 shadow-xl relative overflow-hidden text-[#2c3539] max-h-[90vh] overflow-y-auto space-y-4">
             <div className={`absolute top-0 left-0 w-full h-1.5 ${selectedStudent.status === 'Active' ? 'bg-[#4a5d4e]' : 'bg-rose-600'}`} />
             <button onClick={() => setIsViewOpen(false)} className="absolute top-4 right-4 text-[#8a9485] hover:text-[#1a202c] transition-colors cursor-pointer"><X size={15} /></button>
-            <div className="flex items-center gap-3.5 mb-5 mt-2">
+            <div className="flex items-center gap-3.5 mt-2">
               <div className="p-2.5 bg-[#f4f0e6] border border-[#e2dcd0] rounded-xl text-[#4a5d4e]"><User size={18} /></div>
               <div>
                 <h3 className="text-sm font-black text-[#1a202c] tracking-tight">{selectedStudent.name}</h3>
                 <p className="text-[10px] text-[#8a9485] font-mono uppercase tracking-wider">{selectedStudent.id} | {selectedStudent.level}</p>
               </div>
             </div>
-            <div className="bg-[#f4f0e6]/50 border border-[#e2dcd0]/60 rounded-xl p-4 space-y-3 font-mono text-xs text-[#5a6455] mb-4">
+            <div className="bg-[#f4f0e6]/50 border border-[#e2dcd0]/60 rounded-xl p-4 space-y-3 font-mono text-xs text-[#5a6455]">
               <div className="flex justify-between items-center border-b border-[#e2dcd0]/60 pb-2"><span>Batch Slot:</span><span className="text-[#1a202c] font-bold">{selectedStudent.batch}</span></div>
               <div className="flex justify-between items-center border-b border-[#e2dcd0]/60 pb-2"><span>Assigned Teacher:</span><span className="text-[#1a202c]">{selectedStudent.teacher}</span></div>
               <div className="flex justify-between items-center"><span>Parent Contact:</span><span className="text-[#1a202c]">{selectedStudent.phone}</span></div>
             </div>
-            <div className="mb-5">
+
+            {/* STUDENT ADMISSION DOCUMENTS VAULT SUMMARY */}
+            <div className="space-y-2">
+              <div className="text-[10px] text-[#8a9485] uppercase font-bold flex items-center justify-between">
+                <span className="flex items-center gap-1"><FileCheck size={12} /> Admission Documents Vault (7 Docs):</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-[#f4f0e6]/40 border border-[#e2dcd0] rounded-xl p-3">
+                {[
+                  { id: 'studentPhoto', label: 'Student Photo', icon: Camera },
+                  { id: 'birthCertificate', label: 'Birth Certificate', icon: FileText },
+                  { id: 'studentAadhaar', label: 'Student Aadhaar Card', icon: IdCard },
+                  { id: 'parentAadhaar', label: 'Parent Aadhaar Card', icon: Users },
+                  { id: 'addressProof', label: 'Address Proof', icon: Home },
+                  { id: 'admissionForm', label: 'Admission Form', icon: ClipboardList },
+                  { id: 'feeReceipt', label: 'Fee Payment Receipt', icon: Receipt },
+                ].map(doc => {
+                  const Icon = doc.icon;
+                  return (
+                    <div key={doc.id} className="p-2 bg-white rounded-lg border border-[#e2dcd0] flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 truncate">
+                        <Icon size={13} className="text-[#4a5d4e] shrink-0" />
+                        <span className="font-bold text-[#1a202c] truncate text-[10px]">{doc.label}</span>
+                      </div>
+                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-[9px] rounded-full border border-emerald-200 shrink-0">Supported ✓</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
               <div className="text-[10px] text-[#8a9485] uppercase font-bold flex items-center gap-1 mb-2"><History size={12} /> Audit Logs:</div>
               <div className="bg-[#f4f0e6]/40 border border-[#e2dcd0] rounded-xl p-3 max-h-24 overflow-y-auto space-y-1.5 text-[11px] font-mono text-[#7a8475]">
                 {selectedStudent.logs?.map((log, i) => <div key={i} className="leading-relaxed">• {log}</div>)}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="grid grid-cols-2 gap-3">
               <button onClick={() => window.open(`https://wa.me/91${selectedStudent.phone}`, "_blank")} className="px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold cursor-pointer flex items-center justify-center gap-1.5 hover:bg-emerald-100 transition-all"><MessageSquare size={13} /> WhatsApp</button>
               <button onClick={() => handleEdit(selectedStudent)} className="px-3 py-2 bg-[#f4f0e6] border border-[#e2dcd0] text-[#5a6455] rounded-xl text-xs font-bold cursor-pointer flex items-center justify-center gap-1.5 hover:bg-[#e2dcd0]/50 transition-all"><Pencil size={13} /> Edit Profile</button>
             </div>
@@ -309,41 +518,126 @@ export default function FranchiseStudents() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-[#fcfbfa] border border-[#e2dcd0] w-full max-w-md rounded-2xl p-6 shadow-xl relative text-[#2c3539]">
             <button onClick={() => setIsFormOpen(false)} className="absolute top-4 right-4 text-[#8a9485] hover:text-[#1a202c] transition-colors cursor-pointer"><X size={15} /></button>
-            <h3 className="text-xs font-black text-[#1a202c] mb-5 uppercase tracking-wider border-b border-[#e2dcd0] pb-2">{editingStudent ? `Modify Record: ${editingStudent.id}` : "Process New Admission"}</h3>
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-[#5a6455] mb-1.5 font-bold">Student Full Name</label>
-                <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none focus:border-[#4a5d4e]" />
+            <h3 className="text-xs font-black text-[#1a202c] mb-4 uppercase tracking-wider border-b border-[#e2dcd0] pb-2">
+              {editingStudent ? `Modify Record: ${editingStudent.id}` : "Process Student Admission"}
+            </h3>
+
+            {/* ADMISSION MODE TOGGLE SWITCH (ONLY FOR NEW ADMISSION) */}
+            {!editingStudent && (
+              <div className="grid grid-cols-2 gap-1 bg-[#f4f0e6] p-1 rounded-xl mb-4 font-bold text-xs">
+                <button
+                  type="button"
+                  onClick={() => setAdmissionMode("id")}
+                  className={`py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    admissionMode === "id" 
+                      ? "bg-white text-[#4a5d4e] shadow-sm font-black" 
+                      : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <IdCard size={13} />
+                  <span>Admit by ID</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdmissionMode("register")}
+                  className={`py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    admissionMode === "register" 
+                      ? "bg-white text-[#4a5d4e] shadow-sm font-black" 
+                      : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <UserPlus size={13} />
+                  <span>Register New</span>
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+            )}
+
+            {/* OPTION 1: ADMIT EXISTING STUDENT BY ID / ROLL NO / EMAIL */}
+            {!editingStudent && admissionMode === "id" ? (
+              <form onSubmit={handleAdmitById} className="space-y-4 text-xs">
+                {idMessage.text && (
+                  <div className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${
+                    idMessage.type === "success" 
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                      : "bg-rose-50 text-rose-700 border-rose-200"
+                  }`}>
+                    {idMessage.type === "success" ? <CheckCircle2 size={14} /> : <ShieldAlert size={14} />}
+                    <span>{idMessage.text}</span>
+                  </div>
+                )}
+
                 <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Abacus Level</label>
-                  <select value={formData.level} onChange={(e) => setFormData({...formData, level: e.target.value})} className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none">
-                    <option value="Level 1">Level 1</option><option value="Level 2">Level 2</option><option value="Level 4">Level 4</option>
+                  <label className="block text-[#5a6455] mb-1.5 font-bold">
+                    Student ID / Roll No / Email
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="e.g. STU-101, 101, or student@gmail.com" 
+                      value={idInput} 
+                      onChange={(e) => setIdInput(e.target.value)} 
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] font-mono focus:outline-none focus:border-[#4a5d4e]" 
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">Enter registered Student ID, Roll Number, or Email address to admit to your franchise.</p>
+                </div>
+
+                <div>
+                  <label className="block text-[#5a6455] mb-1.5 font-bold">Assign Batch (Optional)</label>
+                  <select 
+                    value={String(idBatchId || "")} 
+                    onChange={(e) => setIdBatchId(e.target.value)} 
+                    className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none"
+                  >
+                    <option value="">-- Select Batch --</option>
+                    {batches.map((b) => (
+                      <option key={b.id} value={String(b.id)}>
+                        {b.name} ({b.level || 'General'})
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Batch Slot</label>
-                  <select value={formData.batch} onChange={(e) => setFormData({...formData, batch: e.target.value})} className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none">
-                    <option value="Sat | 04:00 PM">Sat | 04:00 PM</option><option value="Sat | 05:30 PM">Sat | 05:30 PM</option><option value="Sun | 10:30 AM">Sun | 10:30 AM</option>
-                  </select>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e2dcd0] mt-2">
+                  <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-1.5 rounded-lg bg-[#fcfbfa] text-[#8a9485] border border-[#e2dcd0] cursor-pointer hover:text-[#1a202c] transition-colors">Cancel</button>
+                  <button type="submit" disabled={idSubmitting} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#4a5d4e] text-[#fcfbfa] font-bold cursor-pointer hover:bg-[#3d4d40] transition-all disabled:opacity-50">
+                    <Save size={14} />
+                    <span>{idSubmitting ? "Admitting..." : "Confirm Admission"}</span>
+                  </button>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+              </form>
+            ) : (
+              /* OPTION 2: REGISTER BRAND NEW STUDENT FORM */
+              <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                 <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Assigned Teacher</label>
-                  <input type="text" value={formData.teacher} onChange={(e) => setFormData({...formData, teacher: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none" />
+                  <label className="block text-[#5a6455] mb-1.5 font-bold">Student Full Name</label>
+                  <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none focus:border-[#4a5d4e]" />
                 </div>
-                <div>
-                  <label className="block text-[#5a6455] mb-1.5 font-bold">Parent Contact</label>
-                  <input type="tel" required placeholder="10 digit cell" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] font-mono focus:outline-none" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[#5a6455] mb-1.5 font-bold">Assign Batch</label>
+                    <select value={String(formData.batchId || "")} onChange={(e) => setFormData({...formData, batchId: e.target.value})} className="w-full px-2 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] focus:outline-none">
+                      <option value="">-- Select Batch --</option>
+                      {batches.map((b) => (
+                        <option key={b.id} value={String(b.id)}>
+                          {b.name} ({b.level || 'General'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[#5a6455] mb-1.5 font-bold">Parent Contact</label>
+                    <input type="tel" placeholder="10 digit cell" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-3 py-2 rounded-xl bg-[#fcfbfa] border border-[#e2dcd0] text-[#1a202c] font-mono focus:outline-none" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e2dcd0] mt-2">
-                <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-1.5 rounded-lg bg-[#fcfbfa] text-[#8a9485] border border-[#e2dcd0] cursor-pointer hover:text-[#1a202c] transition-colors">Cancel</button>
-                <button type="submit" className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#4a5d4e] text-[#fcfbfa] font-bold cursor-pointer hover:bg-[#3d4d40] transition-all"><Save size={14} /><span>Commit Sync</span></button>
-              </div>
-            </form>
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e2dcd0] mt-2">
+                  <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-1.5 rounded-lg bg-[#fcfbfa] text-[#8a9485] border border-[#e2dcd0] cursor-pointer hover:text-[#1a202c] transition-colors">Cancel</button>
+                  <button type="submit" disabled={loading} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#4a5d4e] text-[#fcfbfa] font-bold cursor-pointer hover:bg-[#3d4d40] transition-all disabled:opacity-50"><Save size={14} /><span>{loading ? "Saving..." : "Commit Sync"}</span></button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

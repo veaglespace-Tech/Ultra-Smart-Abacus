@@ -12,7 +12,9 @@ export default function TeacherNotificationsPage() {
   const fetchNotifications = async () => {
     try {
       const res = await api.teacher.getNotifications();
-      const list = (res.data || []).map(n => {
+      const rawList = res.data || res.notifications || [];
+      const uniqueList = Array.from(new Map(rawList.map(item => [item.id, item])).values());
+      const list = uniqueList.map(n => {
         let typeIcon = Bell;
         let typeColor = "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400";
         if (n.type === "EXAM") {
@@ -61,7 +63,9 @@ export default function TeacherNotificationsPage() {
       {/* HEADER SECTION */}
       <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">ALERTS & NOTIFICATIONS</h2>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">ALERTS & NOTIFICATIONS</span>
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">Stay updated with classroom scheduling milestones and grading reviews.</p>
         </div>
         {notifications.length > 0 && (

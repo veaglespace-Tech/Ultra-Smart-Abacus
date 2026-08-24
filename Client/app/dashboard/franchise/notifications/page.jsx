@@ -5,10 +5,19 @@ import { Bell, Info, Send, Trash2, Megaphone, ShieldAlert } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 
+import { useDispatch, useSelector } from "react-redux";
+import { 
+  fetchNotifications, 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead,
+  markReadOptimistic,
+  markAllReadOptimistic
+} from "@/store/notificationSlice";
+
 export default function FranchiseNotificationsPage() {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { notifications, unreadCount, loading } = useSelector((state) => state.notification);
 
   // Form states
   const [title, setTitle] = useState("");
@@ -17,20 +26,9 @@ export default function FranchiseNotificationsPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await api.franchise.getNotifications();
-      setNotifications(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch notifications:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchNotifications();
-  }, []);
+    dispatch(fetchNotifications("FRANCHISE"));
+  }, [dispatch]);
 
   const handleSendNotification = async (e) => {
     e.preventDefault();
@@ -77,10 +75,12 @@ export default function FranchiseNotificationsPage() {
     <div className="space-y-6">
       
       {/* Header Panel */}
-      <div className="bg-white/5 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-5 rounded-3xl backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">ALERTS & BROADCASTS</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Send custom updates to center students, teachers, or view system wide logs.</p>
+          <h2 className="text-xl font-black tracking-tight">
+            <span className="gradient-text">ALERTS & BROADCASTS</span>
+          </h2>
+          <p className="text-xs text-slate-550 dark:text-slate-455 mt-0.5">Send custom updates to center students, teachers, or view system wide logs.</p>
         </div>
       </div>
 
@@ -153,7 +153,7 @@ export default function FranchiseNotificationsPage() {
 
             <button
               type="submit"
-              className="w-full rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-indigo-200 dark:shadow-none transition-all duration-200 hover:-translate-y-0.5"
+              className="w-full rounded-2xl bg-gradient-to-r from-[#2D1B69] via-[#FF6B2B] to-[#FFCA28] hover:opacity-95 text-white font-bold text-xs py-3 flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 shadow-md shadow-[#FF6B2B]/25 btn-shine"
             >
               <Send size={12} />
               <span>Broadcast Announcement</span>
@@ -166,10 +166,24 @@ export default function FranchiseNotificationsPage() {
           
           {/* Admin Notifications Card (Separate small section) */}
           <div className="bg-white/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-5 rounded-3xl shadow-sm backdrop-blur-md">
-            <h4 className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-3.5 flex items-center gap-2">
-              <ShieldAlert size={14} className="text-indigo-600 dark:text-indigo-400" />
-              Notices from Super Admin
-            </h4>
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                <ShieldAlert size={14} className="text-indigo-600 dark:text-indigo-400" />
+                Notices from Super Admin
+              </h4>
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch(markAllReadOptimistic());
+                    dispatch(markAllNotificationsAsRead());
+                  }}
+                  className="bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50 text-[11px] font-bold px-2.5 py-1 rounded-xl hover:bg-orange-100 transition-all cursor-pointer"
+                >
+                  Mark All Read ({unreadCount})
+                </button>
+              )}
+            </div>
             {loading ? (
               <p className="text-xs text-slate-400 font-medium py-1">Checking system updates...</p>
             ) : adminNotices.length === 0 ? (
@@ -182,7 +196,15 @@ export default function FranchiseNotificationsPage() {
                 {adminNotices.map((n) => (
                   <div 
                     key={n.id} 
-                    className="p-3.5 bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/30 rounded-2xl shadow-sm"
+                    onClick={() => {
+                      dispatch(markReadOptimistic(n.id));
+                      dispatch(markNotificationAsRead(n.id));
+                    }}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                      !n.isRead 
+                        ? "bg-amber-500/10 border-amber-500/40 text-slate-900 dark:text-white" 
+                        : "bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-100/50 dark:border-indigo-900/30"
+                    }`}
                   >
                     <h5 className="font-bold text-slate-900 dark:text-white text-xs">{n.title}</h5>
                     <p className="text-xs text-slate-650 dark:text-slate-400 font-medium leading-relaxed mt-1">{n.message}</p>

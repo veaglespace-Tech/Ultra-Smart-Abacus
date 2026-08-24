@@ -7,7 +7,10 @@ import {createNotification,
     getStudentNotifications,
     getTeacherNotifications,
     getMyStudentNotifications,
-    getFranchiseNotifications} from "../controllers/notificationController.js";
+    getFranchiseNotifications,
+    submitPublicInquiry,
+    markNotificationAsRead,
+    markAllNotificationsAsRead} from "../controllers/notificationController.js";
 import { createNotificationValidation } from "../validation/notificationValidation.js";
 import { validate } from "../middleware/notificationMiddleware.js";
 import  authMiddleware from "../middleware/authMiddleware.js";
@@ -15,25 +18,35 @@ import authorize from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
+router.post("/public-inquiry", submitPublicInquiry);
+
 router.post("/",authMiddleware,
-authorize("ADMIN","FRANCHISE"),
+authorize("ADMIN","FRANCHISE","TEACHER","STUDENT"),
 createNotificationValidation,
 validate,
 createNotification);
 
-router.get("/", authMiddleware, authorize("ADMIN", "FRANCHISE"), getAllNotifications);
+router.patch("/read-all", authMiddleware, markAllNotificationsAsRead);
+router.put("/read-all", authMiddleware, markAllNotificationsAsRead);
+router.post("/read-all", authMiddleware, markAllNotificationsAsRead);
+
+router.patch("/:id/read", authMiddleware, markNotificationAsRead);
+router.put("/:id/read", authMiddleware, markNotificationAsRead);
+router.post("/:id/read", authMiddleware, markNotificationAsRead);
+
+router.get("/", authMiddleware, getAllNotifications);
 
 router.get(
     "/teacher",
     authMiddleware,
-    authorize("TEACHER"),
+    authorize("TEACHER", "ADMIN"),
     getTeacherNotifications
 );
 
 router.get(
     "/franchise",
     authMiddleware,
-    authorize("FRANCHISE"),
+    authorize("FRANCHISE", "ADMIN"),
     getFranchiseNotifications
 );
 
